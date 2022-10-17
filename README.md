@@ -1,14 +1,14 @@
-CSR
+# CSR
+
+... introduction ... Ponyhof ... [Andreas Gummer](https://github.com/papa-agoo) ...
 
 <br/>
 
-# Introduction
+## Build and Run
 
-Foo
+... linux only ...
 
-<br/><br/>
-
-# Build Instructions
+<br/>
 
 Dependencies
 
@@ -20,7 +20,7 @@ Dependencies
 Prepare Repo
 
 ```shell
-$ git clone csr.git --recursive-submodules
+$ git clone https://github.com/papa-agoo/csr.git --recursive-submodules
 ```
 
 <br/>
@@ -45,28 +45,65 @@ $ sudo make all install
 
 Run CSR
 
-... optional ld.so.conf stuff ...
+... assuming `/opt/csr` is the install prefix (project root directory) set the `LD_LIBRARY_PATH` before executing CSR apps ...
 
+```shell
+$ export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/opt/csr/lib
+```
+
+... or just add `/opt/csr/lib` to `ld.so.conf` once and forget about it ...
+
+<br/>
+
+... for now CSR apps must be run from within the `project root directory` (i.e. /opt/csr) ...
 
 ```shell
 $ cd /opt/csr
-$ LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/opt/csr/lib ./bin/csr_app
+$ ./bin/csr_app
 ```
 
 <br/><br/>
 
-# Roadmap
+## Roadmap
 
-- [x] v0.0.0
-  - [x] Core Libs
+... milestones dings ...
+
+<br/>
+
+- [ ] Milestone 1 : Foundation
+  - [x] Core Libs Layer
   - [x] Platform Abstraction Layer
-  - [x] Example: hello_config
-  - [x] Example: hello_platform
-- [ ] v0.0.1
   - [ ] Kernel Layer
-  - [ ] Example: hello_kernel
-- [ ] v0.0.2
-  - [ ] CSR Hub Application
-  - [ ] User Interface
-  - [ ] Applet System
+  - [ ] Hub Application
+    - [ ] Config Files
+    - [ ] User Interface
+    - [ ] Applet System
+- [ ] Milestone 2 : Basic Applets
+  - [ ] hello_screens
+  - [ ] xgl_hello_triangle
+  - [ ] softgl_hello_triangle
+  - [ ] ...
 
+<br/><br/>
+
+... milestone candidates ...
+
+<br/>
+
+- [ ] Milestone ? : Resource System
+  - [ ] ...
+  - [ ] applet: hello_resource
+  - [ ] ...
+- [ ] Milestone ? : Rendering System
+  - [ ] ...
+  - [ ] applet: rsx_hello_world
+  - [ ] ...
+
+<br/><br/>
+
+## Media
+
+<br/>
+
+Very early Version.
+![CSR Legacy](files/csr_legacy.png)
