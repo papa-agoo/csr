@@ -73,7 +73,7 @@ $ ./bin/csr_app
 - [ ] Milestone 1 : Foundation
   - [x] Core Libs Layer
   - [x] Platform Abstraction Layer
-  - [ ] Kernel Layer
+  - [x] Kernel Layer
   - [ ] Hub Application
     - [ ] Config Files
     - [ ] User Interface

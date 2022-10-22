@@ -1,0 +1,41 @@
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#define KLOG_MODULE_NAME kernel
+
+#include <csr/kernel.h>
+#include <csr/kernel/kernel_priv.h>
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+result_e ksrv_vfs_init(struct kernel_init_info *init_info)
+{
+    klog_info("initializing vfs service ...");
+
+    ////////////////////////////////////////
+
+    struct ksrv_vfs *srv = ksrv_vfs_ptr();
+
+    ////////////////////////////////////////
+
+    srv->is_initialized = false;
+
+    return RC_SUCCESS;
+
+error:
+    return RC_FAILURE;
+}
+
+void ksrv_vfs_quit()
+{
+    klog_info("quitting vfs service ...");
+
+    ////////////////////////////////////////
+
+    struct ksrv_vfs *srv = ksrv_vfs_ptr();
+
+    // ...
+
+    ////////////////////////////////////////
+
+    srv->is_initialized = false;
+}
