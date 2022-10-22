@@ -1,0 +1,5 @@
+if (RENDER_API_OPENGL)
+    add_subdirectory(opengl)
+else()
+    message(FATAL_ERROR "xgl impl. not found")
+endif()

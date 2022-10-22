@@ -78,10 +78,14 @@ $ ./bin/csr_app
     - [ ] Config Files
     - [ ] User Interface
     - [ ] Applet System
-- [ ] Milestone 2 : Basic Applets
-  - [ ] hello_screens
+- [ ] Milestone 2 : Simple Applets
   - [ ] xgl_hello_triangle
+  - [ ] hello_screens
   - [ ] softgl_hello_triangle
+  - [ ] ...
+- [ ] Milestone 3 : Rendering System Foundation
+  - [ ] ...
+  - [ ] applet: rsx_hello_world
   - [ ] ...
 
 <br/><br/>
@@ -93,10 +97,6 @@ $ ./bin/csr_app
 - [ ] Milestone ? : Resource System
   - [ ] ...
   - [ ] applet: hello_resource
-  - [ ] ...
-- [ ] Milestone ? : Rendering System
-  - [ ] ...
-  - [ ] applet: rsx_hello_world
   - [ ] ...
 
 <br/><br/>

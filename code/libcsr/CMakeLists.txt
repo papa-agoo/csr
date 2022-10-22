@@ -17,6 +17,7 @@ target_include_directories(${MY_TARGET}
 
 add_subdirectory(src/core)
 add_subdirectory(src/platform)
+add_subdirectory(src/graphics)
 
 target_link_libraries(${MY_TARGET}
     PUBLIC
@@ -28,6 +29,8 @@ target_link_libraries(${MY_TARGET}
         csr::core
         csr::platform
         csr::platform::impl
+        csr::graphics
+        csr::graphics::xgl_impl
 )
 
 install(TARGETS ${MY_TARGET}
