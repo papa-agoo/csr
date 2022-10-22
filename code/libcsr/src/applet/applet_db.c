@@ -1,5 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+#include <csr/core/path.h>
 #include <csr/core/vector.h>
 
 #include <csr/applet/applet_db.h>
@@ -31,8 +32,7 @@ static void _scan_applet_path(const char* dirname, struct vector* db)
     {
         const char* filename = name_list[i]->d_name;
 
-        // const char *path_to_file = path_merge(dirname, filename);
-        const char *path_to_file = "/path/to/popo.so";
+        const char *path_to_file = path_merge(dirname, filename);
 
         struct applet_plugin plugin = {0};
 

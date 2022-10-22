@@ -3,7 +3,7 @@
 #include <dlfcn.h>
 #include <dirent.h>
 
-// #include <csr/core/path.h>
+#include <csr/core/path.h>
 
 #include <csr/applet/applet_plugin.h>
 
@@ -46,8 +46,7 @@ result_e applet_plugin_load(struct applet_plugin *plugin, const char *path_to_fi
 
     _init_plugin_defaults(plugin);
 
-    // plugin->filename = path_get_basename(path_to_file);
-    plugin->filename = "popo.so";
+    plugin->filename = path_get_basename(path_to_file);
 
     ////////////////////////////////////////
 

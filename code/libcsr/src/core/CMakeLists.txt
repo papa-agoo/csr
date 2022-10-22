@@ -27,6 +27,7 @@ target_sources(${MY_TARGET}
         object_pool.c
         config.c
         file_io.c
+        path.c
 
         base/guid.c
         clock.c
