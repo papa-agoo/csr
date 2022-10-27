@@ -2,8 +2,13 @@
 
 #pragma once
 
-#include "kernel/kio.h"
-#include "kernel/kernel.h"
-#include "kernel/events.h"
+#include "theme.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+struct ui_theme
+{
+    struct ui_theme_info info;
+
+    void (*apply_theme_cb)(struct ui_theme *theme);
+};

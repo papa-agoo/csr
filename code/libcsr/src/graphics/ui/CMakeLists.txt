@@ -1,7 +1,7 @@
 ########################################
 
-set(MY_TARGET csr_graphics)
-set(MY_ALIAS csr::graphics)
+set(MY_TARGET csr_graphics_ui)
+set(MY_ALIAS csr::graphics::ui)
 
 ########################################
 
@@ -21,12 +21,18 @@ set_target_properties(${MY_TARGET}
 
 target_sources(${MY_TARGET}
     PRIVATE
-        screen.c
+        cimgui_priv.c
 
-        xgl/xgl_driver.c
-        xgl/xgl_device.c
-        xgl/xgl_commands.c
+        ui.c
+        ui_themes.c
+
+        theme/imgui_dark.c
+        theme/csr_graphite.c
 )
 
-add_subdirectory(xgl/backend)
-add_subdirectory(ui)
+target_link_libraries(${MY_TARGET}
+    PUBLIC
+        cimgui::cimgui
+)
+
+add_subdirectory( imgui_backends )

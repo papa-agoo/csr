@@ -1,7 +1,7 @@
 ########################################
 
-set(MY_TARGET csr_graphics)
-set(MY_ALIAS csr::graphics)
+set(MY_TARGET csr_graphics_ui_platform_impl)
+set(MY_ALIAS csr::graphics::ui_platform_impl)
 
 ########################################
 
@@ -21,12 +21,5 @@ set_target_properties(${MY_TARGET}
 
 target_sources(${MY_TARGET}
     PRIVATE
-        screen.c
-
-        xgl/xgl_driver.c
-        xgl/xgl_device.c
-        xgl/xgl_commands.c
+        null.c
 )
-
-add_subdirectory(xgl/backend)
-add_subdirectory(ui)

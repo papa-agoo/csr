@@ -2,8 +2,14 @@
 
 #pragma once
 
-#include "kernel/kio.h"
-#include "kernel/kernel.h"
-#include "kernel/events.h"
+#include "cimgui.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+const struct cimgui_info* cimgui_get_info();
+
+result_e cimgui_init(const char *ini_file);
+void cimgui_quit();
+
+void cimgui_frame_begin(bool update_content_scale);
+void cimgui_frame_end();

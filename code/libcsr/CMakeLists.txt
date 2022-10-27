@@ -34,6 +34,9 @@ target_link_libraries(${MY_TARGET}
         csr::kernel
         csr::graphics
         csr::graphics::xgl_impl
+        csr::graphics::ui
+        csr::graphics::ui_platform_impl
+        csr::graphics::ui_renderer_impl
         csr::applet
 )
 

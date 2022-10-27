@@ -20,7 +20,7 @@ Dependencies
 Prepare Repo
 
 ```shell
-$ git clone https://github.com/papa-agoo/csr.git --recursive-submodules
+$ git clone https://github.com/papa-agoo/csr.git --recurse-submodules
 ```
 
 <br/>

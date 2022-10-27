@@ -1,0 +1,25 @@
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#pragma once
+
+#include "ui.h"
+
+#include "imgui/cimgui_priv.h"
+
+#define KLOG_MODULE_NAME ui
+#include <csr/kernel/kio.h>
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+struct ui
+{
+    bool is_initialized;
+
+    void (*ui_tick_cb)();
+
+    struct ui_conf *conf;
+};
+
+struct ui* ui_ptr();
+
+#define ui_conf_ptr() (ui_ptr()->conf)

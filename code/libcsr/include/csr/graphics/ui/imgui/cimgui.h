@@ -2,8 +2,15 @@
 
 #pragma once
 
-#include "kernel/kio.h"
-#include "kernel/kernel.h"
-#include "kernel/events.h"
+#include <csr/core/base.h>
+
+#define CIMGUI_DEFINE_ENUMS_AND_STRUCTS
+#include <cimgui.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+struct cimgui_info
+{
+    const char* platform_name;
+    const char* renderer_name;
+};
