@@ -23,4 +23,14 @@ struct ksrv_video_conf
     } xgl;
 };
 
-void ksrv_video_conf_defaults(struct ksrv_video_conf *conf);
+static void ksrv_video_conf_defaults(struct ksrv_video_conf *conf)
+{
+    check_ptr(conf);
+
+    conf->window.video_mode = video_mode_create_from_preset(VIDEO_MODE_PRESET_FULL_HD);
+    conf->window.fullscreen = false;
+    conf->window.vsync = true;
+
+error:
+    return;
+}

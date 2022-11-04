@@ -72,8 +72,6 @@ void ui_set_theme(enum ui_theme_type theme_type)
 {
     csr_assert(ui_ptr()->is_initialized);
 
-    check_expr(theme_type != UI_THEME_TYPE_UNKNOWN);
-
     struct ui_theme *theme = _lookup_theme(theme_type);
     check_ptr(theme);
     check_ptr(theme->apply_theme_cb);
@@ -95,16 +93,11 @@ enum ui_theme_type ui_get_theme()
     csr_assert(ui_ptr()->is_initialized);
 
     return ui_conf_ptr()->theme;
-
-error:
-    return UI_THEME_TYPE_UNKNOWN;
 }
 
 const struct ui_theme_info* ui_get_theme_info(enum ui_theme_type theme_type)
 {
     csr_assert(ui_ptr()->is_initialized);
-
-    check_expr(theme_type != UI_THEME_TYPE_UNKNOWN);
 
     struct ui_theme *theme = _lookup_theme(theme_type);
     check_ptr(theme);

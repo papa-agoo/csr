@@ -161,17 +161,6 @@ static bool _mainloop_iterate(struct mainloop* mainloop)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void ksrv_core_conf_defaults(struct ksrv_core_conf *conf)
-{
-    check_ptr(conf);
-
-    conf->log_max_messages = 256;
-    conf->log_show_trace_messages = false;
-
-error:
-    return;
-}
-
 result_e ksrv_core_init(struct ksrv_core_init_info *init_info)
 {
     check_ptr(init_info);
@@ -231,7 +220,7 @@ result_e ksrv_core_init(struct ksrv_core_init_info *init_info)
 
     srv->mainloop->api->iterate = _mainloop_iterate;
 
-    // application iterate callback
+    // set tick callback
     srv->kernel_tick_cb = init_info->kernel_tick_cb;
 
     if (!srv->kernel_tick_cb) {

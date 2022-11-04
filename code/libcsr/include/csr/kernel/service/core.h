@@ -25,4 +25,13 @@ struct ksrv_core_conf
     bool log_show_trace_messages;
 };
 
-void ksrv_core_conf_defaults(struct ksrv_core_conf *conf);
+static void ksrv_core_conf_defaults(struct ksrv_core_conf *conf)
+{
+    check_ptr(conf);
+
+    conf->log_max_messages = 256;
+    conf->log_show_trace_messages = false;
+
+error:
+    return;
+}

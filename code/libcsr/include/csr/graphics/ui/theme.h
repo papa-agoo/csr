@@ -8,8 +8,6 @@
 
 enum ui_theme_type
 {
-    UI_THEME_TYPE_UNKNOWN,
-
     UI_THEME_TYPE_IMGUI_DARK,
     UI_THEME_TYPE_CSR_GRAPHITE,
 };

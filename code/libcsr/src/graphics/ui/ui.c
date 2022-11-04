@@ -46,12 +46,14 @@ result_e ui_init(struct ui_init_info *init_info)
         ui_ptr()->ui_tick_cb = _ui_tick_dummy;
     }
 
+    ui_ptr()->is_initialized = true;
+
+    ////////////////////////////////////////
+
     // apply config
     ui_set_theme(ui_conf_ptr()->theme);
 
     ////////////////////////////////////////
-
-    ui_ptr()->is_initialized = true;
 
     return RC_SUCCESS;
 
@@ -79,4 +81,48 @@ void ui_tick()
     ui_ptr()->ui_tick_cb();
 
     cimgui_frame_end();
+}
+
+struct ui_conf* ui_get_config()
+{
+    csr_assert(ui_ptr()->is_initialized);
+
+    return ui_conf_ptr();
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+f32 ui_get_content_scale()
+{
+    csr_assert(ui_ptr()->is_initialized);
+
+    f32 scale = kio_video_get_content_scale();
+
+    if (ui_conf_ptr()->content_scale.use_custom_scale) {
+        scale = ui_conf_ptr()->content_scale.scale_factor;
+    }
+
+    return scale;
+}
+
+void ui_set_content_scale(f32 scale)
+{
+    // FIXME check_range(min, max, value));
+    check_expr(scale >= UI_CONTENT_SCALE_MIN && scale <= UI_CONTENT_SCALE_MAX);
+
+    if (ui_conf_ptr()->content_scale.use_custom_scale) {
+        ui_conf_ptr()->content_scale.scale_factor = scale;
+    }
+
+    // request scale update
+    {
+        // - load font at new size
+        // - rebuild font atlas
+        // - call style.ScaleAlleSizes() (on a ref. ImGuiStyle)
+
+        klog_warn("ui_set_content_scale() not impl. yet");
+    }
+
+error:
+    return;
 }

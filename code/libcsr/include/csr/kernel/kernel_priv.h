@@ -4,10 +4,10 @@
 
 #include "kernel.h"
 
-#include <csr/kernel/service/core_priv.h>
-#include <csr/kernel/service/video_priv.h>
-#include <csr/kernel/service/audio_priv.h>
-#include <csr/kernel/service/vfs_priv.h>
+#include "service/core_priv.h"
+#include "service/video_priv.h"
+#include "service/audio_priv.h"
+#include "service/vfs_priv.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
