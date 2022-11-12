@@ -15,12 +15,12 @@ static void _apply_imgui_style_defaults()
     ImGuiStyle *style = igGetStyle();
 
     // main
-    style->WindowPadding            = (struct ImVec2) { 8.0f, 8.0f };
-    style->FramePadding             = (struct ImVec2) { 6.0f, 3.0f };
-    style->CellPadding              = (struct ImVec2) { 4.0f, 4.0f };
-    style->ItemSpacing              = (struct ImVec2) { 8.0f, 4.0f };
-    style->ItemInnerSpacing         = (struct ImVec2) { 4.0f, 4.0f };
-    style->TouchExtraPadding        = (struct ImVec2) { 0.0f, 0.0f };
+    style->WindowPadding            = make_ImVec2( 8.0f, 8.0f );
+    style->FramePadding             = make_ImVec2( 6.0f, 3.0f );
+    style->CellPadding              = make_ImVec2( 4.0f, 4.0f );
+    style->ItemSpacing              = make_ImVec2( 8.0f, 4.0f );
+    style->ItemInnerSpacing         = make_ImVec2( 4.0f, 4.0f );
+    style->TouchExtraPadding        = make_ImVec2( 0.0f, 0.0f );
     style->IndentSpacing            = 21.0f;
     style->ScrollbarSize            = 14.0f;
     style->GrabMinSize              = 10.0f;
@@ -43,14 +43,14 @@ static void _apply_imgui_style_defaults()
     style->TabRounding              = 4.0f;
 
     // alignment
-    style->WindowTitleAlign         = (struct ImVec2) { 0.0f, 0.5f };
+    style->WindowTitleAlign         = make_ImVec2( 0.0f, 0.5f );
     style->WindowMenuButtonPosition = ImGuiDir_Left;
     style->ColorButtonPosition      = ImGuiDir_Right;
-    style->ButtonTextAlign          = (struct ImVec2) { 0.5f, 0.5f };
-    style->SelectableTextAlign      = (struct ImVec2) { 0.0f, 0.0f };
+    style->ButtonTextAlign          = make_ImVec2( 0.5f, 0.5f );
+    style->SelectableTextAlign      = make_ImVec2( 0.0f, 0.0f );
 
     // safe area padding
-    style->DisplaySafeAreaPadding   = (struct ImVec2) { 3.0f, 3.0f };
+    style->DisplaySafeAreaPadding   = make_ImVec2( 3.0f, 3.0f );
 }
 
 static struct ui_theme* _lookup_theme(enum ui_theme_type theme)
@@ -76,7 +76,7 @@ void ui_set_theme(enum ui_theme_type theme_type)
     check_ptr(theme);
     check_ptr(theme->apply_theme_cb);
 
-    klog_info("setting theme (%s) ...", theme->info.name);
+    klog_trace("setting theme (%s) ...", theme->info.name);
 
     _apply_imgui_style_defaults();
 
@@ -95,11 +95,22 @@ enum ui_theme_type ui_get_theme()
     return ui_conf_ptr()->theme;
 }
 
-const struct ui_theme_info* ui_get_theme_info(enum ui_theme_type theme_type)
+const struct ui_style* ui_get_theme_style()
+{
+    const struct ui_theme_info *theme_info = ui_get_theme_info();
+    check_ptr(theme_info);
+
+    return &theme_info->style;
+
+error:
+    return NULL;
+}
+
+const struct ui_theme_info* ui_get_theme_info()
 {
     csr_assert(ui_ptr()->is_initialized);
 
-    struct ui_theme *theme = _lookup_theme(theme_type);
+    struct ui_theme *theme = _lookup_theme( ui_ptr()->conf->theme );
     check_ptr(theme);
 
     return &theme->info;

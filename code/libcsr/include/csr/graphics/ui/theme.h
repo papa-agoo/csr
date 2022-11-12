@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <csr/core/base.h>
 #include <csr/core/math/vec4.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -22,6 +23,15 @@ struct ui_style
         struct vec4 log_warn;
         struct vec4 log_error;
         struct vec4 log_trace;
+
+        struct vec4 menu_head_on;
+        struct vec4 menu_head_off;
+
+        struct vec4 applet_loaded;
+        struct vec4 applet_unloaded;
+
+        struct vec4 page_title;
+        struct vec4 page_topic;
     } color;
 };
 

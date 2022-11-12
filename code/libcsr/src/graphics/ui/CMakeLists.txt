@@ -25,6 +25,10 @@ target_sources(${MY_TARGET}
 
         ui.c
         ui_themes.c
+        ui_properties.c
+
+        ctx.c
+        workspace.c
 
         theme/imgui_dark.c
         theme/csr_graphite.c

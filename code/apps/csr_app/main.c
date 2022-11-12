@@ -60,6 +60,10 @@ error:
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 static void on_kernel_tick()
 {
+    // applet_mgr_tick();
+
+    ////////////////////////////////////////
+
     const struct ui_theme_info *theme_info = ui_get_theme_info(ui_get_theme());
     check_ptr(theme_info);
 
@@ -70,6 +74,19 @@ static void on_kernel_tick()
 
     if (xgl_begin_render_pass(&pass_info))
     {
+        // struct screen *screen = foo_get_active_screen();
+
+        // if (screen && screen_is_fullscreen(screen))
+        // {
+        //     // applet loaded AND active screen is in fullscreen mode
+        //     render_fullscreen_quad();
+        // }
+        // else
+        // {
+        //     // no applet loaded OR windowed mode screen(s)
+        //     ui_tick();
+        // }
+
         ui_tick();
 
         xgl_end_render_pass();
@@ -147,16 +164,8 @@ static void init_kernel_config()
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // frontend
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-static void on_ui_tick()
-{
-    static bool show_demo_win = true;
-
-    igCheckbox("Show ImGui Demo Window", &show_demo_win);
-
-    if (show_demo_win) {
-        igShowDemoWindow(&show_demo_win);
-    }
-}
+result_e init_frontend_applet_ctx(struct ui_ctx *ctx);
+result_e init_frontend_application_ctx(struct ui_ctx *ctx);
 
 static void init_frontend_config()
 {
@@ -180,6 +189,37 @@ static void init_frontend_config()
         // theme
         config_map_int(conf->user, "frontend.ui/theme:type", (s32*) &ui_conf->theme);
     }
+}
+
+static struct ui_workspace* create_frontend_workspace()
+{
+    void on_workspace_main_tick(struct ui_workspace * workspace);
+
+    // create workspace
+    struct ui_workspace_create_info info = {0};
+    info.name = "Main";
+    info.enable_docking = true;
+    info.workspace_tick_cb = on_workspace_main_tick;
+
+    struct ui_workspace *workspace = ui_workspace_create(&info);
+    check_ptr(workspace);
+
+    // add application ctx to workspace
+    struct ui_ctx *application_ctx = ui_ctx_create("Application");
+    check_ptr(application_ctx);
+
+    init_frontend_application_ctx(application_ctx);
+
+    ui_workspace_add_context(workspace, application_ctx);
+
+    return workspace;
+
+error:
+    if (workspace) {
+        ui_workspace_destroy(workspace);
+    }
+
+    return NULL;
 }
 
 
@@ -238,7 +278,7 @@ result_e application_init()
         struct ui_init_info init_info = {0};
         init_info.imgui_ini_file = "/tmp/imgui.ini";
         init_info.conf = &conf->ui;
-        init_info.ui_tick_cb = on_ui_tick;
+        init_info.workspace = create_frontend_workspace();
 
         check_result(ui_init(&init_info), "could not init frontend");
     }

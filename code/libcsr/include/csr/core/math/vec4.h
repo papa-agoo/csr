@@ -32,6 +32,9 @@ struct vec4
 #define make_vec4_2_2(_v2, z, w)    make_vec4((_v2).x, (_v2).y, z, w)
 #define make_vec4_3_1(_v3, w)       make_vec4((_v3).x, (_v3).y, (_v3).z, w)
 
+#define make_vec4_zero()            make_vec4(0, 0, 0, 0)
+#define make_vec4_one()             make_vec4(1, 1, 1, 1)
+
 ////////////////////////////////////////////////////////////////////////////////
 
 CSR_INLINE struct vec4 vec4_add(struct vec4 a, struct vec4 b)

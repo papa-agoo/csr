@@ -78,7 +78,7 @@ error:
     return;
 }
 
-void log_db_traverse(struct log_db *db, log_db_traverse_cb_t callback)
+void log_db_traverse(struct log_db *db, log_db_traverse_cb_t callback, void *data)
 {
     check_ptr(db);
     check_ptr(callback);
@@ -87,7 +87,7 @@ void log_db_traverse(struct log_db *db, log_db_traverse_cb_t callback)
     {
         struct log_message *message = vector_get(db->messages, i);
 
-        callback(message);
+        callback(message, data);
     }
 
 error:

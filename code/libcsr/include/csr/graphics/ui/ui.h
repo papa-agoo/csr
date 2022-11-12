@@ -2,13 +2,8 @@
 
 #pragma once
 
-#include "imgui.h"
-#include "theme.h"
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
-#define UI_CONTENT_SCALE_MIN 0.5
-#define UI_CONTENT_SCALE_MAX 4.0
+#include "common.h"
+#include "workspace.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -56,7 +51,7 @@ struct ui_init_info
 {
     const char *imgui_ini_file;
 
-    void (*ui_tick_cb)();
+    struct ui_workspace *workspace;
 
     struct ui_conf *conf;
 };
@@ -71,7 +66,9 @@ struct ui_conf* ui_get_config();
 // themes
 void ui_set_theme(enum ui_theme_type theme);
 enum ui_theme_type ui_get_theme();
-const struct ui_theme_info* ui_get_theme_info(enum ui_theme_type theme);
+
+const struct ui_style* ui_get_theme_style();
+const struct ui_theme_info* ui_get_theme_info();
 
 typedef void (*ui_traverse_themes_cb_t)(const struct ui_theme_info *info);
 void ui_traverse_themes(ui_traverse_themes_cb_t callback);
@@ -79,3 +76,26 @@ void ui_traverse_themes(ui_traverse_themes_cb_t callback);
 // content scale
 f32 ui_get_content_scale();
 void ui_set_content_scale(f32 scale);
+
+// workspaces
+// result_e ui_add_workspace(struct ui_workspace *workspace);
+// void ui_remove_workspace(struct ui_workspace *workspace);
+struct ui_workspace* ui_get_workspace();
+
+// typedef void (*ui_traverse_workspaces_cb_t)(struct ui_workspace *workspace, void *data);
+// void ui_traverse_workspaces(ui_traverse_workspaces_cb_t callback, void *data);
+
+// menus
+void ui_menu_init(struct ui_menu *menu, const char *title);
+void ui_menu_draw(struct ui_menu* menu, struct ui_style *style);
+
+// windows
+typedef void (*ui_window_init_view_cb_t)(struct ui_view *view);
+
+void ui_window_init(struct ui_window *window, const char *title, ui_window_init_view_cb_t callback);
+void ui_window_draw(struct ui_window* window, struct ui_style *style);
+
+// properties
+void ui_property_draw(struct ui_property *property);
+void ui_property_set_draw(struct ui_property_set *set);
+void ui_property_set_group_draw(struct ui_property_set_group *group);

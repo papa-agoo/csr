@@ -3,6 +3,7 @@
 #pragma once
 
 #include "ui.h"
+#include "workspace_priv.h"
 
 #include "imgui/cimgui_priv.h"
 
@@ -15,7 +16,7 @@ struct ui
 {
     bool is_initialized;
 
-    void (*ui_tick_cb)();
+    struct ui_workspace *workspace;
 
     struct ui_conf *conf;
 };
