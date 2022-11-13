@@ -15,6 +15,7 @@
 struct ui
 {
     bool is_initialized;
+    bool show_imgui_demo_window;
 
     struct ui_workspace *workspace;
 

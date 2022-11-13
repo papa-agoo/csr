@@ -225,7 +225,7 @@ void kio_video_set_resolution(struct vec2 resolution)
     platform_win_resize((u32)resolution.w, (u32)resolution.h);
 
 error:
-    return;   
+    return;
 }
 
 xgl_framebuffer kio_video_get_framebuffer()

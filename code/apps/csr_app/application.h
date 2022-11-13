@@ -19,6 +19,9 @@
 #define ENV_APP_CONFIG_DIR          "{APP_HOME_DIR}/config"
 #define ENV_APPLET_CONFIG_DIR       "{APP_CONFIG_DIR}/applet"
 
+#define ENV_APP_INI_FILE            "/tmp/csr_app.ini" // "{APP_CONFIG_DIR}/application.ini"
+#define ENV_IMGUI_INI_FILE          "/tmp/imgui.ini" // "{APP_CONFIG_DIR}/imgui.ini"
+
 #define ENV_APPLET_DB_SCAN_PATH     "./applets"
 #define ENV_RESOURCE_PATH_FONTS     "./resources/fonts"
 

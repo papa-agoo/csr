@@ -41,7 +41,7 @@ static result_e init_user_config()
 {
     struct application_conf *conf = application_conf_ptr();
 
-    const char *ini_file = "/tmp/csr_app.ini";
+    const char *ini_file = ENV_APP_INI_FILE;
 
     klog_info("loading user config ( %s ) ...", ini_file);
 
@@ -276,7 +276,7 @@ result_e application_init()
         init_frontend_config();
 
         struct ui_init_info init_info = {0};
-        init_info.imgui_ini_file = "/tmp/imgui.ini";
+        init_info.imgui_ini_file = ENV_IMGUI_INI_FILE;
         init_info.conf = &conf->ui;
         init_info.workspace = create_frontend_workspace();
 

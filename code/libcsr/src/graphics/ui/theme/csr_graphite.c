@@ -96,6 +96,7 @@ struct ui_theme* ui_theme_csr_graphite_ptr()
 
                     .menu_head_on       = make_vec4(0.14f, 0.75f, 0.55f, 1.00f),
                     .menu_head_off      = make_vec4(0.55f, 0.55f, 0.55f, 1.00f),
+                    .menu_group_title   = make_vec4(0.50f, 0.50f, 0.50f, 1.00f),
 
                     .applet_loaded      = make_vec4(0.14f, 0.75f, 0.55f, 1.00f),
                     .applet_unloaded    = make_vec4(0.85f, 0.45f, 0.25f, 1.00f),

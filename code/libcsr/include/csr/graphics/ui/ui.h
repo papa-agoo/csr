@@ -63,6 +63,8 @@ void ui_tick();
 
 struct ui_conf* ui_get_config();
 
+void ui_toggle_imgui_demo_window();
+
 // themes
 void ui_set_theme(enum ui_theme_type theme);
 enum ui_theme_type ui_get_theme();

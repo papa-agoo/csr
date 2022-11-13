@@ -39,6 +39,7 @@ result_e ui_init(struct ui_init_info *init_info)
     ////////////////////////////////////////
 
     ui_ptr()->is_initialized = true;
+    ui_ptr()->show_imgui_demo_window = false;
 
     ////////////////////////////////////////
 
@@ -66,11 +67,21 @@ void ui_tick()
 {
     csr_assert(ui_ptr()->is_initialized);
 
-    bool update_content_scale = false;
+    bool update_content_scale = false; // FIXME
 
     cimgui_frame_begin(update_content_scale);
 
+    ////////////////////////////////////////
+
+    // draw workspace
     ui_workspace_tick(ui_ptr()->workspace);
+
+    // draw imgui demo window
+    if (ui_ptr()->show_imgui_demo_window) {
+        igShowDemoWindow(&ui_ptr()->show_imgui_demo_window);
+    }
+
+    ////////////////////////////////////////
 
     cimgui_frame_end();
 }
@@ -82,6 +93,10 @@ struct ui_conf* ui_get_config()
     return ui_conf_ptr();
 }
 
+void ui_toggle_imgui_demo_window()
+{
+    ui_ptr()->show_imgui_demo_window ^= 1;
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // content scale

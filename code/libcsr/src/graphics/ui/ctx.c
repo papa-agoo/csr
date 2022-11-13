@@ -70,6 +70,16 @@ error:
     return NULL;
 }
 
+u32 ui_ctx_get_menu_count(struct ui_ctx *ctx)
+{
+    check_ptr(ctx);
+
+    return list_count(ctx->menus);
+
+error:
+    return 0;
+}
+
 result_e ui_ctx_add_menu(struct ui_ctx *ctx, const char *key, struct ui_menu *menu)
 {
     check_ptr(ctx);
@@ -127,9 +137,14 @@ error:
     return;
 }
 
-struct ui_window *ui_ctx_get_window(struct ui_ctx *ctx, const char *key)
+u32 ui_ctx_get_window_count(struct ui_ctx *ctx)
 {
-    return hashmap_get(ctx->ui_items, key);
+    check_ptr(ctx);
+
+    return list_count(ctx->windows);
+
+error:
+    return 0;
 }
 
 result_e ui_ctx_add_window(struct ui_ctx *ctx, const char *key, struct ui_window *window)
@@ -151,6 +166,11 @@ result_e ui_ctx_add_window(struct ui_ctx *ctx, const char *key, struct ui_window
 
 error:
     return RC_FAILURE;
+}
+
+struct ui_window *ui_ctx_get_window(struct ui_ctx *ctx, const char *key)
+{
+    return hashmap_get(ctx->ui_items, key);
 }
 
 void ui_ctx_remove_window(struct ui_ctx *ctx, struct ui_window *window)

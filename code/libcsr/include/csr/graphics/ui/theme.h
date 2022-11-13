@@ -26,6 +26,7 @@ struct ui_style
 
         struct vec4 menu_head_on;
         struct vec4 menu_head_off;
+        struct vec4 menu_group_title;
 
         struct vec4 applet_loaded;
         struct vec4 applet_unloaded;

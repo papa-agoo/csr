@@ -65,6 +65,8 @@ void on_workspace_main_tick(struct ui_workspace *workspace)
 
     ////////////////////////////////////////
 
+    // [ head ] [ application menus | applet menus ] <- ... -> [tail]
+
     // draw main menu
     if (igBeginMainMenuBar())
     {

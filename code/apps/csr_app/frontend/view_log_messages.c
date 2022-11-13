@@ -58,6 +58,11 @@ static void _on_draw_log_message(struct log_message *message, void *style)
 
 static void _draw_view(struct ui_view* view, struct ui_style *style)
 {
+    csr_assert(view);
+    csr_assert(style);
+
+    ////////////////////////////////////////
+
     if (igCollapsingHeader_TreeNodeFlags("Settings", 0))
     {
         struct ksrv_core_conf *conf = &application_conf_ptr()->kernel.core;
