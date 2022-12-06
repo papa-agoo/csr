@@ -137,7 +137,7 @@ static void _update_frame_stats()
 
 static void _kernel_tick_dummy() {}
 
-static bool _mainloop_iterate(struct mainloop* mainloop)
+static bool _mainloop_tick(struct mainloop* mainloop)
 {
     platform_poll_events();
     event_bus_dispatch_events();
@@ -172,17 +172,9 @@ result_e ksrv_core_init(struct ksrv_core_init_info *init_info)
     struct ksrv_core *srv = ksrv_core_ptr();
     srv->conf = init_info->conf;
 
-    // init logging before any initializations
-    struct log_db_create_info log_db_info = {0};
-    log_db_info.name = "Kernel";
-    log_db_info.max_messages = srv->conf->log_max_messages;
-
-    srv->log_db = log_db_create(&log_db_info);
-    check_ptr(srv->log_db);
-
     ////////////////////////////////////////
 
-    klog_notice("initializing core service ...");
+    klog_info("initializing core service ...");
 
     result_e result = platform_init(init_info->platform_info);
     check_result(result, "could not init platform");
@@ -218,7 +210,7 @@ result_e ksrv_core_init(struct ksrv_core_init_info *init_info)
     srv->mainloop = mainloop_create();
     check_ptr(srv->mainloop);
 
-    srv->mainloop->api->iterate = _mainloop_iterate;
+    srv->mainloop->api->tick = _mainloop_tick;
 
     // set tick callback
     srv->kernel_tick_cb = init_info->kernel_tick_cb;
@@ -257,4 +249,25 @@ void ksrv_core_quit()
     ////////////////////////////////////////
 
     srv->is_initialized = false;
+}
+
+struct log_db* ksrv_get_log_db()
+{
+    struct ksrv_core *srv = ksrv_core_ptr();
+
+    // logging is needed before kernel init, so ...
+    if (!srv->log_db)
+    {
+        struct log_db_create_info log_db_info = {0};
+        log_db_info.name = "Kernel";
+        log_db_info.max_messages = KSRV_CORE_MAX_LOG_MESSAGES;
+
+        srv->log_db = log_db_create(&log_db_info);
+        check_ptr(srv->log_db);
+    }
+
+    return srv->log_db;
+
+error:
+    return NULL;
 }

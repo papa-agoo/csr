@@ -4,8 +4,8 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void _draw_kernel_settings_page(struct ui_view* view);
-void _draw_frontend_settings_page(struct ui_view* view);
+void _draw_kernel_settings_page(struct ui_view* view, struct ui_style *style);
+void _draw_frontend_settings_page(struct ui_view* view, struct ui_style *style);
 
 static struct ui_property_page g_property_pages[] = {
     { "Kernel", _draw_kernel_settings_page },
@@ -25,7 +25,9 @@ static void _draw_view(struct ui_view* view, struct ui_style *style)
 
     ////////////////////////////////////////
 
-    if (igBeginListBox("##application.settings_page_list", make_ImVec2(160, -1)))
+    f32 list_width = 140 * ui_get_content_scale_factor();
+
+    if (igBeginListBox("##application.settings_page_list", make_ImVec2(list_width, -1)))
     {
         u32 page_count = COUNT_OF(g_property_pages);
 
@@ -58,7 +60,7 @@ static void _draw_view(struct ui_view* view, struct ui_style *style)
             igTextColored(make_ImVec4_from_vec4(color), ">>> %s", page->title);
             igNewLine();
 
-            page->draw_page_cb(view);
+            page->draw_cb(view, style);
         }
 
         igEndChild();

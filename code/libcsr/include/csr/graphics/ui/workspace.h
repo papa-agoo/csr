@@ -28,3 +28,7 @@ void ui_workspace_remove_context(struct ui_workspace *workspace, struct ui_ctx* 
 
 typedef void (*ui_workspace_traverse_contexts_cb_t)(struct ui_ctx *ctx, void *data);
 void ui_workspace_traverse_contexts(struct ui_workspace *workspace, ui_workspace_traverse_contexts_cb_t callback, void *data);
+
+// windows
+void ui_workspace_set_focused_window(struct ui_workspace *workspace, struct ui_window *window);
+struct ui_window* ui_workspace_get_focused_window(struct ui_workspace *workspace);

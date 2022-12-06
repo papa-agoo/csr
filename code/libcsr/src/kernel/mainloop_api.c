@@ -9,7 +9,7 @@ static result_e _api_run(struct mainloop* mainloop)
     return RC_FAILURE;
 }
 
-static bool _api_iterate(struct mainloop* mainloop)
+static bool _api_tick(struct mainloop* mainloop)
 {
     return false;
 }
@@ -22,7 +22,7 @@ struct mainloop_api* mainloop_api_create()
     check_mem(api);
 
     api->run = _api_run;
-    api->iterate = _api_iterate;
+    api->tick = _api_tick;
 
     return api;
 

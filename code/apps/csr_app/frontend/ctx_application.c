@@ -17,7 +17,10 @@ static void _draw_application_menu_cb(struct ui_menu *menu, struct ui_style *sty
 
     // applet db
     {
-        // ...
+        struct ui_window *win = ui_ctx_get_window(ctx_ptr(), "window.applet_db");
+        csr_assert(win);
+
+        igMenuItem_BoolPtr(win->title, NULL, &win->is_opened, true);
     }
 
     // settings
@@ -32,7 +35,7 @@ static void _draw_application_menu_cb(struct ui_menu *menu, struct ui_style *sty
 
     // quit
     if (igMenuItem_Bool("Quit", NULL, false, true)) {
-        klog_warn("event : application_quit()");
+        application_stop();
     }
 }
 
@@ -52,28 +55,30 @@ static void _draw_kernel_menu_cb(struct ui_menu *menu, struct ui_style *style)
 
 static void _draw_help_menu_cb(struct ui_menu *menu, struct ui_style *style)
 {
+    csr_assert(menu);
+    csr_assert(style);
+
     igMenuItem_BoolPtr("About", NULL, NULL, false);
 
     igSeparator();
 
-    if (igMenuItem_BoolPtr("ImGui Demo Window", NULL, NULL, true)) {
+    if (igMenuItem_BoolPtr("ImGui Demo", NULL, NULL, true)) {
         ui_toggle_imgui_demo_window();
     }
 }
 
 static void _on_draw_windows_menu_entry(struct ui_window *window, void *data)
 {
+    csr_assert(window);
+
     if (!window->is_opened) return;
 
-    igText(""); igSameLine(0, 15);
+    igNewLine();
+    igSameLine(0, 15);
 
-    // FIXME ui_window_has_focus(window)
-    bool is_focused = false;
-
-    if (igMenuItem_Bool(window->title, NULL, is_focused, true))
+    if (igMenuItem_Bool(window->title, NULL, ui_window_is_focused(window), true))
     {
-        // igSetWindowFocus_Str(window->title);
-        klog_warn("event : ui_window_set_focused( %s )", window->key);
+        ui_window_set_focused(window);
     }
 }
 
@@ -161,17 +166,18 @@ static void _register_menus()
 
 static void _register_windows()
 {
+    void init_applet_db_view(struct ui_view * view);
     void init_settings_view(struct ui_view * view);
     void init_log_messages_view(struct ui_view * view);
 
     // applet db
     {
-        // static struct ui_window window = {0};
-        // ui_window_init(&window, "Applet Database", init_applet_db_view);
+        static struct ui_window window = {0};
+        ui_window_init(&window, "Applet Database", init_applet_db_view);
 
-        // window.flags = ImGuiWindowFlags_NoDocking;
+        window.flags = ImGuiWindowFlags_NoDocking;
 
-        // ui_ctx_add_window(ctx_ptr(), "window.applet_db", &window);
+        ui_ctx_add_window(ctx_ptr(), "window.applet_db", &window);
     }
 
     // settings

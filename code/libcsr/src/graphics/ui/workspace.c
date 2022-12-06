@@ -51,6 +51,10 @@ error:
     return NULL;
 }
 
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// contexts
+////////////////////////////////////////////////////////////////////////////////////////////////////
 result_e ui_workspace_add_context(struct ui_workspace *workspace, struct ui_ctx* ctx)
 {
     check_ptr(workspace);
@@ -71,10 +75,7 @@ void ui_workspace_remove_context(struct ui_workspace *workspace, struct ui_ctx* 
 
     list_remove_by_value(workspace->contexts, ctx);
 
-    ui_ctx_destroy(ctx);
-
-    // FIXME
-    // xxx_set_focused_window(NULL);
+    ui_workspace_set_focused_window(workspace, NULL);
 
 error:
     return;
@@ -93,6 +94,35 @@ error:
     return;
 }
 
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// windows
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void ui_workspace_set_focused_window(struct ui_workspace *workspace, struct ui_window *window)
+{
+    check_ptr(workspace);
+
+    // NULL means no window is currently focused
+    workspace->state.focused_window = window;
+
+error:
+    return;
+}
+
+struct ui_window* ui_workspace_get_focused_window(struct ui_workspace *workspace)
+{
+    check_ptr(workspace);
+
+    return workspace->state.focused_window;
+
+error:
+    return NULL;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// priv
+////////////////////////////////////////////////////////////////////////////////////////////////////
 static void _draw_dock_space()
 {
     ImGuiViewport *viewport = igGetMainViewport();

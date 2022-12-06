@@ -15,7 +15,7 @@ static struct version _plugin_get_version() { return make_version(0, 0, 0); }
 
 static result_e _plugin_startup() { return RC_SUCCESS; }
 static void _plugin_shutdown() {}
-static void _plugin_iterate() {}
+static void _plugin_tick() {}
 
 static void _init_plugin_defaults(struct applet_plugin* plugin)
 {
@@ -29,7 +29,7 @@ static void _init_plugin_defaults(struct applet_plugin* plugin)
 
     plugin->startup = _plugin_startup;
     plugin->shutdown = _plugin_shutdown;
-    plugin->iterate = _plugin_iterate;
+    plugin->tick = _plugin_tick;
 
     plugin->handle = NULL;
 

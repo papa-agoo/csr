@@ -10,14 +10,11 @@
 
 // content scale
 ////////////////////////////////////////////////////////////
-static bool _cond_use_custom_content_scale()
-{
-    return application_conf_ptr()->ui.content_scale.use_custom_scale;
-}
-
 static void _draw_ui_override_content_scale()
 {
-    igCheckbox("##use_custom_content_scale", &application_conf_ptr()->ui.content_scale.use_custom_scale);
+    if (igCheckbox("##use_custom_content_scale", &application_conf_ptr()->ui.content_scale.use_custom_scale)) {
+        ui_set_content_scale_factor(ui_get_content_scale_factor());
+    }
 }
 
 static void _draw_ui_content_scale()
@@ -26,10 +23,10 @@ static void _draw_ui_content_scale()
 
     ////////////////////////////////////////
 
-    f32 scale = 100.0 * ui_get_content_scale();
+    f32 scale = ui_get_content_scale();
 
-    f32 scale_min = 100.0 * UI_CONTENT_SCALE_MIN;
-    f32 scale_max = 100.0 * UI_CONTENT_SCALE_MAX;
+    f32 scale_min = UI_CONTENT_SCALE_FACTOR_MIN * 100.0;
+    f32 scale_max = UI_CONTENT_SCALE_FACTOR_MAX * 100.0;
 
     ////////////////////////////////////////
 
@@ -42,7 +39,7 @@ static void _draw_ui_content_scale()
     ////////////////////////////////////////
 
     if (igDragFloat("##content_scale_factor", &scale, 1, scale_min, scale_max, "%.0f%%", flags)) {
-        ui_set_content_scale(scale / 100.0);
+        ui_set_content_scale(scale);
     }
 }
 
@@ -66,27 +63,33 @@ static void _draw_ui_color_scheme()
 
 // fonts
 ////////////////////////////////////////////////////////////
-static void _draw_ui_current_font()
+static void _draw_ui_override_font()
 {
-    // FIXME ui_get_font_info()
-    struct ui_font_info info = {0};
-    info.size = 13;
-    info.uri = "ProggyClean.ttf";
-
-    igText("%s, %.0fpt", info.uri, info.size);
+    if (igCheckbox("##use_custom_font", &application_conf_ptr()->ui.font.use_custom_font))
+    {
+        // FIXME event : content_scale_changed
+        ui_set_content_scale(ui_get_content_scale());
+    }
 }
 
-static void _draw_ui_settings()
+static void _draw_ui_current_font()
+{
+    struct ui_font_info info = ui_get_font_info();
+
+    igText("%s, %.0fpt (%.0fpt @ %d%%)", info.name, info.size, info.size_scaled, ui_get_content_scale());
+}
+
+static void _draw_ui_settings(struct ui_style *style)
 {
     // content scale set
     struct ui_property properties_content_scale[] = {
         {
             .name = "Custom Scale",
+            .tooltip = "Override recommended Content Scale",
             .draw_cb = _draw_ui_override_content_scale,
         },
         {
             .draw_cb = _draw_ui_content_scale,
-            .draw_cond_cb = _cond_use_custom_content_scale,
         },
     };
 
@@ -100,7 +103,11 @@ static void _draw_ui_settings()
     // font set
     struct ui_property properties_font[] = {
         {
-            .name = "Font Face",
+            .name = "Custom Font",
+            .tooltip = "Override builtin Font (ProggyClean.ttf, 13pt)",
+            .draw_cb = _draw_ui_override_font,
+        },
+        {
             .draw_cb = _draw_ui_current_font,
         },
     };
@@ -129,8 +136,8 @@ static void _draw_ui_settings()
 
     // draw sets
     struct ui_property_set* sets[] = {
-        &set_content_scale,
         &set_theme,
+        &set_content_scale,
         &set_font,
     };
 
@@ -139,13 +146,12 @@ static void _draw_ui_settings()
     group.sets = sets;
     group.set_count = COUNT_OF(sets);
 
-    ui_property_set_group_draw(&group);
-
+    ui_property_set_group_draw(&group, style);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void _draw_frontend_settings_page(struct ui_view* view)
+void _draw_frontend_settings_page(struct ui_view* view, struct ui_style *style)
 {
-    _draw_ui_settings();
+    _draw_ui_settings(style);
 }

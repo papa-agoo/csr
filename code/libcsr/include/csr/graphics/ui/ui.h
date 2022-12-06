@@ -29,7 +29,7 @@ static void ui_conf_defaults(struct ui_conf *conf)
 {
     check_ptr(conf);
 
-    // content scale
+    // content 
     conf->content_scale.use_custom_scale = false;
     conf->content_scale.scale_factor = 1.0f;
 
@@ -50,6 +50,7 @@ error:
 struct ui_init_info
 {
     const char *imgui_ini_file;
+    const char *fonts_dir;
 
     struct ui_workspace *workspace;
 
@@ -75,9 +76,15 @@ const struct ui_theme_info* ui_get_theme_info();
 typedef void (*ui_traverse_themes_cb_t)(const struct ui_theme_info *info);
 void ui_traverse_themes(ui_traverse_themes_cb_t callback);
 
+// fonts
+struct ui_font_info ui_get_font_info();
+
 // content scale
-f32 ui_get_content_scale();
-void ui_set_content_scale(f32 scale);
+s32 ui_get_content_scale();
+void ui_set_content_scale(s32 scale);
+
+f32 ui_get_content_scale_factor();
+void ui_set_content_scale_factor(f32 factor);
 
 // workspaces
 // result_e ui_add_workspace(struct ui_workspace *workspace);
@@ -97,7 +104,11 @@ typedef void (*ui_window_init_view_cb_t)(struct ui_view *view);
 void ui_window_init(struct ui_window *window, const char *title, ui_window_init_view_cb_t callback);
 void ui_window_draw(struct ui_window* window, struct ui_style *style);
 
+struct ui_window* ui_window_get_focused();
+void ui_window_set_focused(struct ui_window* window);
+bool ui_window_is_focused(struct ui_window* window);
+
 // properties
-void ui_property_draw(struct ui_property *property);
-void ui_property_set_draw(struct ui_property_set *set);
-void ui_property_set_group_draw(struct ui_property_set_group *group);
+void ui_property_draw(struct ui_property *property, struct ui_style *style);
+void ui_property_set_draw(struct ui_property_set *set, struct ui_style *style);
+void ui_property_set_group_draw(struct ui_property_set_group *group, struct ui_style *style);

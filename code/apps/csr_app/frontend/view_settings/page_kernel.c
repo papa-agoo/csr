@@ -7,16 +7,6 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // core service
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-static void _draw_core_log_max_messages()
-{
-    struct ksrv_core_conf *conf = &application_conf_ptr()->kernel.core;
-
-    if (igDragInt("##log_max_messages", &conf->log_max_messages, 1, 128, 1024, "%d", 0))
-    {
-        klog_warn("event : application_request_restart()");
-    }
-}
-
 static void _draw_core_log_show_trace_messages()
 {
     struct ksrv_core_conf *conf = &application_conf_ptr()->kernel.core;
@@ -24,14 +14,10 @@ static void _draw_core_log_show_trace_messages()
     igCheckbox("##log_show_trace_messages", &conf->log_show_trace_messages);
 }
 
-static void _draw_core_srv_settings()
+static void _draw_core_srv_settings(struct ui_style *style)
 {
     // logger set
     static struct ui_property properties_logger[] = {
-        {
-            .name = "Max Log Messages",
-            .draw_cb = _draw_core_log_max_messages,
-        },
         {
             .name = "Show Trace Messages",
             .draw_cb = _draw_core_log_show_trace_messages,
@@ -55,7 +41,7 @@ static void _draw_core_srv_settings()
     group.sets = sets;
     group.set_count = COUNT_OF(sets);
 
-    ui_property_set_group_draw(&group);
+    ui_property_set_group_draw(&group, style);
 }
 
 
@@ -92,12 +78,11 @@ static void _draw_video_resolution()
 
     ////////////////////////////////////////
 
-
-    if (igCombo_Str_arr("##resolution", (u32*) &vm->preset, preset_list, preset_count, preset_count))
+    if (igCombo_Str_arr("##window_resolution", (u32*) &vm->preset, preset_list, preset_count, preset_count))
     {
         video_mode_preset_get_resolution(vm->preset, &vm->resolution);
 
-        kio_video_set_resolution(vm->resolution);
+        kio_video_set_window_resolution(vm->resolution);
     }
 }
 
@@ -109,7 +94,7 @@ static void _draw_video_custom_resolution()
 
     if (igInputFloat2("##custom_resolution", (f32*) &vm->resolution.data, "%.0f", flags))
     {
-        kio_video_set_resolution(vm->resolution);
+        kio_video_set_window_resolution(vm->resolution);
     }
 }
 
@@ -141,7 +126,7 @@ static void _draw_video_xgl_msaa_count()
     if (igSliderInt("##xgl_msaa_count", &conf->xgl.msaa_count, 0, 32, "%d", 0))
     {
         // FIXME valid values : 0, 2, 4, 8
-        klog_warn("event : application_request_restart()");
+        application_request_restart();
     }
 }
 
@@ -151,11 +136,11 @@ static void _draw_video_xgl_debug_mode()
 
     if (igCheckbox("##xgl_debug_mode", &conf->xgl.debug_mode))
     {
-        klog_warn("event : application_request_restart()");
+        application_request_restart();
     }
 }
 
-static void _draw_video_srv_settings()
+static void _draw_video_srv_settings(struct ui_style *style)
 {
     // window set
     struct ui_property properties_window[] = {
@@ -191,6 +176,7 @@ static void _draw_video_srv_settings()
         // },
         {
             .name = "Debug Context",
+            .tooltip = "not impl. yet :)",
             .draw_cb = _draw_video_xgl_debug_mode
         },
     };
@@ -213,7 +199,7 @@ static void _draw_video_srv_settings()
     group.sets = sets;
     group.set_count = COUNT_OF(sets);
 
-    ui_property_set_group_draw(&group);
+    ui_property_set_group_draw(&group, style);
 }
 
 
@@ -227,7 +213,7 @@ static void _draw_audio_xal_volume()
     igDragInt("##xal_volume", &conf->volume, 1, 0, 100, "%3d%%", 0);
 }
 
-static void _draw_audio_srv_settings()
+static void _draw_audio_srv_settings(struct ui_style *style)
 {
     // XAL set
     struct ui_property properties_xal[] = {
@@ -255,15 +241,14 @@ static void _draw_audio_srv_settings()
     group.sets = sets;
     group.set_count = COUNT_OF(sets);
 
-    ui_property_set_group_draw(&group);
-
+    ui_property_set_group_draw(&group, style);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void _draw_kernel_settings_page(struct ui_view* view)
+void _draw_kernel_settings_page(struct ui_view* view, struct ui_style *style)
 {
-    _draw_core_srv_settings();
-    _draw_video_srv_settings();
-    _draw_audio_srv_settings();
+    _draw_core_srv_settings(style);
+    _draw_video_srv_settings(style);
+    _draw_audio_srv_settings(style);
 }

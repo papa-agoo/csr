@@ -2,7 +2,17 @@
 
 #pragma once
 
-#include "applet/aio.h"
-#include "applet/applet_plugin.h"
+#include "applet.h"
+#include "applet_state.h"
+#include "applet_plugin.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+struct applet
+{
+    bool is_running;
+    bool is_initialized;
+
+    struct applet_state state;
+    struct applet_plugin plugin;
+};

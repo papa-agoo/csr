@@ -16,7 +16,7 @@ struct applet_plugin
 
     result_e (*startup)();
     void (*shutdown)();
-    void (*iterate)();
+    void (*tick)();
 
     void* handle;
 };

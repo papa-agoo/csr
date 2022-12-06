@@ -10,10 +10,15 @@
 
 #include <csr/graphics/ui.h>
 
+#include <csr/applet/applet_mgr.h>
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #define ENV_APP_NAME                "CSR"
-#define ENV_APP_VERSION             "0.0.2"
+#define ENV_APP_VERSION             "0.0.3"
+
+#define ENV_APPLET_DIR              "./applets"
+#define ENV_RESOURCE_DIR            "./resources"
 
 #define ENV_APP_HOME_DIR            "{USER_HOME_DIR}/.csr"
 #define ENV_APP_CONFIG_DIR          "{APP_HOME_DIR}/config"
@@ -21,9 +26,6 @@
 
 #define ENV_APP_INI_FILE            "/tmp/csr_app.ini" // "{APP_CONFIG_DIR}/application.ini"
 #define ENV_IMGUI_INI_FILE          "/tmp/imgui.ini" // "{APP_CONFIG_DIR}/imgui.ini"
-
-#define ENV_APPLET_DB_SCAN_PATH     "./applets"
-#define ENV_RESOURCE_PATH_FONTS     "./resources/fonts"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -54,6 +56,17 @@ struct application
 
     struct application_conf conf;
 };
+
+////////////////////////////////////////////////////////////
+
+result_e application_init();
+void application_quit();
+
+void application_run();
+void application_stop();
+
+void application_request_restart(); // FIXME message system
+bool application_has_input_focus();
 
 struct application* application_ptr();
 

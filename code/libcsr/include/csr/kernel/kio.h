@@ -56,14 +56,14 @@ void kio_video_toggle_vsync();
 void kio_video_enable_fullscreen(bool enable);
 void kio_video_toggle_fullscreen();
 
-xgl_framebuffer kio_video_get_framebuffer();
+struct vec2 kio_video_get_window_resolution();
+void kio_video_set_window_resolution(struct vec2 resolution);
 
-// >>> FIXME AREA
+struct vec2 kio_video_get_display_resolution();
+
 f32 kio_video_get_content_scale();
 
-struct vec2 kio_video_get_resolution();
-void kio_video_set_resolution(struct vec2 resolution);
-// <<< FIXME AREA
+xgl_framebuffer kio_video_get_framebuffer();
 
 
 ////////////////////////////////////////////////////////////////////////////////

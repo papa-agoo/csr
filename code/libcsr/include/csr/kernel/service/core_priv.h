@@ -10,6 +10,8 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+#define KSRV_CORE_MAX_LOG_MESSAGES 256
+
 struct ksrv_core
 {
     bool is_initialized;
@@ -36,3 +38,5 @@ struct ksrv_core_init_info
 
 result_e ksrv_core_init(struct ksrv_core_init_info *init_info);
 void ksrv_core_quit();
+
+struct log_db* ksrv_get_log_db();

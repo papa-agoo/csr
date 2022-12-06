@@ -21,6 +21,10 @@ set_target_properties(${MY_TARGET}
 
 target_sources(${MY_TARGET}
     PRIVATE
+        aio.c
+        applet.c
+        applet_state.c
         applet_plugin.c
+        applet_mgr.c
         applet_db.c
 )

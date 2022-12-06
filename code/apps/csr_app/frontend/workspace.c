@@ -23,7 +23,7 @@ static void _draw_menu_head(struct ui_style *style)
 {
     check_ptr(style);
 
-    bool has_app_focus = false; // FIXME
+    bool has_app_focus = application_has_input_focus();
 
     struct vec4 color = (has_app_focus) ? style->color.menu_head_on : style->color.menu_head_off;
 
@@ -37,17 +37,28 @@ static void _draw_menu_tail(struct ui_style *style)
 {
     check_ptr(style);
 
-    // application state
-    // ...
+    struct vec2 fb_res = kio_video_get_window_resolution();
+
+    f32 cursor_pos = fb_res.w;
+    f32 margin_right = 8.0;
 
     ////////////////////////////////////////
 
     // applet state
-    bool is_applet_loaded = false; // FIXME
+    {
+        struct applet *applet = applet_mgr_get_applet();
 
-    struct vec4 color = (is_applet_loaded) ? style->color.applet_loaded : style->color.applet_unloaded;
+        struct vec4 color = (applet) ? style->color.applet_loaded : style->color.applet_unloaded;
+        const char *text = (applet) ? applet_get_filename(applet) : "no applet loaded";
 
-    // igTextColored(make_ImVec4_from_vec4(color), "foo.so");
+        struct ImVec2 text_size = {0};
+        igCalcTextSize(&text_size, text, NULL, false, -1.0f);
+
+        cursor_pos -= text_size.x + margin_right;
+        igSetCursorPosX(cursor_pos);
+
+        igTextColored(make_ImVec4_from_vec4(color), text);
+    }
 
 error:
     return;

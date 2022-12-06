@@ -17,16 +17,16 @@ result_e ui_init(struct ui_init_info *init_info)
 
     check_ptr(init_info);
     check_ptr(init_info->imgui_ini_file);
+    check_ptr(init_info->fonts_dir);
     check_ptr(init_info->conf);
 
     ui_ptr()->conf = init_info->conf;
     ui_ptr()->workspace = init_info->workspace;
+    ui_ptr()->fonts_dir = strdup(init_info->fonts_dir);
 
     ////////////////////////////////////////
 
     // init imgui
-    klog_notice("initializing ui ...");
-
     result_e result = cimgui_init(init_info->imgui_ini_file);
     check(R_SUCCESS(result), "cimgui_init() failed ...");
 
@@ -40,10 +40,12 @@ result_e ui_init(struct ui_init_info *init_info)
 
     ui_ptr()->is_initialized = true;
     ui_ptr()->show_imgui_demo_window = false;
+    ui_ptr()->update_content_scale = false;
 
     ////////////////////////////////////////
 
-    // apply config
+    ui_build_fonts();
+
     ui_set_theme(ui_conf_ptr()->theme);
 
     ////////////////////////////////////////
@@ -67,9 +69,20 @@ void ui_tick()
 {
     csr_assert(ui_ptr()->is_initialized);
 
-    bool update_content_scale = false; // FIXME
+    ////////////////////////////////////////
 
-    cimgui_frame_begin(update_content_scale);
+    bool rebuild_textures = ui_ptr()->update_content_scale;
+
+    if (ui_ptr()->update_content_scale)
+    {
+        ui_build_fonts();
+
+        ui_set_theme(ui_conf_ptr()->theme);
+
+        ui_ptr()->update_content_scale = false;
+    }
+
+    cimgui_frame_begin(rebuild_textures);
 
     ////////////////////////////////////////
 
@@ -98,10 +111,36 @@ void ui_toggle_imgui_demo_window()
     ui_ptr()->show_imgui_demo_window ^= 1;
 }
 
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// fonts
+////////////////////////////////////////////////////////////////////////////////////////////////////
+struct ui_font_info ui_get_font_info()
+{
+    // FIXME return ui_ptr()->font.current;
+
+    if (ui_conf_ptr()->font.use_custom_font) {
+        return ui_ptr()->font.custom.info;
+    }
+
+    return ui_ptr()->font.builtin.info;
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // content scale
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-f32 ui_get_content_scale()
+s32 ui_get_content_scale()
+{
+    return ui_get_content_scale_factor() * 100;
+}
+
+void ui_set_content_scale(s32 scale)
+{
+    ui_set_content_scale_factor(scale / 100.0);
+}
+
+f32 ui_get_content_scale_factor()
 {
     csr_assert(ui_ptr()->is_initialized);
 
@@ -114,23 +153,17 @@ f32 ui_get_content_scale()
     return scale;
 }
 
-void ui_set_content_scale(f32 scale)
+void ui_set_content_scale_factor(f32 factor)
 {
     // FIXME check_range(min, max, value));
-    check_expr(scale >= UI_CONTENT_SCALE_MIN && scale <= UI_CONTENT_SCALE_MAX);
+    check_expr(factor >= UI_CONTENT_SCALE_FACTOR_MIN && factor <= UI_CONTENT_SCALE_FACTOR_MAX);
 
     if (ui_conf_ptr()->content_scale.use_custom_scale) {
-        ui_conf_ptr()->content_scale.scale_factor = scale;
+        ui_conf_ptr()->content_scale.scale_factor = factor;
     }
 
     // request scale update
-    {
-        // - load font at new size
-        // - rebuild font atlas
-        // - call style.ScaleAlleSizes() (on a ref. ImGuiStyle)
-
-        klog_warn("ui_set_content_scale() not impl. yet");
-    }
+    ui_ptr()->update_content_scale = true;
 
 error:
     return;
@@ -266,9 +299,10 @@ void ui_window_draw(struct ui_window* window, struct ui_style *style)
     // draw window
     if (igBegin(window->title, &window->is_opened, window->flags))
     {
+        // FIXME collect window related events (focus, size, appear, ...)
         if (igIsWindowFocused(ImGuiFocusedFlags_ChildWindows) || igIsWindowAppearing())
         {
-            // ...
+            ui_workspace_set_focused_window(ui_ptr()->workspace, window);
         }
 
         if (window->view.draw_cb) {
@@ -287,4 +321,96 @@ void ui_window_draw(struct ui_window* window, struct ui_style *style)
 
 error:
     return;
+}
+
+struct ui_window* ui_window_get_focused()
+{
+    check_ptr(ui_ptr()->workspace);
+
+error:
+    return NULL;
+}
+
+void ui_window_set_focused(struct ui_window* window)
+{
+    check_ptr(window);
+
+    // track focused window internally
+    ui_workspace_set_focused_window(ui_ptr()->workspace, window);
+
+    // actually focus the window :)
+    igSetWindowFocus_Str(window->title);
+
+error:
+    return;
+}
+
+bool ui_window_is_focused(struct ui_window* window)
+{
+    check_ptr(window);
+
+    return ui_workspace_get_focused_window(ui_ptr()->workspace) == window;
+
+error:
+    return false;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// priv
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void ui_build_fonts()
+{
+    ImFontAtlas *font_atlas = igGetIO()->Fonts;
+
+    ImFontAtlas_Clear(font_atlas);
+
+    ////////////////////////////////////////
+
+    f32 scale_factor = ui_get_content_scale_factor();
+
+    // builtin font
+    {
+        struct ui_font *my_font = &ui_ptr()->font.builtin;
+        my_font->info.name = "ProggyClean.ttf";
+        my_font->info.size = 13.0;
+        my_font->info.size_scaled = ceilf(my_font->info.size * scale_factor);
+
+        ImFontConfig *config = ImFontConfig_ImFontConfig();
+        config->SizePixels = my_font->info.size_scaled;
+
+        my_font->data = ImFontAtlas_AddFontDefault(font_atlas, config);
+
+        igGetIO()->FontDefault = my_font->data;
+    }
+
+    // custom font
+    if (ui_conf_ptr()->font.use_custom_font)
+    {
+        struct ui_font *my_font = &ui_ptr()->font.custom;
+        my_font->info.name = strdup(ui_conf_ptr()->font.name);
+        my_font->info.size = ui_conf_ptr()->font.size;
+        my_font->info.size_scaled = ceilf(my_font->info.size * scale_factor);
+
+        // FIXME make_string(...)
+        char str_buf[256];
+        snprintf(str_buf, 256, "%s/%s", ui_ptr()->fonts_dir, my_font->info.name);
+
+        my_font->data = ImFontAtlas_AddFontFromFileTTF(font_atlas, str_buf, my_font->info.size_scaled, NULL, NULL);
+
+        if (my_font->data)
+        {
+            igGetIO()->FontDefault = my_font->data;
+        }
+        else
+        {
+            klog_error("could not load font : %s ...", str_buf);
+
+            ui_conf_ptr()->font.use_custom_font = false;
+        }
+    }
+
+    ////////////////////////////////////////
+
+    ImFontAtlas_Build(font_atlas);
 }

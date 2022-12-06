@@ -346,7 +346,7 @@ f32 screen_get_max_scale(struct screen* screen)
 {
     check_ptr(screen);
 
-    struct vec2 res = kio_video_get_resolution();
+    struct vec2 res = kio_video_get_window_resolution();
 
     f32 max_scale_w = floorf(res.w / screen->width);
     f32 max_scale_h = floorf(res.h / screen->height);

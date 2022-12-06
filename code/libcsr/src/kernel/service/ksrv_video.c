@@ -30,7 +30,7 @@ result_e ksrv_video_init(struct ksrv_video_init_info *init_info)
     check_ptr(init_info);
     check_ptr(init_info->conf);
 
-    klog_notice("initializing video service ...");
+    klog_info("initializing video service ...");
 
     ////////////////////////////////////////
 

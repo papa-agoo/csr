@@ -11,7 +11,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 struct log_db* kio_log_get_db()
 {
-    return ksrv_core_ptr()->log_db;
+    return ksrv_get_log_db();
 }
 
 void kio_log_message(enum log_level_type level, const char* module, const char* message, ...)
@@ -56,7 +56,7 @@ void kio_log_message(enum log_level_type level, const char* module, const char* 
 
     ////////////////////////////////////////
 
-    struct log_db *log_db = ksrv_core_ptr()->log_db;
+    struct log_db *log_db = kio_log_get_db();
 
     if (log_db)
     {
@@ -188,21 +188,9 @@ error:
     return;   
 }
 
-f32 kio_video_get_content_scale()
+struct vec2 kio_video_get_window_resolution()
 {
     check_expr(ksrv_core_ptr()->is_initialized);
-
-    f32 content_scale = platform_get_info()->display.content_scale;
-    check_expr(content_scale > 0);
-
-    return content_scale;
-
-error:
-    return 1.0;
-}
-
-struct vec2 kio_video_get_resolution()
-{
     check_expr(ksrv_video_ptr()->is_initialized);
 
     return ksrv_video_ptr()->conf->window.video_mode.resolution;
@@ -211,8 +199,9 @@ error:
     return make_vec2(0, 0);
 }
 
-void kio_video_set_resolution(struct vec2 resolution)
+void kio_video_set_window_resolution(struct vec2 resolution)
 {
+    check_expr(ksrv_core_ptr()->is_initialized);
     check_expr(ksrv_video_ptr()->is_initialized);
 
     struct video_mode *vm = &ksrv_video_ptr()->conf->window.video_mode;
@@ -226,6 +215,29 @@ void kio_video_set_resolution(struct vec2 resolution)
 
 error:
     return;
+}
+
+struct vec2 kio_video_get_display_resolution()
+{
+    check_expr(ksrv_core_ptr()->is_initialized);
+
+    return platform_get_info()->display.resolution;
+
+error:
+    return make_vec2(0, 0);
+}
+
+f32 kio_video_get_content_scale()
+{
+    check_expr(ksrv_core_ptr()->is_initialized);
+
+    f32 content_scale = platform_get_info()->display.content_scale;
+    check_expr(content_scale > 0);
+
+    return content_scale;
+
+error:
+    return 1.0;
 }
 
 xgl_framebuffer kio_video_get_framebuffer()

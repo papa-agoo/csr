@@ -7,8 +7,8 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#define UI_CONTENT_SCALE_MIN 0.5
-#define UI_CONTENT_SCALE_MAX 4.0
+#define UI_CONTENT_SCALE_FACTOR_MIN 1.0
+#define UI_CONTENT_SCALE_FACTOR_MAX 4.0
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -16,9 +16,10 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 struct ui_font_info
 {
-    const char *uri;
+    const char *name;
 
     f32 size;
+    f32 size_scaled;
 };
 
 struct ui_font
@@ -90,16 +91,13 @@ struct ui_window
 //              - property
 //              - ...
 
-typedef void (*ui_property_draw_cb_t)();
-typedef bool (*ui_property_draw_cond_cb_t)();
-
 struct ui_property
 {
     const char *name;
     const char *tooltip;
 
-    ui_property_draw_cb_t draw_cb;
-    ui_property_draw_cond_cb_t draw_cond_cb;
+    void (*draw_cb)();
+    bool (*draw_cond_cb)();
 
     bool is_hidden;
     // bool is_disabled;
@@ -125,5 +123,5 @@ struct ui_property_page
 {
     const char *title;
 
-    void (*draw_page_cb)(struct ui_view* view);
+    void (*draw_cb)(struct ui_view *view, struct ui_style *style);
 };
