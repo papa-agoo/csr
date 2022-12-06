@@ -8,9 +8,9 @@ static result_e _api_run(struct mainloop* mainloop)
 {
     check_ptr(mainloop);
     check_ptr(mainloop->api);
-    check_ptr(mainloop->api->iterate);
+    check_ptr(mainloop->api->tick);
 
-    while (mainloop->api->iterate(mainloop));
+    while (mainloop->api->tick(mainloop));
 
     return RC_SUCCESS;
 
@@ -18,7 +18,7 @@ error:
     return RC_FAILURE;
 }
 
-static bool _api_iterate(struct mainloop* mainloop)
+static bool _api_tick(struct mainloop* mainloop)
 {
     check_ptr(mainloop);
 
@@ -39,7 +39,7 @@ struct mainloop* mainloop_create()
     check_ptr(mainloop->api);
 
     mainloop->api->run = _api_run;
-    mainloop->api->iterate = _api_iterate;
+    mainloop->api->tick = _api_tick;
 
     return mainloop;
 

@@ -11,7 +11,7 @@ struct mainloop;
 struct mainloop_api
 {
     result_e (*run)(struct mainloop* mainloop);
-    bool (*iterate)(struct mainloop* mainloop);
+    bool (*tick)(struct mainloop* mainloop);
 };
 
 struct mainloop_api* mainloop_api_create();

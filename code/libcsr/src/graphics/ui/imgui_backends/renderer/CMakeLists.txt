@@ -1,0 +1,5 @@
+if (RENDER_API_OPENGL)
+    add_subdirectory(opengl3)
+else ()
+    add_subdirectory(null)
+endif ()

@@ -51,7 +51,8 @@ void vector_destroy(struct vector* vector)
 
     if (vector->data)
     {
-        vector_reset(vector);
+        // FIXME BUG strange glibc mem issues
+        // vector_reset(vector);
 
         free(vector->data);
     }
@@ -75,6 +76,7 @@ void vector_reset(struct vector* vector)
 
     memset(vector->data, 0, vector->element_count * vector->element_size);
 
+    // FIXME BUG strange glibc mem issues
     vector->element_count = 0;
 
 error:

@@ -7,20 +7,6 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void ksrv_video_conf_defaults(struct ksrv_video_conf *conf)
-{
-    check_ptr(conf);
-
-    conf->window.video_mode = video_mode_create_from_preset(VIDEO_MODE_PRESET_FULL_HD);
-    conf->window.fullscreen = false;
-    conf->window.vsync = true;
-
-error:
-    return;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
 static void _on_window_resize(struct event* event)
 {
     struct ksrv_video *srv = ksrv_video_ptr();
@@ -39,14 +25,12 @@ static void _on_window_resize(struct event* event)
     ksrv_video_create_swapchain((u32)resolution.w, (u32)resolution.h, &srv->swapchain);
 }
 
-////////////////////////////////////////////////////////////////////////////////
-
 result_e ksrv_video_init(struct ksrv_video_init_info *init_info)
 {
     check_ptr(init_info);
     check_ptr(init_info->conf);
 
-    klog_notice("initializing video service ...");
+    klog_info("initializing video service ...");
 
     ////////////////////////////////////////
 

@@ -1,0 +1,5 @@
+if (PLATFORM_BACKEND_GLFW3)
+    add_subdirectory(glfw)
+else()
+    add_subdirectory(null)
+endif()

@@ -19,6 +19,7 @@ add_subdirectory(src/core)
 add_subdirectory(src/platform)
 add_subdirectory(src/kernel)
 add_subdirectory(src/graphics)
+add_subdirectory(src/applet)
 
 target_link_libraries(${MY_TARGET}
     PUBLIC
@@ -33,6 +34,10 @@ target_link_libraries(${MY_TARGET}
         csr::kernel
         csr::graphics
         csr::graphics::xgl_impl
+        csr::graphics::ui
+        csr::graphics::ui_platform_impl
+        csr::graphics::ui_renderer_impl
+        csr::applet
 )
 
 install(TARGETS ${MY_TARGET}

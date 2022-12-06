@@ -45,5 +45,5 @@ u32 log_db_get_message_count(struct log_db *db);
 
 void log_db_add_message(struct log_db *db, struct log_message *message);
 
-typedef void (*log_db_traverse_cb_t)(struct log_message *message);
-void log_db_traverse(struct log_db *db, log_db_traverse_cb_t callback);
+typedef void (*log_db_traverse_cb_t)(struct log_message *message, void *data);
+void log_db_traverse(struct log_db *db, log_db_traverse_cb_t callback, void *data);

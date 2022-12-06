@@ -33,6 +33,12 @@ struct vec2
 #define make_vec2(...) \
     make_compound_literal(struct vec2, __VA_ARGS__)
 
+#define make_vec2_zero()        make_vec2(0, 0)
+#define make_vec2_one()         make_vec2(1, 1)
+
+#define make_vec2_x_axis()      make_vec2(1, 0)
+#define make_vec2_y_axis()      make_vec2(0, 1)
+
 ////////////////////////////////////////////////////////////////////////////////
 
 CSR_INLINE struct vec2 vec2_add(struct vec2 a, struct vec2 b)

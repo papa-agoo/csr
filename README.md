@@ -6,21 +6,33 @@
 
 ## Build and Run
 
-... linux only ...
+Currently only Linux is supported but it should be easy to do a Port for Windows though.
 
 <br/>
 
 Dependencies
 
+* CMake
 * GLFW
 * Epoxy
 
 <br/>
 
-Prepare Repo
+Checkout Repo and Submodules
 
 ```shell
-$ git clone https://github.com/papa-agoo/csr.git --recursive-submodules
+$ git clone https://github.com/papa-agoo/csr.git
+$ git submodules update --init --recursive
+$ cd csr/
+```
+
+<br/>
+
+If you are swithing to a different Branch or simply fetching new Commits, you should always sync the internal Dependencies (like ImGui) using `git submodule update`.
+
+```shell
+$ git checkout origin/develop -b develop
+$ git submodule update --recursive
 ```
 
 <br/>
@@ -28,7 +40,6 @@ $ git clone https://github.com/papa-agoo/csr.git --recursive-submodules
 Generate Makefiles using CMake
 
 ```shell
-$ cd csr/
 $ cmake -DCMAKE_BUILD_TYPE=Release -B build
 ```
 
@@ -45,17 +56,17 @@ $ sudo make all install
 
 Run CSR
 
-... assuming `/opt/csr` is the install prefix (project root directory) set the `LD_LIBRARY_PATH` before executing CSR apps ...
+Assuming `/opt/csr` is the install prefix (project root directory) set the `LD_LIBRARY_PATH` before executing CSR Apps ...
 
 ```shell
 $ export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/opt/csr/lib
 ```
 
-... or just add `/opt/csr/lib` to `ld.so.conf` once and forget about it ...
+... or just add `/opt/csr/lib` to `ld.so.conf` once and forget about it.
 
 <br/>
 
-... for now CSR apps must be run from within the `project root directory` (i.e. /opt/csr) ...
+For now CSR Apps must be run from within the `project root directory`.
 
 ```shell
 $ cd /opt/csr
@@ -66,38 +77,7 @@ $ ./bin/csr_app
 
 ## Roadmap
 
-... milestones dings ...
-
-<br/>
-
-- [ ] Milestone 1 : Foundation
-  - [x] Core Libs Layer
-  - [x] Platform Abstraction Layer
-  - [x] Kernel Layer
-  - [ ] Hub Application
-    - [ ] Config Files
-    - [ ] User Interface
-    - [ ] Applet System
-- [ ] Milestone 2 : Simple Applets
-  - [ ] xgl_hello_triangle
-  - [ ] hello_screens
-  - [ ] softgl_hello_triangle
-  - [ ] ...
-- [ ] Milestone 3 : Rendering System Foundation
-  - [ ] ...
-  - [ ] applet: rsx_hello_world
-  - [ ] ...
-
-<br/><br/>
-
-... milestone candidates ...
-
-<br/>
-
-- [ ] Milestone ? : Resource System
-  - [ ] ...
-  - [ ] applet: hello_resource
-  - [ ] ...
+... priority table ...
 
 <br/><br/>
 

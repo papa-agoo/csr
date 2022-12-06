@@ -7,16 +7,6 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void ksrv_audio_conf_defaults(struct ksrv_audio_conf *conf)
-{
-    check_ptr(conf);
-
-    conf->volume = 100;
-
-error:
-    return;
-}
-
 result_e ksrv_audio_init(struct kernel_init_info *init_info)
 {
     klog_info("initializing audio service ...");

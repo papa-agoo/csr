@@ -21,8 +21,15 @@ struct frame_stats
 
 struct ksrv_core_conf
 {
-    s32 log_max_messages;
     bool log_show_trace_messages;
 };
 
-void ksrv_core_conf_defaults(struct ksrv_core_conf *conf);
+static void ksrv_core_conf_defaults(struct ksrv_core_conf *conf)
+{
+    check_ptr(conf);
+
+    conf->log_show_trace_messages = false;
+
+error:
+    return;
+}
