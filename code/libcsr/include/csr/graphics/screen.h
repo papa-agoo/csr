@@ -2,46 +2,45 @@
 
 #pragma once
 
-#include <csr/graphics/xgl/driver.h>
+#include "screen_surface.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-enum screen_usage_hint
-{
-    SCREEN_USAGE_HINT_UNKNOWN,
+#define SCREEN_AUTOSIZE_FACTOR  0.75 // FIXME better name
 
-    SCREEN_USAGE_HINT_XGL_API,
-    SCREEN_USAGE_HINT_NATIVE_API,
-    SCREEN_USAGE_HINT_DIRECT_PIXEL_ACCESS,
-};
+#define SCREEN_SCALE_MIN        1
+#define SCREEN_WIDTH_MIN        320
+#define SCREEN_HEIGHT_MIN       160
 
-const char* screen_usage_hint_cstr(enum screen_usage_hint hint);
-const char* screen_usage_hint_cstr_human(enum screen_usage_hint hint);
-
-enum screen_scaling_policy
-{
-    SCREEN_SCALING_POLICY_UNKNOWN, // guess (pixel access = static, else dynamic)
-
-    SCREEN_SCALING_POLICY_STATIC,
-    SCREEN_SCALING_POLICY_DYNAMIC,
-
-    SCREEN_SCALE_POLICY_STRETCH,
-};
-
+// how to resize the screen (surface) size if the parent window size changes
 enum screen_resize_policy
 {
-    SCREEN_RESIZE_POLICY_RESIZE_FRAMEBUFFER,
-    SCREEN_RESIZE_POLICY_SCALE_VIEWPORT,
+    SCREEN_RESIZE_POLICY_UNKNOWN,
+
+    // adjust screen size automatically to match the parent window size
+    SCREEN_RESIZE_POLICY_AUTO,
+
+    // parent window resize has no effect on screen size
+    SCREEN_RESIZE_POLICY_EXPLICIT,
 };
 
-// resize policy
-//      - resize fb
-//      - scale vp
-//      - keep aspect ratio
+// how to scale the screen contents to a bigger content area (parent window)
+enum screen_scale_policy
+{
+    SCREEN_SCALE_POLICY_UNKNOWN,
 
-// scale policy
-//      - integer
-//      - floating point
+    // no scaling wanted
+    SCREEN_SCALE_POLICY_NONE,
+
+    // floating point
+    SCREEN_SCALE_POLICY_FP,
+
+    // floating point quarter steps (1.00, 1.25, ...)
+    SCREEN_SCALE_POLICY_FP_QS,
+
+    // integer (1, 2, ...)
+    SCREEN_SCALE_POLICY_INTEGER,
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -51,45 +50,46 @@ struct screen_create_info
 {
     const char* name;
 
-    u32 width;
-    u32 height;
-    f32 scale;
+    f32 scale_factor;
+    enum screen_scale_policy scale_policy;
+    enum screen_resize_policy resize_policy;
 
-    struct vec4 clear_color;
-
-    enum screen_usage_hint usage_hint;
-    enum screen_scaling_policy scaling_policy;
+    struct screen_surface_create_info surface;
 };
 
 struct screen* screen_create(struct screen_create_info *ci);
 void screen_destroy(struct screen* screen);
 
-bool screen_begin(struct screen* screen);
+bool screen_begin(struct screen* screen, enum screen_surface_type surface_type);
 void screen_end();
 
 const char* screen_get_name(struct screen* screen);
-enum screen_usage_hint screen_get_usage_hint(struct screen* screen);
-
+enum screen_surface_type screen_get_surface_type(struct screen* screen);
 xgl_texture screen_get_texture(struct screen* screen);
 
-void screen_resize(struct screen *screen, u32 width, u32 height);
 
-// unscaled screen size (texture dimensions)
-struct rect screen_get_rect(struct screen *screen);
+// resize api
+enum screen_resize_policy screen_get_resize_policy(struct screen* screen);
+void screen_set_resize_policy(struct screen* screen, enum screen_resize_policy policy);
 
-// scaled screen size (viewport dimensions)
-struct rect screen_get_scaled_rect(struct screen *screen);
+struct vec2 screen_get_size(struct screen *screen);
+void screen_set_size(struct screen *screen, struct vec2 size);
+
+struct vec2 screen_get_scaled_size(struct screen *screen);
+
 
 // scaling api
-void screen_scale_up(struct screen* screen);
-void screen_scale_down(struct screen* screen);
+enum screen_scale_policy screen_get_scale_policy(struct screen *screen);
+void screen_set_scale_policy(struct screen *screen, enum screen_scale_policy policy);
 
 f32 screen_get_scale(struct screen* screen);
 void screen_set_scale(struct screen* screen, f32 factor);
 
-f32 screen_get_max_scale(struct screen* screen);
+void screen_scale_up(struct screen* screen);
+void screen_scale_down(struct screen* screen);
 
 void screen_maximize_scale(struct screen* screen);
 void screen_reset_scale(struct screen* screen);
 
+f32 screen_get_max_scale(struct screen* screen);
 bool screen_is_scale_maxed(struct screen* screen);

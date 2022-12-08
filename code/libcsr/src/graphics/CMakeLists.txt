@@ -22,6 +22,7 @@ set_target_properties(${MY_TARGET}
 target_sources(${MY_TARGET}
     PRIVATE
         screen.c
+        screen_surface.c
 
         xgl/xgl_driver.c
         xgl/xgl_device.c
