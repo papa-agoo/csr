@@ -1,6 +1,6 @@
 # CSR
 
-... introduction ... Ponyhof ... [Andreas Gummer](https://github.com/papa-agoo) ...
+... introduction ...
 
 <br/>
 
@@ -22,8 +22,8 @@ Checkout Repo and Submodules
 
 ```shell
 $ git clone https://github.com/papa-agoo/csr.git
-$ git submodules update --init --recursive
 $ cd csr/
+$ git submodule update --init --recursive
 ```
 
 <br/>
