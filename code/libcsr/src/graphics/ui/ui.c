@@ -192,7 +192,7 @@ void ui_menu_init(struct ui_menu *menu, const char *title)
     menu->key = NULL;
 
     menu->draw_cb = NULL;
-    menu->is_enabled_cb = NULL;
+    menu->draw_cond_cb = NULL;
 
 error:
     return;
@@ -203,7 +203,7 @@ void ui_menu_draw(struct ui_menu* menu, struct ui_style *style)
     check_ptr(menu);
     check_ptr(style);
 
-    if (menu->is_enabled_cb && !menu->is_enabled_cb(menu)) return;
+    if (menu->draw_cond_cb && !menu->draw_cond_cb(menu)) return;
 
     if (igBeginMenu(menu->title, true))
     {
@@ -227,54 +227,49 @@ static void _default_view_draw_cb(struct ui_view* view, struct ui_style *style)
     igText("No View available");
 }
 
-static void _default_window_push_properties_cb(struct ui_window* win)
-{
-    // FIXME need a better approach for generic styling options
-    igPushStyleVar_Vec2(ImGuiStyleVar_WindowPadding, make_ImVec2(8, 8));
-}
+extern void init_screen_view(struct ui_view *view, void *screen);
 
-static void _default_window_pop_properties_cb(struct ui_window* win)
+void ui_view_init(struct ui_view *view, enum ui_view_type view_type, void* user_data)
 {
-    igPopStyleVar(1);
-}
+    check_ptr(view);
+    check_expr(view_type != UI_VIEW_TYPE_UNKNOWN);
 
-static void _init_view_defaults(struct ui_window *window)
-{
-    check_ptr(window);
+    switch (view_type)
+    {
+        case UI_VIEW_TYPE_SCREEN:
+            init_screen_view(view, user_data);
+        break;
 
-    window->view.name = strdup(window->title);
-    window->view.parent = window;
-    window->view.draw_cb = _default_view_draw_cb;
-    window->view.user_data = NULL;
+        case UI_VIEW_TYPE_CUSTOM: {
+            view->type = view_type;
+            view->draw_cb = _default_view_draw_cb;
+            view->user_data = user_data;
+        }
+        break;
+    }
 
 error:
     return;
 }
 
-void ui_window_init(struct ui_window *window, const char *title, ui_window_init_view_cb_t init_view_cb)
+static void _default_window_push_properties_cb(struct ui_window* win) {}
+static void _default_window_pop_properties_cb(struct ui_window* win) {}
+
+void ui_window_init(struct ui_window *window, const char *title)
 {
     check_ptr(window);
     check_ptr(title);
 
-    window->title = strdup(title);
-
     window->key = NULL;
-
+    window->title = strdup(title);
     window->is_opened = false;
-    window->is_viewport = false;
 
-    window->flags = ImGuiWindowFlags_None;
+    window->priv.flags = ImGuiWindowFlags_None;
+    window->priv.push_properties_cb = _default_window_push_properties_cb;
+    window->priv.pop_properties_cb = _default_window_pop_properties_cb;
 
-    window->push_properties_cb = _default_window_push_properties_cb;
-    window->pop_properties_cb = _default_window_pop_properties_cb;
-
-    window->user_data = NULL;
-
-    _init_view_defaults(window);
-
-    if (init_view_cb) {
-        init_view_cb(&window->view);
-    }
+    window->view.draw_cb = _default_view_draw_cb;
+    window->view.parent = window;
 
 error:
     return;
@@ -290,14 +285,14 @@ void ui_window_draw(struct ui_window* window, struct ui_style *style)
     ////////////////////////////////////////
 
     // push window style properties
-    if (window->push_properties_cb) {
-        window->push_properties_cb(window);
+    if (window->priv.push_properties_cb) {
+        window->priv.push_properties_cb(window);
     }
 
     ////////////////////////////////////////
 
     // draw window
-    if (igBegin(window->title, &window->is_opened, window->flags))
+    if (igBegin(window->title, &window->is_opened, window->priv.flags))
     {
         // FIXME collect window related events (focus, size, appear, ...)
         if (igIsWindowFocused(ImGuiFocusedFlags_ChildWindows) || igIsWindowAppearing())
@@ -315,8 +310,8 @@ void ui_window_draw(struct ui_window* window, struct ui_style *style)
     ////////////////////////////////////////
 
     // pop window style properties
-    if (window->pop_properties_cb) {
-        window->pop_properties_cb(window);
+    if (window->priv.pop_properties_cb) {
+        window->priv.pop_properties_cb(window);
     }
 
 error:

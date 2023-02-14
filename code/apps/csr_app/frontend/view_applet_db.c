@@ -29,14 +29,16 @@ static void _on_draw_applet_entry(struct applet_db_entry *entry, void *data)
             // close window on successfull load
             struct ui_view *view = data;
 
-            if (R_SUCCESS(result)) {
-                view->parent->is_opened = false;
+            if (R_SUCCESS(result))
+            {
+                struct ui_window *window = view->parent;
+                window->is_opened = false;
             }
         }
     }
 }
 
-static void _draw_view(struct ui_view* view, struct ui_style *style)
+void draw_applet_db_view(struct ui_view* view, struct ui_style *style)
 {
     csr_assert(view);
     csr_assert(style);
@@ -62,7 +64,8 @@ static void _draw_view(struct ui_view* view, struct ui_style *style)
     table_flags |= ImGuiTableFlags_Hideable;
     table_flags |= ImGuiTableFlags_Sortable;
 
-    struct ImVec2 table_size = {0, -igGetFrameHeightWithSpacing()}; // FIXME ???
+    // resize table so the "Update Database" button is visible
+    struct ImVec2 table_size = {0, -igGetFrameHeightWithSpacing()};
 
     if (igBeginTable("application#applet_db", 4, table_flags, table_size, 0))
     {
@@ -92,11 +95,4 @@ static void _draw_view(struct ui_view* view, struct ui_style *style)
     if (igButton("Update Database", make_ImVec2_zero())) {
         applet_mgr_update_db();
     }
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-void init_applet_db_view(struct ui_view* view)
-{
-    view->draw_cb = _draw_view;
 }

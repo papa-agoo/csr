@@ -56,7 +56,7 @@ static void _on_draw_log_message(struct log_message *message, void *style)
     }
 }
 
-static void _draw_view(struct ui_view* view, struct ui_style *style)
+void draw_log_messages_view(struct ui_view* view, struct ui_style *style)
 {
     csr_assert(view);
     csr_assert(style);
@@ -105,11 +105,4 @@ static void _draw_view(struct ui_view* view, struct ui_style *style)
     }
 
     igPopStyleVar(1);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-void init_log_messages_view(struct ui_view* view)
-{
-    view->draw_cb = _draw_view;
 }

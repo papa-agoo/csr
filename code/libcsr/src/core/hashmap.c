@@ -205,6 +205,11 @@ error:
     return NULL;
 }
 
+bool hashmap_has(struct hashmap* map, const char* key)
+{
+    return hashmap_get(map, key) != NULL;
+}
+
 s32 hashmap_traverse(struct hashmap* map, hashmap_traverse_cb traverse_cb, void *user_data)
 {
     check_ptr(map);

@@ -17,5 +17,7 @@ void hashmap_destroy(struct hashmap* map);
 void* hashmap_set(struct hashmap* map, const char* key, void* data);
 void* hashmap_get(struct hashmap* map, const char* key);
 
+bool hashmap_has(struct hashmap* map, const char* key);
+
 s32 hashmap_traverse(struct hashmap* map, hashmap_traverse_cb cb, void *user_data);
 void* hashmap_find(struct hashmap* map, void* left, hashmap_find_cb cb);

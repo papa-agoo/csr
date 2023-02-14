@@ -166,16 +166,17 @@ static void _register_menus()
 
 static void _register_windows()
 {
-    void init_applet_db_view(struct ui_view * view);
-    void init_settings_view(struct ui_view * view);
-    void init_log_messages_view(struct ui_view * view);
+    extern void draw_applet_db_view(struct ui_view* view, struct ui_style *style);
+    extern void draw_settings_view(struct ui_view* view, struct ui_style *style);
+    extern void draw_log_messages_view(struct ui_view* view, struct ui_style *style);
 
     // applet db
     {
         static struct ui_window window = {0};
-        ui_window_init(&window, "Applet Database", init_applet_db_view);
+        ui_window_init(&window, "Applet Database");
 
-        window.flags = ImGuiWindowFlags_NoDocking;
+        window.view.draw_cb = draw_applet_db_view;
+        window.priv.flags = ImGuiWindowFlags_NoDocking;
 
         ui_ctx_add_window(ctx_ptr(), "window.applet_db", &window);
     }
@@ -183,9 +184,10 @@ static void _register_windows()
     // settings
     {
         static struct ui_window window = {0};
-        ui_window_init(&window, "Settings", init_settings_view);
+        ui_window_init(&window, "Settings");
 
-        window.flags = ImGuiWindowFlags_NoDocking;
+        window.view.draw_cb = draw_settings_view;
+        window.priv.flags = ImGuiWindowFlags_NoDocking;
 
         ui_ctx_add_window(ctx_ptr(), "window.settings", &window);
     }
@@ -193,8 +195,9 @@ static void _register_windows()
     // log messages
     {
         static struct ui_window window = {0};
-        ui_window_init(&window, "Log Messages", init_log_messages_view);
+        ui_window_init(&window, "Log Messages");
 
+        window.view.draw_cb = draw_log_messages_view;
         window.is_opened = true;
 
         ui_ctx_add_window(ctx_ptr(), "window.log_messages", &window);

@@ -70,6 +70,10 @@ error:
     return NULL;
 }
 
+
+////////////////////////////////////////////////////////////////////////////////
+// menus
+////////////////////////////////////////////////////////////////////////////////
 u32 ui_ctx_get_menu_count(struct ui_ctx *ctx)
 {
     check_ptr(ctx);
@@ -86,8 +90,7 @@ result_e ui_ctx_add_menu(struct ui_ctx *ctx, const char *key, struct ui_menu *me
     check_ptr(key);
     check_ptr(menu);
 
-    void *collision = hashmap_get(ctx->ui_items, key);
-    check(collision == NULL, "collision : cannot add menu, key already used : %s", key);
+    check_expr(!hashmap_has(ctx->ui_items, key));
 
     menu->key = strdup(key);
 
@@ -137,6 +140,28 @@ error:
     return;
 }
 
+struct ui_menu *ui_ctx_find_menu(struct ui_ctx *ctx, ui_ctx_find_menu_cb_t callback, void *data)
+{
+    check_ptr(ctx);
+    check_ptr(callback);
+
+    LIST_FOREACH(ctx->menus, first, next, current)
+    {
+        struct ui_menu *menu = current->value;
+
+        if (callback(menu, data)) {
+            return menu;
+        }
+    }
+
+error:
+    return NULL;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// windows
+////////////////////////////////////////////////////////////////////////////////
 u32 ui_ctx_get_window_count(struct ui_ctx *ctx)
 {
     check_ptr(ctx);
@@ -153,8 +178,7 @@ result_e ui_ctx_add_window(struct ui_ctx *ctx, const char *key, struct ui_window
     check_ptr(key);
     check_ptr(window);
 
-    void *collision = hashmap_get(ctx->ui_items, key);
-    check(collision == NULL, "collision : cannot add window, key already used : %s", key);
+    check_expr(!hashmap_has(ctx->ui_items, key));
 
     window->key = strdup(key);
 
@@ -201,5 +225,23 @@ void ui_ctx_traverse_windows(struct ui_ctx* ctx, ui_ctx_traverse_windows_cb_t ca
     }
 
 error:
-    return;    
+    return;
+}
+
+struct ui_window *ui_ctx_find_window(struct ui_ctx *ctx, ui_ctx_find_window_cb_t callback, void *data)
+{
+    check_ptr(ctx);
+    check_ptr(callback);
+
+    LIST_FOREACH(ctx->windows, first, next, current)
+    {
+        struct ui_window *window = current->value;
+
+        if (callback(window, data)) {
+            return window;
+        }
+    }
+
+error:
+    return NULL;
 }

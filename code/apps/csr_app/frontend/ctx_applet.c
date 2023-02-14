@@ -23,6 +23,32 @@ static void _draw_applet_menu_cb(struct ui_menu *menu, struct ui_style *style)
     }
 }
 
+static bool _cond_is_screen_window(struct ui_window *window, void *data)
+{
+    return window->view.type == UI_VIEW_TYPE_SCREEN;
+}
+
+static bool _cond_draw_screens_menu_cb(struct ui_menu *menu)
+{
+    // no window found means no screens available
+    return ui_ctx_find_window(ctx_ptr(), _cond_is_screen_window, NULL) != NULL;
+}
+
+static void _on_draw_screen_window_menu_entry(struct ui_window *window, void *style)
+{
+    if (window->view.type == UI_VIEW_TYPE_SCREEN) {
+        igMenuItem_BoolPtr(window->title, NULL, &window->is_opened, true);
+    }
+}
+
+static void _draw_screens_menu_cb(struct ui_menu *menu, struct ui_style *style)
+{
+    csr_assert(menu);
+    csr_assert(style);
+
+    ui_ctx_traverse_windows(ctx_ptr(), _on_draw_screen_window_menu_entry, style);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 static void _register_menus()
@@ -34,7 +60,18 @@ static void _register_menus()
 
         menu.draw_cb = _draw_applet_menu_cb;
 
-        ui_ctx_add_menu(ctx_ptr(), "menu.main", &menu);
+        ui_ctx_add_menu(ctx_ptr(), "menu.applet", &menu);
+    }
+
+    // screens
+    {
+        static struct ui_menu menu = {0};
+        ui_menu_init(&menu, "Screens");
+
+        menu.draw_cb = _draw_screens_menu_cb;
+        menu.draw_cond_cb = _cond_draw_screens_menu_cb;
+
+        ui_ctx_add_menu(ctx_ptr(), "menu.screens", &menu);
     }
 }
 

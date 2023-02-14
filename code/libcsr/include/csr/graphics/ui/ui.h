@@ -98,10 +98,10 @@ struct ui_workspace* ui_get_workspace();
 void ui_menu_init(struct ui_menu *menu, const char *title);
 void ui_menu_draw(struct ui_menu* menu, struct ui_style *style);
 
-// windows
-typedef void (*ui_window_init_view_cb_t)(struct ui_view *view);
+// windows / views
+void ui_view_init(struct ui_view *view, enum ui_view_type view_type, void* user_data);
 
-void ui_window_init(struct ui_window *window, const char *title, ui_window_init_view_cb_t callback);
+void ui_window_init(struct ui_window *window, const char *title);
 void ui_window_draw(struct ui_window* window, struct ui_style *style);
 
 struct ui_window* ui_window_get_focused();

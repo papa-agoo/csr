@@ -26,16 +26,26 @@ void applet_state_init(struct applet *applet)
     state->ui = ui_ctx_create("Applet");
     check_ptr(state->ui);
 
-    // screens
-    state->screens = hashmap_create();
-    check_ptr(state->screens);
-
     // callbacks
     state->callbacks.hid = (struct hid_callbacks){0};
 
     ////////////////////////////////////////
 
     applet->is_initialized = true;
+
+error:
+    return;
+}
+
+static void _destroy_screen_windows_cb(struct ui_window *window, void *data)
+{
+    check_ptr(window);
+
+    if (window->view.type == UI_VIEW_TYPE_SCREEN) {
+        screen_destroy(window->view.user_data);
+    }
+
+    free(window);
 
 error:
     return;
@@ -54,10 +64,8 @@ void applet_state_quit(struct applet *applet)
     // callbacks
     state->callbacks.hid = (struct hid_callbacks){0};
 
-    // screens
-    hashmap_destroy(state->screens);
-
     // ui
+    ui_ctx_traverse_windows(state->ui, _destroy_screen_windows_cb, NULL);
     ui_ctx_destroy(state->ui);
 
     // config

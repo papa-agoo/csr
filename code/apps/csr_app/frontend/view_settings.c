@@ -16,7 +16,7 @@ static struct ui_property_page g_property_pages[] = {
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-static void _draw_view(struct ui_view* view, struct ui_style *style)
+void draw_settings_view(struct ui_view* view, struct ui_style *style)
 {
     csr_assert(view);
     csr_assert(style);
@@ -68,9 +68,4 @@ static void _draw_view(struct ui_view* view, struct ui_style *style)
 
 error:
     return;
-}
-
-void init_settings_view(struct ui_view* view)
-{
-    view->draw_cb = _draw_view;
 }

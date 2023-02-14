@@ -162,24 +162,135 @@ error:
 ////////////////////////////////////////////////////////////////////////////////
 // video
 ////////////////////////////////////////////////////////////////////////////////
+static void _normalize_screen_create_info_values(struct screen_create_info *ci)
+{
+    check_ptr(ci);
+
+    ////////////////////////////////////////
+
+    // fallback to gpu surface type
+    if (ci->surface.type == SCREEN_SURFACE_TYPE_UNKNOWN) {
+        ci->surface.type = SCREEN_SURFACE_TYPE_GPU;
+    }
+
+    ////////////////////////////////////////
+
+    // try to select to proper resize policy
+    if (ci->resize_policy == SCREEN_RESIZE_POLICY_UNKNOWN)
+    {
+        // initially explicit resizing only
+        ci->resize_policy = SCREEN_RESIZE_POLICY_EXPLICIT;
+
+        // gpu surfaces can be automatically resized when needed (window resize, docking, ...)
+        if (ci->surface.type == SCREEN_SURFACE_TYPE_GPU) {
+            ci->resize_policy = SCREEN_RESIZE_POLICY_AUTO;
+        }
+    }
+
+    ////////////////////////////////////////
+
+    // try to select to proper scale policy
+    if (ci->scale_policy == SCREEN_SCALE_POLICY_UNKNOWN)
+    {
+        // disable scaling by default
+        ci->scale_policy = SCREEN_SCALE_POLICY_NONE;
+
+        // use integer scaling for cpu surfaces
+        if (ci->surface.type == SCREEN_SURFACE_TYPE_CPU) {
+            ci->scale_policy = SCREEN_SCALE_POLICY_INTEGER;
+        }
+    }
+
+    ////////////////////////////////////////
+
+    // normalize screen surface
+    struct xgl_viewport *viewport = &ci->surface.viewport;
+    {
+        // viewport size
+        struct vec2 my_size = make_vec2(viewport->width, viewport->height);
+        struct vec2 max_size = kio_video_get_window_resolution();
+
+        if (my_size.w == 0 || my_size.h == 0)
+        {
+            // set default size
+            my_size = make_vec2(SCREEN_WIDTH_MIN, SCREEN_HEIGHT_MIN);
+
+            // gpu surfaces may be resized relatively to the os window size (ie. 75% resolution)
+            if (ci->surface.type == SCREEN_SURFACE_TYPE_GPU) {
+                my_size = vec2_scale(max_size, SCREEN_AUTOSIZE_FACTOR);
+            }
+        }
+
+        viewport->width = clamp(my_size.w, SCREEN_WIDTH_MIN, max_size.w);
+        viewport->height = clamp(my_size.h, SCREEN_HEIGHT_MIN, max_size.h);
+
+        // depth range
+        if (viewport->min_depth == viewport->max_depth)
+        {
+            // FIXME use globally defined values
+            viewport->min_depth = 0.0f;
+            viewport->max_depth = 1.0f;
+        }
+    }
+
+    ////////////////////////////////////////
+
+    // normalize scale factor
+    if (ci->scale_factor < SCREEN_SCALE_MIN) {
+        ci->scale_factor = SCREEN_SCALE_MIN;
+    }
+
+    // screen size matches ui window size, so no scaling needed at all
+    if (ci->resize_policy == SCREEN_RESIZE_POLICY_AUTO) {
+        ci->scale_factor = 1;
+    }
+
+error:
+    return;
+}
+
 struct screen* aio_add_screen(const char *key, struct screen_create_info *ci)
 {
     check_applet_initialized();
 
-    alog_error("aio_add_screen() not impl. yet");
+    check_ptr(key);
 
-    // 1) create screen
-    // 2) create window
-    // 3) ui_view_init(&window->view, UI_VIEW_TYPE_SCREEN, screen)
+    check_expr(ui_ctx_get_window(applet_state_ptr()->ui, key) == NULL);
 
-    // NOTES on fb resizing / scaling policies
-    //  - screen CPU fb (pixelbuffer)
-    //      - always "fixed size" framebuffer + use upscaling
-    //  - screen GPU fb (XGL, OpenGL)
-    //      - screen size params available
-    //          - treat screen as "fixed size" framebuffer + use upscaling
-    //      - no screen size params
-    //          - use 75% of window size, framebuffer resizeable (no upscaling)
+    ////////////////////////////////////////
+
+    // create screen
+    _normalize_screen_create_info_values(ci);
+
+    struct screen *screen = screen_create(ci);
+    check_ptr(screen);
+
+    // show screen info
+    const char *screen_name = screen_get_name(screen);
+    struct vec2 screen_size = screen_get_size(screen);
+
+    enum screen_surface_type surface_type = screen_get_surface_type(screen);
+    const char *surface_type_str = screen_surface_type_cstr(surface_type);
+
+    alog_info("adding screen (%s) ...", screen_name);
+    alog_info(" - %s (%.0fx%.0f)", surface_type_str, screen_size.w, screen_size.h);
+
+    ////////////////////////////////////////
+
+    // create window
+    struct ui_window *window = calloc(1, sizeof(struct ui_window));
+    check_mem(window);
+
+    char win_title[64];
+    snprintf(win_title, 64, "%s##%s", screen_name, applet_get_filename(applet_ptr())); // FIXME make_string();
+
+    ui_window_init(window, win_title);
+    ui_view_init(&window->view, UI_VIEW_TYPE_SCREEN, screen);
+
+    // window and screen ownership go to the ui ctx (will be freed there)
+    aio_add_ui_window(key, window);
+
+    return screen;
 
 error:
     return NULL;
@@ -189,7 +300,15 @@ struct screen* aio_get_screen(const char *key)
 {
     check_applet_initialized();
 
-    alog_error("aio_get_screen() not impl. yet");
+    check_ptr(key);
+
+    struct ui_window *window = ui_ctx_get_window(applet_state_ptr()->ui, key);
+    check_ptr(window);
+
+    struct screen *screen = window->view.user_data;
+    check_ptr(screen);
+
+    return screen;
 
 error:
     return NULL;

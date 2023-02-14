@@ -40,41 +40,46 @@ struct ui_menu
     const char *title;
 
     void (*draw_cb)(struct ui_menu* menu, struct ui_style *style);
-    bool (*is_enabled_cb)(struct ui_menu *menu);
+    bool (*draw_cond_cb)(struct ui_menu *menu);
 };
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // windows, views
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+enum ui_view_type
+{
+    UI_VIEW_TYPE_UNKNOWN,
+
+    UI_VIEW_TYPE_CUSTOM,
+    UI_VIEW_TYPE_SCREEN,
+};
+
 struct ui_view
 {
-    const char* name;
+    enum ui_view_type type;
 
     void (*draw_cb)(struct ui_view* view, struct ui_style *style);
 
-    struct ui_window* parent;
-
+    void* parent;
     void* user_data;
 };
 
 struct ui_window
 {
     const char* key;
-
     const char* title;
 
-    bool is_viewport;
     bool is_opened;
-
-    ImGuiWindowFlags flags;
-
-    void (*push_properties_cb)(struct ui_window* window);
-    void (*pop_properties_cb)(struct ui_window* window);
 
     struct ui_view view;
 
-    void* user_data;
+    struct {
+        ImGuiWindowFlags flags;
+
+        void (*push_properties_cb)(struct ui_window* window);
+        void (*pop_properties_cb)(struct ui_window* window);
+    } priv;
 };
 
 

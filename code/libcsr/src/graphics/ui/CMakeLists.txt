@@ -24,6 +24,7 @@ target_sources(${MY_TARGET}
         cimgui_priv.c
 
         ui.c
+        ui_view_screen.c
         ui_themes.c
         ui_properties.c
 
