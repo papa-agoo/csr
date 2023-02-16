@@ -23,6 +23,7 @@ target_sources(${MY_TARGET}
     PRIVATE
         screen.c
         screen_surface.c
+        pixelbuffer.c
 
         xgl/xgl_driver.c
         xgl/xgl_device.c
