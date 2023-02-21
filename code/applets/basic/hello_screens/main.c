@@ -101,7 +101,7 @@ static void _plugin_tick()
 
     if (screen_begin(screen_pb, SCREEN_SURFACE_TYPE_CPU))
     {
-        const struct pixelbuffer *pb = screen_get_pixelbuffer(screen_pb);
+        struct pixelbuffer *pb = screen_get_pixelbuffer(screen_pb);
 
         if (pb)
         {
