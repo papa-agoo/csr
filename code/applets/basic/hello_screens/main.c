@@ -30,8 +30,8 @@ static result_e _plugin_startup()
         struct screen_create_info create_info = {0};
         create_info.name = "XGL Framebuffer";
 
-        create_info.surface.viewport.width = size.w;;
-        create_info.surface.viewport.height = size.h;;
+        create_info.surface.viewport.width = size.w;
+        create_info.surface.viewport.height = size.h;
         create_info.surface.clear_values.color = make_vec4(0, 1, 0, 1);
 
         struct screen *screen = aio_add_screen("fb.xgl", &create_info);
@@ -43,8 +43,8 @@ static result_e _plugin_startup()
         struct screen_create_info create_info = {0};
         create_info.name = "OpenGL Framebuffer";
 
-        create_info.surface.viewport.width = size.w;;
-        create_info.surface.viewport.height = size.h;;
+        create_info.surface.viewport.width = size.w;
+        create_info.surface.viewport.height = size.h;
         create_info.surface.clear_values.color = make_vec4(0, 0, 1, 1);
 
         struct screen *screen = aio_add_screen("fb.ogl", &create_info);
@@ -57,8 +57,8 @@ static result_e _plugin_startup()
         create_info.name = "Pixelbuffer";
 
         create_info.surface.type = SCREEN_SURFACE_TYPE_CPU;
-        create_info.surface.viewport.width = size.w;;
-        create_info.surface.viewport.height = size.h;;
+        create_info.surface.viewport.width = size.w;
+        create_info.surface.viewport.height = size.h;
         create_info.surface.clear_values.color = make_vec4(1, 0, 0, 1);
 
         struct screen *screen = aio_add_screen("pb", &create_info);
@@ -101,11 +101,12 @@ static void _plugin_tick()
 
     if (screen_begin(screen_pb, SCREEN_SURFACE_TYPE_CPU))
     {
-        // FIXME need SCREEN_SURFACE_TYPE_CPU impl.
+        const struct pixelbuffer *pb = screen_get_pixelbuffer(screen_pb);
 
-        // const struct pixelbuffer *pb = screen_get_pixelbuffer(screen_pb);
-
-        // ...
+        if (pb)
+        {
+            // ...
+        }
 
         screen_end();
     }
