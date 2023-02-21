@@ -24,10 +24,7 @@ struct color32
 #define COLOR_RGBA32_4U(r, g, b, a) (a << 24 | b << 16 | g << 8 | r)
 
 #define COLOR_RGBA32_4F(r, g, b, a) ( \
-    (u32)(a * 255.0f) << 24 | \
-    (u32)(b * 255.0f) << 16 | \
-    (u32)(g * 255.0f) << 8 | \
-    (u32)(r * 255.0f) \
+    (u32)(a * 255.0f) << 24 | (u32)(b * 255.0f) << 16 | (u32)(g * 255.0f) << 8 | (u32)(r * 255.0f) \
 )
 
 #define COLOR_CHAN_R(c) ((c & 0x000000ff) >> 0)

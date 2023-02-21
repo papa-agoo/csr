@@ -11,6 +11,9 @@ struct screen_surface
     struct xgl_viewport viewport;
     struct xgl_clear_values clear_values;
 
+    // FIXME use xgl_map_texture()
+    struct pixelbuffer* pb;
+
     xgl_texture color_buffer;
     xgl_texture depth_stencil_buffer;
 
@@ -137,6 +140,14 @@ struct screen_surface* screen_surface_create(struct screen_surface_create_info *
     result_e result = _create_buffers(surface);
     check_result(result, "could not create buffers");
 
+    if (surface->type == SCREEN_SURFACE_TYPE_CPU)
+    {
+        surface->pb = pixelbuffer_create(surface->viewport.width, surface->viewport.height);
+        check_ptr(surface->pb);
+
+        // FIXME use pb->user_data as depth_stencil buffer
+    }
+
     ////////////////////////////////////////
 
     return surface;
@@ -154,6 +165,12 @@ void screen_surface_destroy(struct screen_surface *surface)
     check_ptr(surface);
 
     _destroy_buffers(surface);
+
+    if (surface->type == SCREEN_SURFACE_TYPE_CPU && surface->pb)
+    {
+        pixelbuffer_destroy(surface->pb);
+        // FIXME free pb->user_data as well
+    }
 
     free(surface);
 
@@ -182,6 +199,14 @@ void screen_surface_end(struct screen_surface* surface)
 
     xgl_end_render_pass();
 
+    // FIXME use xgl_unmap_texture()
+    if (surface->type == SCREEN_SURFACE_TYPE_CPU && surface->pb)
+    {
+        struct vec2 size = {surface->viewport.width, surface->viewport.height};
+
+        xgl_update_texture(surface->color_buffer, 0, size.w, size.h, (u8*)surface->pb->pixels);
+    }
+
 error:
     return;
 }
@@ -209,6 +234,10 @@ void screen_surface_set_size(struct screen_surface *surface, struct vec2 size)
     _destroy_buffers(surface);
     _create_buffers(surface);
 
+    if (surface->pb) {
+        pixelbuffer_resize(surface->pb, size.w, size.h);
+    }
+
 error:
     return;
 }
@@ -231,4 +260,17 @@ xgl_texture screen_surface_get_texture(struct screen_surface *surface)
 
 error:
     return (xgl_texture) {0};
+}
+
+struct pixelbuffer* screen_surface_get_pixelbuffer(struct screen_surface *surface)
+{
+    check_ptr(surface);
+
+    check_expr(surface->type == SCREEN_SURFACE_TYPE_CPU);
+
+    // FIXME use xgl_map_texture()
+    return surface->pb;
+
+error:
+    return NULL;
 }

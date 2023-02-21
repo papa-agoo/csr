@@ -65,7 +65,9 @@ void screen_end();
 
 const char* screen_get_name(struct screen* screen);
 enum screen_surface_type screen_get_surface_type(struct screen* screen);
+
 xgl_texture screen_get_texture(struct screen* screen);
+struct pixelbuffer* screen_get_pixelbuffer(struct screen* screen);
 
 
 // resize api

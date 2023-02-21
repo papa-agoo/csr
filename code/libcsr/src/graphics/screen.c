@@ -180,6 +180,17 @@ error:
     return (xgl_texture) {0};
 }
 
+struct pixelbuffer* screen_get_pixelbuffer(struct screen* screen)
+{
+    check_ptr(screen);
+
+    check_expr(g_active_screen != NULL);
+
+    return screen_surface_get_pixelbuffer(screen->surface);
+
+error:
+    return NULL;
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // resize api

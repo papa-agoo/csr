@@ -3,6 +3,7 @@
 #pragma once
 
 #include <csr/graphics/xgl/driver.h>
+#include <csr/graphics/pixelbuffer.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -51,4 +52,6 @@ struct vec2 screen_surface_get_size(struct screen_surface *surface);
 void screen_surface_set_size(struct screen_surface *surface, struct vec2 size);
 
 enum screen_surface_type screen_surface_get_type(struct screen_surface *surface);
+
 xgl_texture screen_surface_get_texture(struct screen_surface *surface);
+struct pixelbuffer* screen_surface_get_pixelbuffer(struct screen_surface *surface);
