@@ -80,6 +80,11 @@ struct ui_window
         void (*push_properties_cb)(struct ui_window* window);
         void (*pop_properties_cb)(struct ui_window* window);
 
+        // initial window setup (no ini available)
+        struct vec2 size;
+        struct vec2 position;
+
+        // needed for screens
         struct vec2 content_size;
     } priv;
 

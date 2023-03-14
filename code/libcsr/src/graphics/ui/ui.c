@@ -284,6 +284,23 @@ void ui_window_draw(struct ui_window* window, struct ui_style *style)
 
     ////////////////////////////////////////
 
+    // initial window setup (no ini file present)
+    {
+        // window size
+        struct vec2 win_size = window->priv.size;
+
+        if (!vec2_equal(win_size, make_vec2_zero())) {
+            igSetNextWindowSize(make_ImVec2_from_vec2(win_size), ImGuiCond_FirstUseEver);
+        }
+
+        // window position
+        struct vec2 win_position = window->priv.position;
+
+        if (!vec2_equal(win_position, make_vec2_zero())) {
+            igSetNextWindowPos(make_ImVec2_from_vec2(win_position), ImGuiCond_FirstUseEver, make_ImVec2_zero());
+        }
+    }
+
     // push window style properties
     if (window->priv.push_properties_cb) {
         window->priv.push_properties_cb(window);

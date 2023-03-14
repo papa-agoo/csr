@@ -189,6 +189,9 @@ static void _register_windows()
         window.view.draw_cb = draw_settings_view;
         window.priv.flags = ImGuiWindowFlags_NoDocking;
 
+        window.priv.size = make_vec2(720, 550);
+        window.priv.position = make_vec2(420, 120);
+
         ui_ctx_add_window(ctx_ptr(), "window.settings", &window);
     }
 
@@ -199,6 +202,9 @@ static void _register_windows()
 
         window.view.draw_cb = draw_log_messages_view;
         window.is_opened = true;
+
+        window.priv.size = make_vec2(740, 300);
+        window.priv.position = make_vec2(14, 766);
 
         ui_ctx_add_window(ctx_ptr(), "window.log_messages", &window);
     }
