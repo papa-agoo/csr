@@ -80,6 +80,8 @@ static result_e _plugin_startup()
     // create screen
     struct screen_create_info create_info = {0};
     create_info.name = "Pixelbuffer";
+    create_info.keep_aspect_ratio = true;
+    create_info.scale_policy = SCREEN_SCALE_POLICY_FP;
 
     create_info.surface.type = SCREEN_SURFACE_TYPE_CPU;
     create_info.surface.viewport.width = 640;

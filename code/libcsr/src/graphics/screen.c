@@ -6,51 +6,6 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// impl. notes on resize / scale policies
-//
-//  - screen CPU fb (pixelbuffer)
-//      - always "fixed size" framebuffer + use upscaling
-//
-//  - screen GPU fb (framebuffer)
-//      - screen size params available
-//          - treat screen as "fixed size" framebuffer + use upscaling
-//      - no screen size params
-//          - use 75% of window size, framebuffer resizeable (no upscaling)
-
-// - resize policy "AUTO"
-//
-//      - keep aspect ratio ON or OFF
-//      - scale factor always 1 (no scaling, framebuffer resize)
-//
-//      - resize_screen_to_window_size()
-//          - window_resize_event triggered (manual resize, docking)
-//
-//      - resize_window_to_screen_size()
-//          - no window_resize_event triggered (screen resized externally)
-//          - window size != screen size
-
-// - resize policy "EXPLICIT"
-//
-//      - center_screen_within_window()
-//          - keep aspect ratio ON
-//          - scaled image (no framebuffer resize)
-//          - centered on both axes (x,y)
-//          - window_resize_event triggered (update scale factor to fit the new area)
-
-////////////////////////////////////////////////////////////////////////////////
-
-static f32 _calc_max_scale_factor(enum screen_scale_policy scale_policy, struct vec2 src, struct vec2 dst)
-{
-    // FIXME use scale policy
-
-    f32 max_scale_w = floorf(dst.w / src.w);
-    f32 max_scale_h = floorf(dst.h / src.h);
-
-    return max(max_scale_w, max_scale_h);
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
 static struct screen *g_active_screen = NULL;
 
 struct screen* screen_create(struct screen_create_info *ci)
@@ -82,6 +37,7 @@ struct screen* screen_create(struct screen_create_info *ci)
     screen->name = strdup(ci->name);
     screen->scale_factor = ci->scale_factor;
     screen->scale_policy = ci->scale_policy;
+    screen->keep_aspect_ratio = ci->keep_aspect_ratio;
     screen->resize_policy = ci->resize_policy;
 
     // create surface
@@ -192,9 +148,58 @@ error:
     return NULL;
 }
 
+bool screen_get_keep_aspect_ratio(struct screen* screen)
+{
+    check_ptr(screen);
+
+    return screen->keep_aspect_ratio;
+
+error:
+    return true;
+}
+
+void screen_set_keep_aspect_ratio(struct screen* screen, bool keep)
+{
+    check_ptr(screen);
+
+    screen->keep_aspect_ratio = keep;
+
+error:
+    return;
+}
+
+void screen_toggle_keep_aspect_ratio(struct screen* screen)
+{
+    check_ptr(screen);
+
+    screen->keep_aspect_ratio ^= 1;
+
+error:
+    return;
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // resize api
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+static struct vec2 _calc_scale_factor(enum screen_scale_policy scale_policy, struct vec2 src, struct vec2 dst)
+{
+    // FIXME aspect ratio for both axes?
+    f32 ratio = min(dst.w / src.w, dst.h / src.h);
+
+    switch (scale_policy)
+    {
+        case SCREEN_SCALE_POLICY_FP:
+            return make_vec2(ratio, ratio);
+
+        case SCREEN_SCALE_POLICY_INTEGER:
+            return make_vec2(.min = floorf(ratio), .max = ceilf(ratio));
+    }
+
+    // SCREEN_SCALE_POLICY_NONE
+    return make_vec2_one();
+}
+
 enum screen_resize_policy screen_get_resize_policy(struct screen* screen)
 {
     check_ptr(screen);
@@ -216,6 +221,26 @@ error:
     return;
 }
 
+struct vec2 screen_get_min_size(struct screen *screen)
+{
+    check_ptr(screen);
+
+    return make_vec2(SCREEN_WIDTH_MIN, SCREEN_HEIGHT_MIN);
+
+error:
+    return make_vec2_zero();
+}
+
+struct vec2 screen_get_max_size(struct screen *screen)
+{
+    check_ptr(screen);
+
+    return kio_video_get_window_resolution();
+
+error:
+    return make_vec2_zero();
+}
+
 struct vec2 screen_get_size(struct screen *screen)
 {
     check_ptr(screen);
@@ -232,6 +257,11 @@ void screen_set_size(struct screen *screen, struct vec2 size)
     check_ptr(screen);
     check_ptr(screen->surface);
 
+    check_expr(size.w >= SCREEN_WIDTH_MIN && size.h >= SCREEN_HEIGHT_MIN);
+
+    struct vec2 max_size = screen_get_max_size(screen);
+    check_expr(size.w <= max_size.w && size.h <= max_size.h);
+
     screen_surface_set_size(screen->surface, size);
 
 error:
@@ -246,6 +276,23 @@ struct vec2 screen_get_scaled_size(struct screen *screen)
 
 error:
     return make_vec2_zero();
+}
+
+struct vec2 screen_get_size_for_parent(struct screen *screen, struct vec2 parent)
+{
+    check_ptr(screen);
+    check_expr(parent.x > 0 && parent.y > 0);
+
+    if (screen->keep_aspect_ratio)
+    {
+        struct vec2 child = screen_get_size(screen);
+        struct vec2 scale = _calc_scale_factor(screen->scale_policy, child, parent);
+
+        return vec2_scale(child, scale.max);
+    }
+
+error:
+    return parent;
 }
 
 
@@ -287,10 +334,16 @@ void screen_set_scale(struct screen* screen, f32 factor)
 {
     check_ptr(screen);
 
-    check_expr(factor >= 1.0);
+    if (screen->scale_policy == SCREEN_SCALE_POLICY_NONE) {
+        return;
+    }
+
+    check_expr(factor >= SCREEN_SCALE_MIN);
     check_expr(factor <= screen_get_max_scale(screen));
 
-    // FIXME use scale policy info
+    if (screen->scale_policy == SCREEN_SCALE_POLICY_INTEGER) {
+        factor = floorf(factor);
+    }
 
     screen->scale_factor = factor;
 
@@ -302,11 +355,12 @@ void screen_scale_up(struct screen* screen)
 {
     check_ptr(screen);
 
-    // FIXME use scale policy info
+    if (screen->scale_policy == SCREEN_SCALE_POLICY_INTEGER)
+    {
+        screen->scale_factor++;
 
-    screen->scale_factor++;
-
-    screen->scale_factor = min(screen->scale_factor, screen_get_max_scale(screen));
+        screen->scale_factor = min(screen->scale_factor, screen_get_max_scale(screen));
+    }
 
 error:
     return;
@@ -316,11 +370,12 @@ void screen_scale_down(struct screen* screen)
 {
     check_ptr(screen);
 
-    // FIXME use scale policy info
+    if (screen->scale_policy == SCREEN_SCALE_POLICY_INTEGER)
+    {
+        screen->scale_factor--;
 
-    screen->scale_factor--;
-
-    screen->scale_factor = max(screen->scale_factor, 1);
+        screen->scale_factor = max(screen->scale_factor, SCREEN_SCALE_MIN);
+    }
 
 error:
     return;
@@ -340,7 +395,7 @@ void screen_reset_scale(struct screen* screen)
 {
     check_ptr(screen);
 
-    screen->scale_factor = 1;
+    screen->scale_factor = SCREEN_SCALE_MIN;
 
 error:
     return;
@@ -349,12 +404,29 @@ error:
 f32 screen_get_max_scale(struct screen* screen)
 {
     check_ptr(screen);
-    check_ptr(screen->surface);
 
-    struct vec2 max_size = kio_video_get_window_resolution();
-    struct vec2 surface_size = screen_surface_get_size(screen->surface);
+    struct vec2 parent = screen_get_max_size(screen);
 
-    return _calc_max_scale_factor(screen->scale_policy, surface_size, max_size);
+    return screen_get_max_scale_for_parent(screen, parent);
+
+error:
+    return 0;
+}
+
+f32 screen_get_max_scale_for_parent(struct screen *screen, struct vec2 parent)
+{
+    check_ptr(screen);
+    check_expr(parent.x > 0 && parent.y > 0);
+
+    // scale factor for child / parent
+    struct vec2 child = screen_get_size(screen);
+    struct vec2 scale = _calc_scale_factor(screen->scale_policy, child, parent);
+
+    // scale factor for child / parent_fb (max possible parent (framebuffer) size)
+    struct vec2 parent_fb = screen_get_max_size(screen);
+    struct vec2 scale_fb = _calc_scale_factor(screen->scale_policy, child, parent_fb);
+
+    return clamp(scale.min, SCREEN_SCALE_MIN, scale_fb.max);
 
 error:
     return 0;

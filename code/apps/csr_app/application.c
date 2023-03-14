@@ -88,7 +88,7 @@ error:
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 static void on_kernel_tick()
 {
-    application_ptr()->has_input_focus = kio_hid_kbd_key_down(KBD_KEY_LEFT_SUPER);
+    application_ptr()->has_input_focus = kio_hid_kbd_key_down(KBD_KEY_LEFT_SHIFT);
 
     applet_mgr_tick();
 

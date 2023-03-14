@@ -24,8 +24,15 @@ result_e cimgui_init(const char *ini_file)
     igCreateContext(NULL);
 
     ImGuiContext *ctx = igGetCurrentContext();
-    ctx->IO.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+
+    // config
     ctx->IO.ConfigWindowsMoveFromTitleBarOnly = true;
+    ctx->IO.ConfigDockingWithShift = true;
+
+    // config flags
+    ctx->IO.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+
+    // misc
     ctx->IO.IniFilename = strdup(ini_file);
 
     ////////////////////////////////////////

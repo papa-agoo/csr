@@ -6,8 +6,6 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#define SCREEN_AUTOSIZE_FACTOR  0.75 // FIXME better name
-
 #define SCREEN_SCALE_MIN        1
 #define SCREEN_WIDTH_MIN        320
 #define SCREEN_HEIGHT_MIN       160
@@ -29,14 +27,11 @@ enum screen_scale_policy
 {
     SCREEN_SCALE_POLICY_UNKNOWN,
 
-    // no scaling wanted
+    // no scaling wanted (factor always 1)
     SCREEN_SCALE_POLICY_NONE,
 
     // floating point
     SCREEN_SCALE_POLICY_FP,
-
-    // floating point quarter steps (1.00, 1.25, ...)
-    SCREEN_SCALE_POLICY_FP_QS,
 
     // integer (1, 2, ...)
     SCREEN_SCALE_POLICY_INTEGER,
@@ -52,6 +47,8 @@ struct screen_create_info
 
     f32 scale_factor;
     enum screen_scale_policy scale_policy;
+
+    bool keep_aspect_ratio;
     enum screen_resize_policy resize_policy;
 
     struct screen_surface_create_info surface;
@@ -69,15 +66,22 @@ enum screen_surface_type screen_get_surface_type(struct screen* screen);
 xgl_texture screen_get_texture(struct screen* screen);
 struct pixelbuffer* screen_get_pixelbuffer(struct screen* screen);
 
+bool screen_get_keep_aspect_ratio(struct screen* screen);
+void screen_set_keep_aspect_ratio(struct screen* screen, bool keep);
+void screen_toggle_keep_aspect_ratio(struct screen* screen);
 
 // resize api
 enum screen_resize_policy screen_get_resize_policy(struct screen* screen);
 void screen_set_resize_policy(struct screen* screen, enum screen_resize_policy policy);
 
+struct vec2 screen_get_min_size(struct screen *screen);
+struct vec2 screen_get_max_size(struct screen *screen);
+
 struct vec2 screen_get_size(struct screen *screen);
 void screen_set_size(struct screen *screen, struct vec2 size);
 
 struct vec2 screen_get_scaled_size(struct screen *screen);
+struct vec2 screen_get_size_for_parent(struct screen *screen, struct vec2 parent);
 
 
 // scaling api
@@ -94,4 +98,6 @@ void screen_maximize_scale(struct screen* screen);
 void screen_reset_scale(struct screen* screen);
 
 f32 screen_get_max_scale(struct screen* screen);
+f32 screen_get_max_scale_for_parent(struct screen *screen, struct vec2 parent);
+
 bool screen_is_scale_maxed(struct screen* screen);

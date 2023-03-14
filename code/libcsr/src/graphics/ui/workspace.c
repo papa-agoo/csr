@@ -148,7 +148,6 @@ static void _draw_dock_space()
         igPopStyleVar(3);
 
         ImGuiDockNodeFlags dock_flags = 0;
-        dock_flags |= ImGuiDockNodeFlags_None;
         dock_flags |= ImGuiDockNodeFlags_AutoHideTabBar;
 
         ImGuiID dockspace_id = igGetID_Str("MainDockSpace");

@@ -79,7 +79,13 @@ struct ui_window
 
         void (*push_properties_cb)(struct ui_window* window);
         void (*pop_properties_cb)(struct ui_window* window);
+
+        struct vec2 content_size;
     } priv;
+
+    struct {
+        bool fit_window_to_content_size;
+    } hint;
 };
 
 

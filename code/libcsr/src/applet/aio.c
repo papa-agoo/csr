@@ -217,7 +217,7 @@ static void _normalize_screen_create_info_values(struct screen_create_info *ci)
 
             // gpu surfaces may be resized relatively to the os window size (ie. 75% resolution)
             if (ci->surface.type == SCREEN_SURFACE_TYPE_GPU) {
-                my_size = vec2_scale(max_size, SCREEN_AUTOSIZE_FACTOR);
+                my_size = vec2_scale(max_size, 0.75);
             }
         }
 

@@ -12,6 +12,8 @@ struct screen
 
     f32 scale_factor;
     enum screen_scale_policy scale_policy;
+
+    bool keep_aspect_ratio;
     enum screen_resize_policy resize_policy;
 
     struct screen_surface *surface;
