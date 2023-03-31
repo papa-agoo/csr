@@ -390,19 +390,38 @@ static GLenum _texture_attachment_type(u32 usage_flags)
     return GL_INVALID_ENUM;
 }
 
-static GLenum _texture_format(enum xgl_texture_format format)
+static GLenum _texture_pixel_format(enum xgl_texture_format format)
 {
     switch (format)
     {
         case XGL_TEXTURE_FORMAT_RGBA:
             return GL_RGBA;
 
+        case XGL_TEXTURE_FORMAT_D24_S8:
+            return GL_DEPTH_STENCIL;
+
         default:
             return GL_INVALID_ENUM;
     }
 }
 
-static GLenum _texture_internal_format(enum xgl_texture_format format)
+static GLenum _texture_pixel_size_type(enum xgl_texture_format format)
+{
+    switch (format)
+    {
+        case XGL_TEXTURE_FORMAT_RGBA:
+            return GL_UNSIGNED_BYTE;
+
+        case XGL_TEXTURE_FORMAT_D24_S8:
+            return GL_UNSIGNED_INT_24_8;
+
+
+        default:
+            return GL_INVALID_ENUM;
+    }
+}
+
+static GLenum _texture_storage_format(enum xgl_texture_format format)
 {
     switch (format)
     {
@@ -431,6 +450,23 @@ guid xgl_create_texture_impl(enum xgl_texture_type type, u32 sample_count, u32 u
 
     ////////////////////////////////////////
 
+    texture.pbo.idx_prev = 0;
+    texture.pbo.idx_current = 1;
+    texture.pbo.idx_next = 2;
+
+    texture.pbo.storage_flags = GL_DYNAMIC_STORAGE_BIT;
+
+    // need manual syncing : GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
+    texture.pbo.mapping_flags = GL_MAP_PERSISTENT_BIT;
+    texture.pbo.mapping_flags |= (usage_flags & XGL_TEXTURE_USAGE_STREAM_READ_BIT) ? GL_MAP_READ_BIT : 0;
+    texture.pbo.mapping_flags |= (usage_flags & XGL_TEXTURE_USAGE_STREAM_WRITE_BIT) ? GL_MAP_WRITE_BIT : 0;
+
+    if (texture.pbo.mapping_flags & (GL_MAP_READ_BIT | GL_MAP_WRITE_BIT)) {
+        GL_CALL( glCreateBuffers(GL_PBO_COUNT, texture.pbo.buffer) );
+    }
+
+    ////////////////////////////////////////
+
     struct gl_storage *storage = gl_storage_ptr();
 
     return object_pool_alloc(storage->textures, &texture);
@@ -445,6 +481,14 @@ void xgl_destroy_texture_impl(guid p_texture)
 
     struct gl_texture *texture = object_pool_get(storage->textures, p_texture);
     check_ptr(texture);
+
+    ////////////////////////////////////////
+
+    if (texture->pbo.mapping_flags & (GL_MAP_READ_BIT | GL_MAP_WRITE_BIT)) {
+        GL_CALL( glDeleteBuffers(GL_PBO_COUNT, texture->pbo.buffer) );
+    }
+
+    ////////////////////////////////////////
 
     GL_CALL( glDeleteTextures(1, &texture->id) );
 
@@ -476,8 +520,9 @@ result_e xgl_alloc_texture_storage_impl(guid p_texture,
     texture->height = height;
     texture->layer_count = layer_count;
 
-    texture->format = _texture_format(format);
-    texture->format_internal = _texture_internal_format(format);
+    texture->pixel_format = _texture_pixel_format(format);
+    texture->pixel_size_type = _texture_pixel_size_type(format);
+    texture->storage_format = _texture_storage_format(format);
 
     ////////////////////////////////////////
 
@@ -486,7 +531,7 @@ result_e xgl_alloc_texture_storage_impl(guid p_texture,
         case GL_TEXTURE_1D:
         {
             GL_CALL( glTextureStorage1D(texture->id, texture->mip_count,
-                texture->format_internal, texture->width) );
+                texture->storage_format, texture->width) );
         }
         break;
 
@@ -495,7 +540,17 @@ result_e xgl_alloc_texture_storage_impl(guid p_texture,
         case GL_TEXTURE_CUBE_MAP:
         {
             GL_CALL( glTextureStorage2D(texture->id, texture->mip_count,
-                texture->format_internal, texture->width, texture->height) );
+                texture->storage_format, texture->width, texture->height) );
+
+            if (texture->pbo.mapping_flags & (GL_MAP_READ_BIT | GL_MAP_WRITE_BIT) && texture->type == GL_TEXTURE_2D)
+            {
+                texture->pbo.byte_length = texture->width * texture->height * sizeof(f32);
+
+                for (u32 i = 0; i < GL_PBO_COUNT; i++) {
+                    GL_CALL( glNamedBufferStorage(texture->pbo.buffer[i], texture->pbo.byte_length,
+                        NULL, texture->pbo.mapping_flags | texture->pbo.storage_flags) );
+                }
+            }
         }
         break;
 
@@ -504,21 +559,21 @@ result_e xgl_alloc_texture_storage_impl(guid p_texture,
         case GL_TEXTURE_CUBE_MAP_ARRAY:
         {
             GL_CALL( glTextureStorage3D(texture->id, texture->mip_count,
-                texture->format_internal, texture->width, texture->height, texture->layer_count) );
+                texture->storage_format, texture->width, texture->height, texture->layer_count) );
         }
         break;
 
         case GL_TEXTURE_2D_MULTISAMPLE:
         {
             GL_CALL( glTextureStorage2DMultisample(texture->id, texture->sample_count,
-                texture->format_internal, texture->width, texture->height, GL_TRUE) );
+                texture->storage_format, texture->width, texture->height, GL_TRUE) );
         }
         break;
 
         case GL_TEXTURE_2D_MULTISAMPLE_ARRAY:
         {
             GL_CALL( glTextureStorage3DMultisample(texture->id, texture->sample_count,
-                texture->format_internal, texture->width, texture->height, texture->layer_count, GL_TRUE) );
+                texture->storage_format, texture->width, texture->height, texture->layer_count, GL_TRUE) );
         }
         break;
     }
@@ -551,12 +606,12 @@ result_e xgl_update_texture_impl(guid p_texture, u32 layer, u32 width, u32 heigh
     if (texture->layer_count == 1)
     {
         GL_CALL( glTextureSubImage2D(texture->id, 0, 0, 0, width, height,
-            texture->format, GL_UNSIGNED_BYTE, data) );
+            texture->pixel_format, texture->pixel_size_type, data) );
     }
     else
     {
         GL_CALL( glTextureSubImage3D(texture->id, 0, 0, 0, layer, width,
-            height, 1, texture->format, GL_UNSIGNED_BYTE, data) );
+            height, 1, texture->pixel_format, texture->pixel_size_type, data) );
     }
 
     ////////////////////////////////////////
@@ -565,6 +620,89 @@ result_e xgl_update_texture_impl(guid p_texture, u32 layer, u32 width, u32 heigh
 
 error:
     return RC_FAILURE;
+}
+
+void* xgl_map_texture_impl(guid p_texture)
+{
+    struct gl_storage *storage = gl_storage_ptr();
+
+    struct gl_texture *texture = object_pool_get(storage->textures, p_texture);
+    check_ptr(texture);
+
+    check_expr(texture->pbo.mapping_flags > 0);
+    check_expr(texture->pbo.byte_length > 0);
+
+    ////////////////////////////////////////
+
+    // copy texture to pbo
+    if (texture->pbo.mapping_flags & GL_MAP_READ_BIT)
+    {
+        GLuint pbo = texture->pbo.buffer[texture->pbo.idx_next];
+
+        GL_CALL( glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo) );
+
+        GL_CALL( glGetTextureImage(texture->id, 0, texture->pixel_format,
+            texture->pixel_size_type, texture->pbo.byte_length, 0) );
+
+        GL_CALL( glBindBuffer(GL_PIXEL_PACK_BUFFER, 0) );
+    }
+
+    // copy pbo to texture
+    if (texture->pbo.mapping_flags & GL_MAP_WRITE_BIT)
+    {
+        GLuint pbo = texture->pbo.buffer[texture->pbo.idx_prev];
+
+        GL_CALL( glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo) );
+
+        GL_CALL( glTextureSubImage2D(texture->id, 0, 0, 0, texture->width, texture->height,
+            texture->pixel_format, texture->pixel_size_type, 0) );
+
+        GL_CALL( glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0) );
+    }
+
+    // map pbo
+    if (texture->pbo.ptr == NULL)
+    {
+        GLuint pbo = texture->pbo.buffer[texture->pbo.idx_current];
+
+        GL_CALL( texture->pbo.ptr = glMapNamedBufferRange(pbo, 0, texture->pbo.byte_length,
+            texture->pbo.mapping_flags) );
+    }
+
+    ////////////////////////////////////////
+
+    return texture->pbo.ptr;
+
+error:
+    return NULL;
+}
+
+void xgl_unmap_texture_impl(guid p_texture)
+{
+    struct gl_storage *storage = gl_storage_ptr();
+
+    struct gl_texture *texture = object_pool_get(storage->textures, p_texture);
+    check_ptr(texture);
+
+    check_expr(texture->pbo.ptr != NULL);
+
+    ////////////////////////////////////////
+
+    GLuint pbo = texture->pbo.buffer[texture->pbo.idx_current];
+
+    // unmap pbo
+    GL_CALL( glUnmapNamedBuffer(pbo) );
+    texture->pbo.ptr = NULL;
+
+    // update indices
+    texture->pbo.idx_prev = (texture->pbo.idx_prev + 1) % GL_PBO_COUNT;
+    texture->pbo.idx_current = (texture->pbo.idx_current + 1) % GL_PBO_COUNT;
+    texture->pbo.idx_next = (texture->pbo.idx_next + 1) % GL_PBO_COUNT;
+
+    ////////////////////////////////////////
+
+error:
+    return;
 }
 
 result_e xgl_generate_mipmaps_impl(guid p_texture)

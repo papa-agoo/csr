@@ -141,6 +141,9 @@ enum xgl_texture_usage
     XGL_TEXTURE_USAGE_SAMPLED_BIT                   = BIT(0),
     XGL_TEXTURE_USAGE_COLOR_ATTACHMENT_BIT          = BIT(1),
     XGL_TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT  = BIT(2),
+
+    XGL_TEXTURE_USAGE_STREAM_READ_BIT               = BIT(3),
+    XGL_TEXTURE_USAGE_STREAM_WRITE_BIT              = BIT(4),
 };
 
 struct xgl_texture_create_info

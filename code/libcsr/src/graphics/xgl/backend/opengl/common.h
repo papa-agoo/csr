@@ -22,6 +22,8 @@ struct gl_sampler
     GLuint id;
 };
 
+#define GL_PBO_COUNT 3
+
 struct gl_texture
 {
     GLuint id;
@@ -29,8 +31,10 @@ struct gl_texture
     GLenum type;
     GLenum attachment_type;
 
-    GLenum format;
-    GLenum format_internal;
+    // https://afrantzis.com/pixel-format-guide/opengl.html
+    GLenum pixel_format;
+    GLenum pixel_size_type;
+    GLenum storage_format;
 
     u32 width;
     u32 height;
@@ -38,6 +42,19 @@ struct gl_texture
     u32 mip_count;
     u32 sample_count;
     u32 layer_count;
+
+    struct {
+        u32 idx_prev;
+        u32 idx_current;
+        u32 idx_next;
+
+        GLuint buffer[GL_PBO_COUNT];
+        void *ptr;
+
+        GLsizei byte_length;
+        GLbitfield mapping_flags;
+        GLbitfield storage_flags;
+    } pbo;
 };
 
 struct gl_buffer

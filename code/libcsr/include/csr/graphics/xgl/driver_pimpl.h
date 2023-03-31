@@ -39,6 +39,10 @@ void xgl_destroy_texture_impl(guid p_texture);
 
 result_e xgl_alloc_texture_storage_impl(guid p_texture, enum xgl_texture_format format, u32 mip_count, u32 width, u32 height, u32 layer_count);
 result_e xgl_update_texture_impl(guid p_texture, u32 layer, u32 width, u32 height, u8 *data);
+
+void* xgl_map_texture_impl(guid p_texture);
+void xgl_unmap_texture_impl(guid p_texture);
+
 result_e xgl_generate_mipmaps_impl(guid p_texture);
 void* xgl_get_texture_handle_impl(guid p_texture);
 

@@ -59,7 +59,7 @@ struct xgl_texture
     u32 array_layer_count;
 
     bool storage_allocated;
-    bool is_currently_mapped; // FIXME
+    bool is_currently_mapped;
 
     guid gpu_id;
 };

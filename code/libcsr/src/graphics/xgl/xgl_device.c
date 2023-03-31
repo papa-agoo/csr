@@ -243,6 +243,7 @@ result_e xgl_create_buffer(struct xgl_buffer_create_info* info, xgl_buffer* p_bu
     check_ptr(info);
     check_ptr(p_buffer);
 
+    // FIXME handle usage flags properly! :)
     check_expr(info->usage_flags != XGL_BUFFER_USAGE_UNKNOWN);
     check_expr(info->byte_length > 0);
 
@@ -419,6 +420,7 @@ result_e xgl_create_texture(struct xgl_texture_create_info* info, xgl_texture* p
     check_expr(info->type != XGL_TEXTURE_TYPE_UNKNOWN);
     check_expr(info->format != XGL_TEXTURE_FORMAT_UNKNOWN);
 
+    // FIXME handle usage flags properly! :)
     check_expr(info->usage_flags != XGL_TEXTURE_USAGE_UNKNOWN);
 
     check_expr(info->width > 0);
@@ -519,6 +521,43 @@ result_e xgl_update_texture(xgl_texture p_texture, u32 layer, u32 width, u32 hei
 
 error:
     return RC_FAILURE;
+}
+
+void* xgl_map_texture(xgl_texture p_texture)
+{
+    struct xgl_storage *storage = xgl_storage_ptr();
+
+    struct xgl_texture *texture = object_pool_get(storage->textures, p_texture.handle);
+    check_ptr(texture);
+
+    check_expr(!texture->is_currently_mapped);
+
+    void *ptr = xgl_map_texture_impl(texture->gpu_id);
+    check(ptr, "could not map texture");
+
+    texture->is_currently_mapped = true;
+
+    return ptr;
+
+error:
+    return NULL;
+}
+
+void xgl_unmap_texture(xgl_texture p_texture)
+{
+    struct xgl_storage *storage = xgl_storage_ptr();
+
+    struct xgl_texture *texture = object_pool_get(storage->textures, p_texture.handle);
+    check_ptr(texture);
+
+    check_expr(texture->is_currently_mapped);
+
+    xgl_unmap_texture_impl(texture->gpu_id);
+
+    texture->is_currently_mapped = false;
+
+error:
+    return;
 }
 
 void* xgl_get_texture_handle(xgl_texture p_texture)

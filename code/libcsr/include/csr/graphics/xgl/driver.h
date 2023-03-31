@@ -49,8 +49,11 @@ void xgl_destroy_sampler(xgl_sampler sampler);
 result_e xgl_create_texture(struct xgl_texture_create_info* info, xgl_texture* texture);
 void xgl_destroy_texture(xgl_texture texture);
 result_e xgl_update_texture(xgl_texture texture, u32 layer, u32 width, u32 height, u8 *data);
-void* xgl_get_texture_handle(xgl_texture texture);
 
+void* xgl_map_texture(xgl_texture texture);
+void xgl_unmap_texture(xgl_texture texture);
+
+void* xgl_get_texture_handle(xgl_texture texture);
 
 // shaders
 result_e xgl_create_shader(struct xgl_shader_create_info* info, xgl_shader* shader);
