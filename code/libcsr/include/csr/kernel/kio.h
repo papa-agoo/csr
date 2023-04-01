@@ -36,7 +36,9 @@ void kio_log_message(enum log_level_type level, const char* module, const char* 
 ////////////////////////////////////////////////////////////////////////////////
 f64 kio_time_elapsed();
 f64 kio_time_elapsed_delta();
-u64 kio_time_elapsed_hires();
+
+f64 kio_time_elapsed_rtc();
+u64 kio_time_elapsed_ms_rtc();
 
 
 ////////////////////////////////////////////////////////////////////////////////

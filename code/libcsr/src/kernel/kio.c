@@ -62,7 +62,7 @@ void kio_log_message(enum log_level_type level, const char* module, const char* 
     {
         struct frame_stats *stats = &ksrv_core_ptr()->frame_stats;
 
-        u32 current_frame_time = kio_time_elapsed_hires() - stats->runtime_ms;
+        u32 current_frame_time = kio_time_elapsed_ms_rtc() - stats->runtime_ms;
 
         struct log_message message = {0};
         message.level = level;
@@ -99,11 +99,18 @@ error:
     return 0; 
 }
 
-u64 kio_time_elapsed_hires()
+f64 kio_time_elapsed_rtc()
 {
     if (!ksrv_core_ptr()->is_initialized) return 0;
 
-    return platform_time_elapsed_ms();
+    return platform_time_elapsed();
+}
+
+u64 kio_time_elapsed_ms_rtc()
+{
+    if (!ksrv_core_ptr()->is_initialized) return 0;
+
+    return platform_time_elapsed() * 1000;
 }
 
 
