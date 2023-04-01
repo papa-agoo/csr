@@ -89,7 +89,7 @@ void applet_tick(struct applet* applet, f64 dt)
     check_ptr(applet);
     check_expr(applet->is_running);
 
-    clock_update(applet->state.clock, dt);
+    clock_tick(applet->state.clock, dt);
 
     applet->plugin.tick();
 

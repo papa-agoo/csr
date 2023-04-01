@@ -11,13 +11,13 @@ struct clock;
 struct clock* clock_create(const char* name);
 void clock_destroy(struct clock* clock);
 
+void clock_init(struct clock* clock, f64 elapsed_s);
+void clock_tick(struct clock* clock, f64 delta_s);
+
 const char* clock_get_name(struct clock* clock);
 
-void clock_set_scale(struct clock* clock, f32 scale);
 f32 clock_get_scale(struct clock* clock);
-
-void clock_init(struct clock* clock, f64 elapsed_s);
-void clock_update(struct clock* clock, f64 delta_s);
+void clock_set_scale(struct clock* clock, f32 scale);
 
 f64 clock_time_elapsed(struct clock* clock);
 f64 clock_time_elapsed_delta(struct clock* clock);

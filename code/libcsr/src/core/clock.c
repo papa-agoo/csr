@@ -42,6 +42,30 @@ error:
     return;
 }
 
+void clock_init(struct clock* clock, f64 elapsed_s)
+{
+    check_ptr(clock);
+
+    clock->elapsed_s = elapsed_s;
+    clock->elapsed_delta_s = 0.0f;
+
+error:
+    return;
+}
+
+void clock_tick(struct clock* clock, f64 dt_s)
+{
+    check_ptr(clock);
+
+    dt_s *= clock->time_scale;
+
+    clock->elapsed_s += dt_s;
+    clock->elapsed_delta_s = dt_s;
+
+error:
+    return;
+}
+
 const char* clock_get_name(struct clock* clock)
 {
     check_ptr(clock);
@@ -50,16 +74,6 @@ const char* clock_get_name(struct clock* clock)
 
 error:
     return "unknown";
-}
-
-void clock_set_scale(struct clock* clock, f32 scale)
-{
-    check_ptr(clock);
-
-    clock->time_scale = scale;
-
-error:
-    return;
 }
 
 f32 clock_get_scale(struct clock* clock)
@@ -72,25 +86,11 @@ error:
     return 0;
 }
 
-void clock_init(struct clock* clock, f64 elapsed_s)
+void clock_set_scale(struct clock* clock, f32 scale)
 {
     check_ptr(clock);
 
-    clock->elapsed_s = elapsed_s;
-    clock->elapsed_delta_s = 0.0f;
-
-error:
-    return;
-}
-
-void clock_update(struct clock* clock, f64 dt_s)
-{
-    check_ptr(clock);
-
-    dt_s *= clock->time_scale;
-
-    clock->elapsed_s += dt_s;
-    clock->elapsed_delta_s = dt_s;
+    clock->time_scale = scale;
 
 error:
     return;

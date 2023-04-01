@@ -102,7 +102,7 @@ static void _update_global_clocks()
     f64 current_time_s = platform_time_elapsed();
     f64 delta_s = current_time_s - clock_time_elapsed(clock);
 
-    clock_update(clock, delta_s);
+    clock_tick(clock, delta_s);
 }
 
 static void _update_frame_stats()
