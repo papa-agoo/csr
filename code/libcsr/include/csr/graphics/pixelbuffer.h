@@ -28,3 +28,6 @@ void pixelbuffer_fill_rect(struct pixelbuffer* pb, struct rect rect, struct colo
 
 void pixelbuffer_draw_point(struct pixelbuffer* pb, u32 x, u32 y, struct color32 color);
 void pixelbuffer_draw_line(struct pixelbuffer* pb, struct vec2 p1, struct vec2 p2, struct color32 color);
+
+
+#define pixelbuffer_draw_point_fast(pb, x, y, color) (pb->pixels[pb->width * y + x] = color)

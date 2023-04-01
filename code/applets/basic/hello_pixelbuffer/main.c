@@ -26,7 +26,11 @@ static void draw_shadertoy_bg(struct pixelbuffer* pb, f64 time_elapsed)
             color.r = 0.5f + 0.5f * cosf(time_elapsed + uv.x + 0.0f);
             color.b = 0.5f + 0.5f * cosf(time_elapsed + uv.x + 4.0f);
 
-            pixelbuffer_draw_point(pb, x, y, make_color32_from_vec4(color));
+            // safe write access
+            // pixelbuffer_draw_point(pb, x, y, make_color32_from_vec4(color));
+
+            // fast write access
+            pixelbuffer_draw_point_fast(pb, x, y, make_color32_from_vec4(color));
         }
     }
 
@@ -80,7 +84,6 @@ static result_e _plugin_startup()
     // create screen
     struct screen_create_info create_info = {0};
     create_info.name = "Pixelbuffer";
-    create_info.keep_aspect_ratio = true;
     create_info.scale_policy = SCREEN_SCALE_POLICY_FP;
 
     create_info.surface.type = SCREEN_SURFACE_TYPE_CPU;
@@ -105,18 +108,21 @@ static void _plugin_tick()
     {
         struct pixelbuffer *pb = screen_get_pixelbuffer(screen);
 
-        // draw background
-        draw_shadertoy_bg(pb, aio_time_elapsed());
+        if (pb)
+        {
+            // draw background
+            draw_shadertoy_bg(pb, aio_time_elapsed());
 
-        // draw lines
-        draw_line_circle(pb);
+            // draw lines
+            draw_line_circle(pb);
 
-        // fill some rects
-        u32 x = 10, y = 10, w = 20, h = 20;
+            // fill some rects
+            u32 x = 10, y = 10, w = 20, h = 20;
 
-        pixelbuffer_fill_rect(pb, make_rect(x, y, w, h), make_color32(COLOR_RED));
-        pixelbuffer_fill_rect(pb, make_rect(x + w, y, w, h), make_color32(COLOR_GREEN));
-        pixelbuffer_fill_rect(pb, make_rect(x + (w * 2), y, w, h), make_color32(COLOR_BLUE));
+            pixelbuffer_fill_rect(pb, make_rect(x, y, w, h), make_color32(COLOR_RED));
+            pixelbuffer_fill_rect(pb, make_rect(x + w, y, w, h), make_color32(COLOR_GREEN));
+            pixelbuffer_fill_rect(pb, make_rect(x + (w * 2), y, w, h), make_color32(COLOR_BLUE));
+        }
 
         screen_end();
     }
