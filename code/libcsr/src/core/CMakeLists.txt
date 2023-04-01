@@ -29,6 +29,7 @@ target_sources(${MY_TARGET}
         path.c
         file_io.c
         clock.c
+        stopwatch.c
 
         base/guid.c
         math/transform.c
