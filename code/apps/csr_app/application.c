@@ -398,12 +398,6 @@ static void on_application_kbd_key_down(struct keyboard_event* event)
         }
         break;
 
-        // toggle mouse capture
-        case KBD_KEY_F9: {
-            klog_warn("xxx_toggle_mouse_capture() not implemented yet");
-        }
-        break;
-
         // toggle vsync
         case KBD_KEY_F10: {
             kio_video_toggle_vsync();
@@ -415,6 +409,10 @@ static void on_application_kbd_key_down(struct keyboard_event* event)
             kio_video_toggle_fullscreen();
         }
         break;
+
+        default: {
+            klog_error("key not handled : %s", keyboard_key_cstr(event->key));
+        }
     }
 
 error:
@@ -428,18 +426,23 @@ static void on_application_mouse_wheel_spin(struct mouse_event *event)
     // viewport: scale up
     if (event->wy > 0)
     {
-        // ...
+        klog_warn("screen_scale_up() not implemented yet");
+
+        // FIXME (screen_size == os_window_size) => go fullscreen
     }
 
     // viewport: scale down
     if (event->wy < 0)
     {
-        // ...
+        klog_warn("screen_scale_down() not implemented yet");
+
+        // FIXME (screen_size == os_window_size) => go windowed mode
     }
 
 error:
     return;
 }
+
 result_e application_init()
 {
     csr_assert(!application_ptr()->is_initialized);
@@ -527,6 +530,11 @@ result_e application_init()
         struct hid_callbacks *hid = &application_callbacks_ptr()->hid;
         hid->on_kbd_key_down = on_application_kbd_key_down;
         hid->on_mouse_wheel_spin = on_application_mouse_wheel_spin;
+    }
+
+    // fullscreen quad resources (will be moved to rsx)
+    {
+        // https://learnopengl.com/Advanced-OpenGL/Framebuffers
     }
 
     application_ptr()->is_initialized = true;

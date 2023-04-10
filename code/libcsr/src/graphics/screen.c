@@ -8,6 +8,32 @@
 
 static struct screen *g_active_screen = NULL;
 
+#define active_screen_ptr() g_active_screen
+
+static f32 _calc_aspect_ratio(struct vec2 src, struct vec2 dst)
+{
+    return min(dst.w / src.w, dst.h / src.h);
+}
+
+static f32 _calc_scale_factor(enum screen_scale_policy scale_policy, struct vec2 src, struct vec2 dst)
+{
+    f32 ratio = _calc_aspect_ratio(src, dst);
+
+    switch (scale_policy)
+    {
+        case SCREEN_SCALE_POLICY_FP:
+            return ratio;
+
+        case SCREEN_SCALE_POLICY_INTEGER:
+            return floorf(ratio);
+    }
+
+    // SCREEN_SCALE_POLICY_NONE
+    return 1;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
 struct screen* screen_create(struct screen_create_info *ci)
 {
     check_ptr(ci);
@@ -44,6 +70,9 @@ struct screen* screen_create(struct screen_create_info *ci)
     screen->surface = screen_surface_create(&ci->surface);
     check_ptr(screen->surface);
 
+    // init stopwatch
+    stopwatch_init(&screen->stopwatch, kio_time_elapsed_rtc, 1.0);
+
     ////////////////////////////////////////
 
     return screen;
@@ -75,15 +104,17 @@ bool screen_begin(struct screen* screen, enum screen_surface_type surface_type)
     check_ptr(screen);
 
     // only one screen at a time may be used
-    check_expr(g_active_screen == NULL);
+    check_expr(active_screen_ptr() == NULL);
 
     // weak surface type validation
     check_expr(screen_surface_get_type(screen->surface) == surface_type);
 
     if(screen_surface_begin(screen->surface))
     {
+        stopwatch_start(&screen->stopwatch);
+
         // mark this screen as being used (active render pass)
-        g_active_screen = screen;
+        active_screen_ptr() = screen;
 
         return true;
     }
@@ -94,12 +125,21 @@ error:
 
 void screen_end()
 {
-    check_expr(g_active_screen != NULL);
+    check_expr(active_screen_ptr() != NULL);
 
-    screen_surface_end(g_active_screen->surface);
+    struct screen *screen = active_screen_ptr();
+
+    screen_surface_end(screen->surface);
+
+    stopwatch_stop(&screen->stopwatch);
+
+    // update stats
+    screen->stats.num_frames++;
+    screen->stats.avg_fps = stopwatch_splits_per_second(&screen->stopwatch);
+    screen->stats.avg_frametime_ms = stopwatch_time_elapsed_avg(&screen->stopwatch) * 1000.0;
 
     // this screen is not used anymore
-    g_active_screen = NULL;
+    active_screen_ptr() = NULL;
 
 error:
     return;   
@@ -113,6 +153,20 @@ const char* screen_get_name(struct screen* screen)
 
 error:
     return NULL;
+}
+
+const char* screen_get_surface_type_cstr(struct screen* screen)
+{
+    check_ptr(screen);
+
+    switch (screen_surface_get_type(screen->surface))
+    {
+        case SCREEN_SURFACE_TYPE_GPU: return "GPU";
+        case SCREEN_SURFACE_TYPE_CPU: return "CPU";
+    }
+
+error:
+    return "Unknown";
 }
 
 enum screen_surface_type screen_get_surface_type(struct screen* screen)
@@ -130,6 +184,8 @@ xgl_texture screen_get_texture(struct screen* screen)
 {
     check_ptr(screen);
 
+    check_expr(active_screen_ptr() == NULL);
+
     return screen_surface_get_texture(screen->surface);
 
 error:
@@ -140,9 +196,19 @@ struct pixelbuffer* screen_get_pixelbuffer(struct screen* screen)
 {
     check_ptr(screen);
 
-    check_expr(g_active_screen != NULL);
+    check_expr(active_screen_ptr() != NULL);
 
     return screen_surface_get_pixelbuffer(screen->surface);
+
+error:
+    return NULL;
+}
+
+const struct screen_stats* screen_get_stats(struct screen *screen)
+{
+    check_ptr(screen);
+
+    return &screen->stats;
 
 error:
     return NULL;
@@ -182,24 +248,6 @@ error:
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // resize api
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-static struct vec2 _calc_scale_factor(enum screen_scale_policy scale_policy, struct vec2 src, struct vec2 dst)
-{
-    // FIXME aspect ratio for both axes?
-    f32 ratio = min(dst.w / src.w, dst.h / src.h);
-
-    switch (scale_policy)
-    {
-        case SCREEN_SCALE_POLICY_FP:
-            return make_vec2(ratio, ratio);
-
-        case SCREEN_SCALE_POLICY_INTEGER:
-            return make_vec2(.min = floorf(ratio), .max = ceilf(ratio));
-    }
-
-    // SCREEN_SCALE_POLICY_NONE
-    return make_vec2_one();
-}
-
 enum screen_resize_policy screen_get_resize_policy(struct screen* screen)
 {
     check_ptr(screen);
@@ -216,6 +264,10 @@ void screen_set_resize_policy(struct screen* screen, enum screen_resize_policy p
     check_expr(policy != SCREEN_RESIZE_POLICY_UNKNOWN);
 
     screen->resize_policy = policy;
+
+    if (policy == SCREEN_RESIZE_POLICY_AUTO) {
+        screen_set_scale_policy(screen, SCREEN_SCALE_POLICY_NONE);
+    }
 
 error:
     return;
@@ -286,9 +338,9 @@ struct vec2 screen_get_size_for_parent(struct screen *screen, struct vec2 parent
     if (screen->keep_aspect_ratio)
     {
         struct vec2 child = screen_get_size(screen);
-        struct vec2 scale = _calc_scale_factor(screen->scale_policy, child, parent);
+        f32 ratio = _calc_aspect_ratio(child, parent);
 
-        return vec2_scale(child, scale.max);
+        return vec2_scale(child, ratio);
     }
 
 error:
@@ -315,6 +367,10 @@ void screen_set_scale_policy(struct screen *screen, enum screen_scale_policy pol
     check_expr(policy != SCREEN_SCALE_POLICY_UNKNOWN);
 
     screen->scale_policy = policy;
+
+    if (policy == SCREEN_SCALE_POLICY_NONE) {
+        screen_reset_scale(screen);
+    }
 
 error:
     return;
@@ -420,13 +476,14 @@ f32 screen_get_max_scale_for_parent(struct screen *screen, struct vec2 parent)
 
     // scale factor for child / parent
     struct vec2 child = screen_get_size(screen);
-    struct vec2 scale = _calc_scale_factor(screen->scale_policy, child, parent);
+    f32 child_scale = _calc_scale_factor(screen->scale_policy, child, parent);
 
     // scale factor for child / parent_fb (max possible parent (framebuffer) size)
     struct vec2 parent_fb = screen_get_max_size(screen);
-    struct vec2 scale_fb = _calc_scale_factor(screen->scale_policy, child, parent_fb);
+    f32 parent_fb_scale = _calc_scale_factor(screen->scale_policy, child, parent_fb);
 
-    return clamp(scale.min, SCREEN_SCALE_MIN, scale_fb.max);
+    // clamp to min / max possible scale values
+    return clamp(child_scale, SCREEN_SCALE_MIN, parent_fb_scale);
 
 error:
     return 0;

@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <csr/core/stopwatch.h>
+
 #include "screen.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -15,6 +17,9 @@ struct screen
 
     bool keep_aspect_ratio;
     enum screen_resize_policy resize_policy;
+
+    struct screen_stats stats;
+    struct stopwatch stopwatch;
 
     struct screen_surface *surface;
 };

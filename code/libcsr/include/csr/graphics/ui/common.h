@@ -89,6 +89,7 @@ struct ui_window
     } priv;
 
     struct {
+        bool show_surface_info;
         bool fit_window_to_content_size;
     } hint;
 };

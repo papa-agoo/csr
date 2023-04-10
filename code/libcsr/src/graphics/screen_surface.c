@@ -11,8 +11,7 @@ struct screen_surface
     struct xgl_viewport viewport;
     struct xgl_clear_values clear_values;
 
-    // FIXME use xgl_map_texture()
-    struct pixelbuffer* pb;
+    struct pixelbuffer pb;
 
     xgl_texture color_buffer;
     xgl_texture depth_stencil_buffer;
@@ -48,12 +47,28 @@ static result_e _create_buffers(struct screen_surface *surface)
 
     ////////////////////////////////////////
 
+    enum xgl_texture_usage stream_flags = 0;
+
+    if (surface->type == SCREEN_SURFACE_TYPE_CPU)
+    {
+        struct pixelbuffer *pb = &surface->pb;
+
+        pb->width = size.w;
+        pb->height = size.h;
+        pb->num_pixels = size.w * size.h;
+
+        // FIXME write only => massive performance hit?
+        stream_flags = XGL_TEXTURE_USAGE_STREAM_READ_BIT | XGL_TEXTURE_USAGE_STREAM_WRITE_BIT;
+    }
+
+    ////////////////////////////////////////
+
     xgl_texture color_buffer;
     {
         struct xgl_texture_create_info info = {};
         info.type = XGL_TEXTURE_TYPE_2D;
         info.format = XGL_TEXTURE_FORMAT_RGBA;
-        info.usage_flags = XGL_TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
+        info.usage_flags = XGL_TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | stream_flags;
         info.width = size.w;
         info.height = size.h;
         info.mip_level_count = 1;
@@ -73,7 +88,7 @@ static result_e _create_buffers(struct screen_surface *surface)
         struct xgl_texture_create_info info = {};
         info.type = XGL_TEXTURE_TYPE_2D;
         info.format = XGL_TEXTURE_FORMAT_D24_S8;
-        info.usage_flags = XGL_TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+        info.usage_flags = XGL_TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | stream_flags;
         info.width = size.w;
         info.height = size.h;
         info.mip_level_count = 1;
@@ -140,14 +155,6 @@ struct screen_surface* screen_surface_create(struct screen_surface_create_info *
     result_e result = _create_buffers(surface);
     check_result(result, "could not create buffers");
 
-    if (surface->type == SCREEN_SURFACE_TYPE_CPU)
-    {
-        surface->pb = pixelbuffer_create(surface->viewport.width, surface->viewport.height);
-        check_ptr(surface->pb);
-
-        // FIXME use pb->user_data as depth_stencil buffer
-    }
-
     ////////////////////////////////////////
 
     return surface;
@@ -166,10 +173,9 @@ void screen_surface_destroy(struct screen_surface *surface)
 
     _destroy_buffers(surface);
 
-    if (surface->type == SCREEN_SURFACE_TYPE_CPU && surface->pb)
+    if (surface->type == SCREEN_SURFACE_TYPE_CPU)
     {
-        pixelbuffer_destroy(surface->pb);
-        // FIXME free pb->user_data as well
+        surface->pb = (struct pixelbuffer) {0};
     }
 
     free(surface);
@@ -187,7 +193,18 @@ bool screen_surface_begin(struct screen_surface* surface)
 
     xgl_set_viewports(1, &surface->viewport);
 
-    return xgl_begin_render_pass(&pass_info);
+    bool render_pass_valid = xgl_begin_render_pass(&pass_info);
+
+    if (surface->type == SCREEN_SURFACE_TYPE_CPU && render_pass_valid)
+    {
+        surface->pb.pixels = xgl_map_texture(surface->color_buffer);
+        check_ptr(surface->pb.pixels);
+
+        surface->pb.user_data = xgl_map_texture(surface->depth_stencil_buffer);
+        check_ptr(surface->pb.user_data);
+    }
+
+    return render_pass_valid;
 
 error:
     return false;
@@ -199,12 +216,13 @@ void screen_surface_end(struct screen_surface* surface)
 
     xgl_end_render_pass();
 
-    // FIXME use xgl_unmap_texture()
-    if (surface->type == SCREEN_SURFACE_TYPE_CPU && surface->pb)
+    if (surface->type == SCREEN_SURFACE_TYPE_CPU)
     {
-        struct vec2 size = {surface->viewport.width, surface->viewport.height};
+        surface->pb.pixels = NULL;
+        xgl_unmap_texture(surface->color_buffer);
 
-        xgl_update_texture(surface->color_buffer, 0, size.w, size.h, (u8*)surface->pb->pixels);
+        surface->pb.user_data = NULL;
+        xgl_unmap_texture(surface->depth_stencil_buffer);
     }
 
 error:
@@ -233,10 +251,6 @@ void screen_surface_set_size(struct screen_surface *surface, struct vec2 size)
 
     _destroy_buffers(surface);
     _create_buffers(surface);
-
-    if (surface->pb) {
-        pixelbuffer_resize(surface->pb, size.w, size.h);
-    }
 
 error:
     return;
@@ -267,9 +281,11 @@ struct pixelbuffer* screen_surface_get_pixelbuffer(struct screen_surface *surfac
     check_ptr(surface);
 
     check_expr(surface->type == SCREEN_SURFACE_TYPE_CPU);
+    // FIXME check_expr( PIXELBUFFER_VALID );
 
-    // FIXME use xgl_map_texture()
-    return surface->pb;
+    check_quiet(surface->pb.pixels != NULL); // FIXME
+
+    return &surface->pb;
 
 error:
     return NULL;

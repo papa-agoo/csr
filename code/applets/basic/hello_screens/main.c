@@ -29,6 +29,7 @@ static result_e _plugin_startup()
     {
         struct screen_create_info create_info = {0};
         create_info.name = "XGL Framebuffer";
+        create_info.keep_aspect_ratio = true;
 
         create_info.surface.viewport.width = size.w;
         create_info.surface.viewport.height = size.h;

@@ -5,66 +5,168 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-static void draw_screen_context_menu()
+static void draw_screen_context_menu(struct ui_window *window)
 {
-    // - fullscreen ON / OFF
-    // - keep aspect ratio ON / OFF
-
-    // - resize policy submenu
-    // - scale policy submenu
-
-    // - scale up
-    // - scale down
-    // - scale min
-    // - scale max
-
-    // - show info overlay
-}
-
-static void draw_screen_info_overlay()
-{
-    // - screen size
-    // - scaled size, scale factor
-    // - time for begin/end block (ms)
-    // - surface type (CPU / GPU)
-}
-
-static void collect_window_input_events(struct ui_window *window)
-{
-    check_ptr(window);
-
-    if (!igIsWindowHovered(ImGuiHoveredFlags_RootAndChildWindows)) return;
-
-    ////////////////////////////////////////
-
     struct screen* screen = window->view.user_data;
 
-    // toggle fullscreen mode
-    if (igIsMouseDoubleClicked(ImGuiMouseButton_Left))
+    igPushStyleVar_Vec2(ImGuiStyleVar_ItemSpacing, make_ImVec2(8, 8));
+    igPushStyleVar_Vec2(ImGuiStyleVar_WindowPadding, make_ImVec2(8, 8));
+
+    ////////////////////////////////////////
+
+    ImGuiPopupFlags flags = ImGuiPopupFlags_MouseButtonRight;
+
+    if (igBeginPopupContextWindow("screen.ctx.menu", flags))
     {
-        // FIXME
-        clog_trace("toggle fullscreen mode : %s", screen_get_name(screen));
+        enum screen_scale_policy scale_policy = screen_get_scale_policy(screen);
+        enum screen_resize_policy resize_policy = screen_get_resize_policy(screen);
+
+        if (igMenuItem_Bool("Fullscreen", NULL, false, false)) {
+            // FIXME
+        }
+
+        if (igMenuItem_Bool("Fit Window to Screen", NULL, false, true))
+        {
+            igSetWindowSize_Vec2(make_ImVec2_zero(), ImGuiCond_Always);
+
+            window->hint.fit_window_to_content_size = true;
+        }
+
+        igSeparator();
+
+        ////////////////////////////////////////
+
+        {
+            bool enable_scaling_options = scale_policy == SCREEN_SCALE_POLICY_INTEGER;
+
+            bool has_reached_max_scale = screen_is_scale_maxed(screen);
+
+            if (igMenuItem_Bool("Scale Up", NULL, false, !has_reached_max_scale && enable_scaling_options)) {
+                screen_scale_up(screen);
+            }
+
+            bool has_reached_min_scale = screen_get_scale(screen) == 1;
+
+            if (igMenuItem_Bool("Scale Down", NULL, false, !has_reached_min_scale && enable_scaling_options)) {
+                screen_scale_down(screen);
+            }
+
+            enable_scaling_options = scale_policy != SCREEN_SCALE_POLICY_NONE;
+
+            if (igMenuItem_Bool("Scale Reset", NULL, false, !has_reached_min_scale && enable_scaling_options)) {
+                screen_reset_scale(screen);
+            }
+        }
+
+        igSeparator();
+
+        ////////////////////////////////////////
+
+        if (igBeginMenu("Resize Policy", true))
+        {
+            enum screen_resize_policy my_resize_policy = SCREEN_RESIZE_POLICY_AUTO;
+
+            if (igMenuItem_Bool("Automatic", NULL, resize_policy == my_resize_policy, true)) {
+                screen_set_resize_policy(screen, my_resize_policy);
+            }
+
+            my_resize_policy = SCREEN_RESIZE_POLICY_EXPLICIT;
+
+            if (igMenuItem_Bool("Explicit", NULL, resize_policy == my_resize_policy, true)) {
+                screen_set_resize_policy(screen, my_resize_policy);
+            }
+
+            igEndMenu();
+        }
+
+        ////////////////////////////////////////
+
+        if (igBeginMenu("Scale Policy", resize_policy == SCREEN_RESIZE_POLICY_EXPLICIT))
+        {
+            enum screen_scale_policy my_scale_policy = SCREEN_SCALE_POLICY_NONE;
+
+            if (igMenuItem_Bool("None", NULL, scale_policy == my_scale_policy, true)) {
+                screen_set_scale_policy(screen, my_scale_policy);
+            }
+
+            my_scale_policy = SCREEN_SCALE_POLICY_FP;
+
+            if (igMenuItem_Bool("Floating Point", NULL, scale_policy == my_scale_policy, true)) {
+                screen_set_scale_policy(screen, my_scale_policy);
+            }
+
+            my_scale_policy = SCREEN_SCALE_POLICY_INTEGER;
+
+            if (igMenuItem_Bool("Integer", NULL, scale_policy == my_scale_policy, true)) {
+                screen_set_scale_policy(screen, my_scale_policy);
+            }
+
+            igEndMenu();
+        }
+
+        ////////////////////////////////////////
+
+        bool keep_aspect_ratio = screen_get_keep_aspect_ratio(screen);
+        bool enable_keep_ar_menu = resize_policy == SCREEN_RESIZE_POLICY_AUTO;
+
+        if (igMenuItem_Bool("Keep Aspect Ratio", NULL, keep_aspect_ratio, enable_keep_ar_menu)) {
+            screen_toggle_keep_aspect_ratio(screen);
+        }
+
+        ////////////////////////////////////////
+
+        igSeparator();
+
+        igMenuItem_BoolPtr("Show Surface Info", NULL, &window->hint.show_surface_info, true);
+
+        igEndPopup();
     }
 
     ////////////////////////////////////////
 
-    // fit window to screen
-    if (igIsMouseClicked(ImGuiMouseButton_Middle, false))
+    igPopStyleVar(2);
+}
+
+static void draw_surface_info(struct screen *screen)
+{
+    const char *surface_type_str = screen_get_surface_type_cstr(screen);
+
+    struct vec2 size = screen_get_size(screen);
+
+    f32 scale_factor = screen_get_scale(screen);
+    struct vec2 size_scaled = make_vec2(size.w * scale_factor, size.h * scale_factor);
+
+    const struct screen_stats *stats = screen_get_stats(screen);
+
+    // FIXME make_string("", ...)
+    char str_buf[128];
+
+    snprintf(str_buf, 128, "%s Surface : %.0fx%.0f @ %.2fx (%.0fx%.0f), %05.2fms (%02.0ffps)",
+        surface_type_str, size.w, size.h, scale_factor, size_scaled.w, size_scaled.h,
+        stats->avg_frametime_ms, stats->avg_fps);
+
+    // poor mans text shadows :)
     {
-        igSetWindowSize_Vec2(make_ImVec2_zero(), ImGuiCond_Always);
+        f32 padding = 25;
+        f32 shadow_offset = 1;
 
-        window->hint.fit_window_to_content_size = true;
+        struct ImVec2 cursor_pos = {0};
+        igGetCursorPos(&cursor_pos);
+
+        // bg text
+        cursor_pos.x = padding;
+        cursor_pos.y = padding + igGetFrameHeight();
+
+        igSetCursorPos(cursor_pos);
+        igTextColored(make_ImVec4(0, 0, 0, 1), "%s", str_buf);
+
+        // fg text
+        cursor_pos.x -= shadow_offset;
+        cursor_pos.y -= shadow_offset;
+
+        igSetCursorPos(cursor_pos);
+        igText("%s", str_buf);
     }
-
-    ////////////////////////////////////////
-
-    // toggle aspect ratio
-    if (igIsMouseClicked(ImGuiMouseButton_Right, false))
-    {
-        screen_toggle_keep_aspect_ratio(screen);
-    }
-
-    ////////////////////////////////////////
 
 error:
     return;
@@ -124,10 +226,11 @@ static void _draw_view(struct ui_view* view, struct ui_style *style)
     struct ui_window *window = view->parent;
     struct screen* screen = view->user_data;
 
-    // FIXME
-    collect_window_input_events(window);
-
     ////////////////////////////////////////
+
+    if (window->hint.fit_window_to_content_size) {
+        igSetWindowSize_Vec2(make_ImVec2_zero(), ImGuiCond_Always);
+    }
 
     struct vec2 screen_size = {0};
 
@@ -160,11 +263,6 @@ static void _draw_view(struct ui_view* view, struct ui_style *style)
             // update scale factor (scaled size)
             update_screen_scale(screen, content_size_new);
             screen_size = screen_get_scaled_size(screen);
-
-            // scale to content size (ignore aspect ratio)
-            if (!screen_get_keep_aspect_ratio(screen)) {
-                screen_size = content_size_new;
-            }
         }
 
         // fit window to screen size
@@ -182,6 +280,17 @@ static void _draw_view(struct ui_view* view, struct ui_style *style)
     draw_screen_image(texture, screen_size, content_size_new);
 
     window->priv.content_size = content_size_new;
+
+    ////////////////////////////////////////
+
+    // FIXME need external check
+    if (igIsKeyDown(ImGuiKey_LeftShift)) {
+        draw_screen_context_menu(window);
+    }
+
+    if (window->hint.show_surface_info) {
+        draw_surface_info(screen);
+    }
 }
 
 static void _on_window_resize()

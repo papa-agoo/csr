@@ -41,6 +41,13 @@ enum screen_scale_policy
 
 struct screen;
 
+struct screen_stats
+{
+    u32 num_frames;
+    f32 avg_fps;
+    f32 avg_frametime_ms;
+};
+
 struct screen_create_info
 {
     const char* name;
@@ -61,10 +68,14 @@ bool screen_begin(struct screen* screen, enum screen_surface_type surface_type);
 void screen_end();
 
 const char* screen_get_name(struct screen* screen);
+
+const char* screen_get_surface_type_cstr(struct screen* screen);
 enum screen_surface_type screen_get_surface_type(struct screen* screen);
 
 xgl_texture screen_get_texture(struct screen* screen);
 struct pixelbuffer* screen_get_pixelbuffer(struct screen* screen);
+
+const struct screen_stats* screen_get_stats(struct screen *screen);
 
 bool screen_get_keep_aspect_ratio(struct screen* screen);
 void screen_set_keep_aspect_ratio(struct screen* screen, bool keep);
