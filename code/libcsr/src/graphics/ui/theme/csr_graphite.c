@@ -54,9 +54,8 @@ static void _on_apply_theme(struct ui_theme *theme)
     colors[ImGuiCol_ResizeGripActive]       = make_ImVec4(0.24f, 0.36f, 0.50f, 0.80f);
     colors[ImGuiCol_Tab]                    = make_ImVec4(0.38f, 0.42f, 0.45f, 0.42f);
     colors[ImGuiCol_TabHovered]             = make_ImVec4(0.24f, 0.36f, 0.50f, 0.80f);
-    colors[ImGuiCol_TabActive]              = make_ImVec4(0.26f, 0.31f, 0.38f, 1.00f);
-    colors[ImGuiCol_TabUnfocused]           = make_ImVec4(0.38f, 0.42f, 0.45f, 0.42f);
-    colors[ImGuiCol_TabUnfocusedActive]     = make_ImVec4(0.49f, 0.62f, 0.77f, 0.40f);
+    colors[ImGuiCol_TabSelected]            = make_ImVec4(0.26f, 0.31f, 0.38f, 1.00f);
+    colors[ImGuiCol_TabSelectedOverline]    = make_ImVec4(0.39f, 0.46f, 0.56f, 1.00f);
     colors[ImGuiCol_DockingPreview]         = make_ImVec4(0.26f, 0.59f, 0.98f, 0.70f);
     colors[ImGuiCol_DockingEmptyBg]         = make_ImVec4(0.20f, 0.20f, 0.20f, 1.00f);
     colors[ImGuiCol_PlotLines]              = make_ImVec4(0.61f, 0.61f, 0.61f, 1.00f);
@@ -86,7 +85,7 @@ struct ui_theme* ui_theme_csr_graphite_ptr()
 
             .style = {
                 .color = {
-                    .background         = make_vec4(0.22, 0.22, 0.22, 1.0),
+                    .background         = make_vec4(0.22f, 0.22f, 0.22f, 1.00f),
 
                     .log_info           = make_vec4(0.75f, 0.75f, 0.75f, 1.00f),
                     .log_notice         = make_vec4(0.44f, 0.85f, 0.85f, 1.00f),

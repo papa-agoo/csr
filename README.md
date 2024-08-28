@@ -111,7 +111,7 @@ The main focus lies on the Model Viewer Applet (model_viewer.so) which will be a
     - [ ] Reload current applet
     - [ ] Remember last loaded applet
   - [ ] Library
-    - [ ] SoftGL rasterizer
+    - [ ] SoftGL Rasterizer
   - [ ] Applets
     - [ ] ecs_hello_world.so (some tests with Flecs)
     - [ ] xgl_hello_cube.so (textured)

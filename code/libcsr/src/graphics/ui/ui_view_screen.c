@@ -283,8 +283,8 @@ static void _draw_view(struct ui_view* view, struct ui_style *style)
 
     ////////////////////////////////////////
 
-    // FIXME need external check
-    if (igIsKeyDown(ImGuiKey_LeftShift)) {
+    // FIXME need external check (ie. application_has_input_focus())
+    if (igIsKeyDown_Nil(ImGuiKey_LeftShift)) {
         draw_screen_context_menu(window);
     }
 
