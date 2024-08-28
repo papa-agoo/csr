@@ -15,9 +15,9 @@
 >
 > *― Terry Pratchett*
 
-This Quote by Terry Pratchett is on point on how I feel about Computer Graphics. I always loved being immersed in nicely lit Environments, feeling the dense Atmosphere in unreal Places or just wondering how all of this was actually made. Back then it was Magic to me, just as it is today.
+This quote by Terry Pratchett is on point on how I feel about computer graphics. I always loved being immersed in nicely lit environments, feeling the dense atmosphere in unreal places or just wondering how all of this was actually made. Back then it was magic to me, just as it is today.
 
-So welcome to my passion Project on which I work(ed) in my freetime, which is also the Playground for my CG related Research.
+So welcome to my passion project on which I work(ed) in my freetime, which is also the playground for my CG related research.
 
 ## Build and Run
 
@@ -27,11 +27,11 @@ Linux only for now.
 
 * CMake
 * GLFW
-* Epoxy
+* Epoxy (OpenGL Glue)
 
 <br/>
 
-Modern Features like DSA (Direct State Access) are used so at least OpenGL v4.5 is required.
+Modern features like DSA (Direct State Access) are used so at least OpenGL v4.5 is required.
 
 **Checkout Repo and Submodules**
 
@@ -43,7 +43,7 @@ $ git submodule update --init --recursive
 
 <br/>
 
-If you are swithing to a different Branch or simply fetching new Commits, you should always sync the internal Dependencies (like ImGui) using `git submodule update`.
+If you are swithing to a different branch or simply fetching new commits, you should always sync the internal dependencies (like ImGui) using `git submodule update`.
 
 ```shell
 $ git checkout origin/develop -b develop
@@ -71,7 +71,7 @@ $ sudo make all install
 
 **Run CSR**
 
-Assuming `/opt/csr` is the install prefix (project root directory) set the `LD_LIBRARY_PATH` before executing CSR Apps ...
+Assuming `/opt/csr` is the install prefix (project root directory) set the `LD_LIBRARY_PATH` before executing CSR apps ...
 
 ```shell
 $ export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/opt/csr/lib
@@ -81,7 +81,7 @@ $ export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/opt/csr/lib
 
 <br/>
 
-For now CSR Apps must be run from within the `project root directory`.
+For now CSR apps must be run from within the `project root directory`.
 
 ```shell
 $ cd /opt/csr
@@ -90,35 +90,35 @@ $ ./bin/csr_app
 
 ## Roadmap
 
-The main Focus lies on the Model Viewer Applet (model_viewer.so) which will be able to load and render (on GPU and on CPU) external Models in Wavefront OBJ / glTF Formats. Stuff like Bug Fixes, Refactoring or smaller Detours (which will happen :)) are not listed here.
+The main focus lies on the Model Viewer Applet (model_viewer.so) which will be able to load and render (on GPU and on CPU) external models in Wavefront OBJ / glTF formats. Stuff like bug fixes, refactoring or smaller detours (which will happen :)) are not listed here.
 
 <br/>
 
 * **Milestone 1 (Prep Work)**
   - [ ] Application
-    - [ ] Env Vars Service (Support for something like {FOO}/{BAR}.baz at Runtime)
-    - [ ] Per Applet Config ({APPLET_CONFIG_DIR}/my_applet.ini)
-    - [ ] App Home Dir ({USER_HOME_DIR}/.csr)
+    - [ ] Env vars service (support for something like {FOO}/{BAR}.baz at runtime)
+    - [ ] Per applet config ({APPLET_CONFIG_DIR}/my_applet.ini)
+    - [ ] App home dir ({USER_HOME_DIR}/.csr)
   - [ ] Library
-    - [ ] Modern String Impl. (length based)
-    - [ ] Arena Memory Allocator (Heap und Pool Allocators coming later)
+    - [ ] Modern string impl. (length based)
+    - [ ] Arena memory allocator (heap und pool allocators coming later)
     - [ ] File I/O (OS level R/W API)
 
 <br/>
 
 * **Milestone 2 (Foundations)**
   - [ ] Application
-    - [ ] Reload current Applet
-    - [ ] Remember last loaded Applet
+    - [ ] Reload current applet
+    - [ ] Remember last loaded applet
   - [ ] Library
-    - [ ] SoftGL Rasterizer
+    - [ ] SoftGL rasterizer
   - [ ] Applets
-    - [ ] ecs_hello_world.so (some Tests with Flecs)
+    - [ ] ecs_hello_world.so (some tests with Flecs)
     - [ ] xgl_hello_cube.so (textured)
     - [ ] model_viewer.so
-      - [ ] 3D Scene (Base Grid, Orbit Camera, Orientantion Gizmo, Unit Cube AABB)
+      - [ ] 3D scene (Base Grid, Orbit Camera, Orientantion Gizmo, Unit Cube AABB)
       - [ ] User Interface (Model, Camera, Renderers, Debug Info)
-      - [ ] GPU + CPU Renderers (XGL + SoftGL)
+      - [ ] GPU + CPU renderers (XGL + SoftGL)
 
 <br/>
 
@@ -126,9 +126,9 @@ The main Focus lies on the Model Viewer Applet (model_viewer.so) which will be a
   - [ ] Library
     - [ ] SoftGL Texture Mapping
   - [ ] model_viewer.so
-    - [ ] Builtin procedural Meshes (Cube, Sphere, Torus, ...)
-    - [ ] Loaders for OBJ / GLTF Files
-    - [ ] Debug Materials (Points, Lines, Normals, UVs, Solid, Textured)
+    - [ ] Builtin procedural meshes (Cube, Sphere, Torus, ...)
+    - [ ] Loaders for Wavefront OBJ / glTF files
+    - [ ] Debug materials (Point Cloud, Wireframe, Normals, UVs, Solid, Textured)
     - [ ] Integration of the ImGizmo Library
 
 <br/>
@@ -150,6 +150,6 @@ The main Focus lies on the Model Viewer Applet (model_viewer.so) which will be a
 
 ## Media
 
-Very early Version. This little Project ignited my Passion for Graphics Programming a few years ago. :)
+Very early version. This little project ignited my passion for graphics programming a few years ago. :)
 
 ![CSR Legacy](files/csr_legacy.png)
