@@ -32,5 +32,7 @@ target_sources(${MY_TARGET}
         stopwatch.c
 
         base/guid.c
+        base/string.c
+
         math/transform.c
 )

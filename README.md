@@ -2,42 +2,26 @@
 
 ![CSR Banner](files/csr_feisar_frame.png)
 
-<br/>
-
 ## Overview
-
-<br/>
 
 - [Introduction](#introduction)  
 - [Build and Run](#build-and-run)  
 - [Roadmap](#roadmap)  
 - [Media](#media)  
 
-<br/>
-
 ## Introduction
-
-<br/>
 
 > *“It’s still magic even if you know how it’s done.”*
 >
-> <sub>*Terry Pratchett*</sub>
+> *― Terry Pratchett*
 
-<br/>
-
-This Quote by *Terry Pratchett* is on point on how I feel about Computer Graphics. I always loved being immersed in nicely lit Environments, feeling the dense Atmosphere in unreal Places or just wondering how all of this was actually made. Back then it was Magic to me, just as it is today.
-
-<br/>
+This Quote by Terry Pratchett is on point on how I feel about Computer Graphics. I always loved being immersed in nicely lit Environments, feeling the dense Atmosphere in unreal Places or just wondering how all of this was actually made. Back then it was Magic to me, just as it is today.
 
 So welcome to my passion Project on which I work(ed) in my freetime, which is also the Playground for my CG related Research.
-
-<br/><br/>
 
 ## Build and Run
 
 Linux only for now.
-
-<br/>
 
 **External Dependencies**
 
@@ -48,8 +32,6 @@ Linux only for now.
 <br/>
 
 Modern Features like DSA (Direct State Access) are used so at least OpenGL v4.5 is required.
-
-<br/>
 
 **Checkout Repo and Submodules**
 
@@ -106,11 +88,7 @@ $ cd /opt/csr
 $ ./bin/csr_app
 ```
 
-<br/><br/>
-
 ## Roadmap
-
-<br/>
 
 The main Focus lies on the Model Viewer Applet (model_viewer.so) which will be able to load and render (on GPU and on CPU) external Models in Wavefront OBJ / glTF Formats. Stuff like Bug Fixes, Refactoring or smaller Detours (which will happen :)) are not listed here.
 
@@ -127,7 +105,6 @@ The main Focus lies on the Model Viewer Applet (model_viewer.so) which will be a
     - [ ] File I/O (OS level R/W API)
 
 <br/>
-
 
 * **Milestone 2 (Foundations)**
   - [ ] Application
@@ -171,11 +148,7 @@ The main Focus lies on the Model Viewer Applet (model_viewer.so) which will be a
     - [ ] XGL SDF Text
   - ...
 
-<br/><br/>
-
 ## Media
-
-<br/>
 
 Very early Version. This little Project ignited my Passion for Graphics Programming a few years ago. :)
 

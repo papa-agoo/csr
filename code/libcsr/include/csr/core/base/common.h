@@ -40,5 +40,6 @@
 ////////////////////////////////////////////////////////////
 
 #include "types.h"
+#include "string.h"
 #include "macros.h"
 #include "result.h"

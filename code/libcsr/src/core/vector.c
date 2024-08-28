@@ -51,6 +51,8 @@ void vector_destroy(struct vector* vector)
 
     if (vector->data)
     {
+        // NOTE alignment issues???
+
         // FIXME BUG strange glibc mem issues
         // vector_reset(vector);
 
