@@ -45,8 +45,6 @@ static void _destroy_screen_windows_cb(struct ui_window *window, void *data)
         screen_destroy(window->view.user_data);
     }
 
-    free(window);
-
 error:
     return;
 }
