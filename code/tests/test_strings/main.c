@@ -93,6 +93,7 @@ void _test_string_substr()
         clog_info("substr(0, 0) => "string_fmt, string_fmt_arg(string_substr(str, 0, 0)));      // /foo/bar.so
         clog_info("substr(0, 5) => "string_fmt, string_fmt_arg(string_substr(str, 0, 5)));      // /foo/
         clog_info("substr(1, -7) => "string_fmt, string_fmt_arg(string_substr(str, 1, -7)));    // foo
+        clog_info("substr(5, -3) => "string_fmt, string_fmt_arg(string_substr(str, 5, -3)));    // bar
 
         clog_info("substr(5, 0) => "string_fmt, string_fmt_arg(string_substr(str, 5, 0)));      // bar.so
         clog_info("substr(-6, 3) => "string_fmt, string_fmt_arg(string_substr(str, -6, 3)));    // bar

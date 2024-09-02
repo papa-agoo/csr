@@ -420,10 +420,11 @@ result_e config_save_ini(struct config *cfg, const char *filename)
 
     ////////////////////////////////////////
 
-    fio_file *file = fio_open(filename, FIO_MODE_WRITE_ONLY);
+    // FIXME obsolete after migration to the new strings :)
+    fio_file *file = fio_open(make_string_from_cstr(filename), FIO_MODE_WRITE_ONLY);
     check(file, "could not open file for writing : %s", filename);
 
-    iniparser_dump_ini(cfg->ini, fio_get_fp(file));
+    iniparser_dump_ini(cfg->ini, fio_get_stream(file));
 
     fio_close(file);
 
