@@ -1,6 +1,6 @@
 ########################################
 
-set(MY_NAME hello_strings)
+set(MY_NAME test_strings)
 set(MY_TARGET ${MY_NAME})
 
 ########################################
@@ -18,5 +18,5 @@ install(
     TARGETS
         ${MY_TARGET}
     DESTINATION
-        ${CMAKE_INSTALL_PREFIX}/examples
+        ${CMAKE_INSTALL_PREFIX}/tests
 )
