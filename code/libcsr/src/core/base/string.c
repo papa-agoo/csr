@@ -106,16 +106,22 @@ struct string string_substr(struct string str, s32 offset, s32 length)
     ////////////////////////////////////////
 
     // calculate start position
+    //    - 0. zero offset      : offset
+    //    - 1. positive offset  : offset
+    //    - 2. negative offset  : str.length - abs(offset)
     u32 start_pos = (offset >= 0) ? offset : str.length + offset;
     check_expr(start_pos < str.length);
 
     ////////////////////////////////////////
 
     // calculate end position
+    //    - 0. zero length      : str.length
+    //    - 1. positive length  : start_pos + length
+    //    - 2. negative length  : str.length - abs(length)
     u32 end_pos = str.length;
 
     if (length != 0) {
-        end_pos = (length < 0) ? (str.length - start_pos) + length : start_pos + length;
+        end_pos = (length < 0) ? str.length + length : start_pos + length;
     }
 
     check_expr(end_pos <= str.length);
