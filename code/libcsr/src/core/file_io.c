@@ -87,7 +87,7 @@ error:
 
 fio_file* fio_open(struct string path, enum fio_mode mode)
 {
-    check_expr(fio_fs_is_file(path));
+    check_expr(!fio_fs_is_directory(path));
 
     fio_file *file = calloc(1, sizeof(struct fio_file));
     check_mem(file);
@@ -431,12 +431,8 @@ result_e fio_fs_create_directory(struct string path)
 
         // file conflict
         //   - if it's a directory, just skip it
-        //   - if it's a file of some kind (regular, symlink, ...), abort XXX
-        if (!fio_fs_is_directory(my_path))
-        {
-            clog_error("file conflict, aborting foo ... (" string_fmt ")", string_fmt_arg(my_path));
-            break;
-        }
+        //   - if it's a file of some kind (regular, symlink, ...)
+        check(fio_fs_is_directory(my_path), "file conflict, aborting ... ("string_fmt")", string_fmt_arg(my_path));
 
     } while (position != -1);
 

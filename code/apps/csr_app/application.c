@@ -41,11 +41,13 @@ static result_e init_env_vars()
 
     // FIXME kio_reg_set_xxx(...)
     path_set_var("USER_HOME_DIR", platform_get_user_home_dir()); // FIXME kio_get_xxx_info()
+
     path_set_var("APP_HOME_DIR", ENV_APP_HOME_DIR);
     path_set_var("APP_CONFIG_DIR", ENV_APP_CONFIG_DIR);
     path_set_var("APPLET_CONFIG_DIR", ENV_APPLET_CONFIG_DIR);
+
+    path_set_var("APPLET_DIR", ENV_APPLET_DIR);
     path_set_var("RESOURCE_DIR", ENV_RESOURCE_DIR);
-    path_set_var("APPLET_DIR", ENV_RESOURCE_DIR);
 
     return RC_SUCCESS;
 
@@ -55,9 +57,20 @@ error:
 
 static result_e init_app_home_dir()
 {
-    const char *app_home_dir = "${HOME}/agummer/.csr";
+    // struct string app_home_dir = kio_env_get(ENV_APP_HOME_DIR);
+    struct string app_home_dir = make_string_from_cstr(path_get(ENV_APP_HOME_DIR));
 
-    klog_info("using app home dir : %s", ENV_APP_HOME_DIR);
+    if (!fio_fs_is_directory(app_home_dir))
+    {
+        klog_info("initializing application home dir (%s)", ENV_APP_HOME_DIR);
+
+        // fio_fs_create_directory(kio_env_get(ENV_APP_CONFIG_DIR));
+        struct string app_config_dir = make_string_from_cstr(path_get(ENV_APP_CONFIG_DIR));
+        fio_fs_create_directory(app_config_dir);
+
+    }
+
+    klog_info("using app home dir : "string_fmt, string_fmt_arg(app_home_dir));
 
     return RC_SUCCESS;
 
@@ -69,7 +82,7 @@ static result_e init_user_config()
 {
     struct application_conf *conf = application_conf_ptr();
 
-    const char *ini_file = ENV_APP_INI_FILE;
+    const char *ini_file = path_get(ENV_APP_INI_FILE);
 
     klog_info("loading user config ( %s ) ...", ini_file);
 
@@ -110,6 +123,8 @@ static void on_kernel_tick()
         // {
         //     // applet loaded AND active screen is in fullscreen mode
         //     render_fullscreen_quad();
+        //
+        //     kio_video_draw_fullscreen_quad(make_rect(x, y, w, h), sampler, texture);
         // }
         // else
         // {
@@ -502,7 +517,7 @@ result_e application_init()
         init_frontend_config();
 
         struct ui_init_info init_info = {0};
-        init_info.imgui_ini_file = ENV_IMGUI_INI_FILE;
+        init_info.imgui_ini_file = path_get(ENV_IMGUI_INI_FILE);
         init_info.fonts_dir = path_get("{RESOURCE_DIR}/fonts"); // kio_reg_xxx("{RESOURCE_DIR}/fonts")
         init_info.conf = &conf->ui;
         init_info.workspace = create_frontend_workspace();

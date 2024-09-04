@@ -98,7 +98,7 @@ The main focus lies on the Model Viewer Applet (model_viewer.so) which will be a
   - [ ] Application
     - [ ] Env vars service (support for something like {FOO}/{BAR}.baz at runtime)
     - [ ] Per applet config ({APPLET_CONFIG_DIR}/my_applet.ini)
-    - [ ] App home dir ({USER_HOME_DIR}/.csr)
+    - [x] App home dir ({USER_HOME_DIR}/.csr)
   - [ ] Library
     - [ ] Modern string impl. (immutable, length based)
     - [ ] Arena memory allocator (heap und pool allocators coming later)
