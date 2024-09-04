@@ -100,7 +100,7 @@ The main focus lies on the Model Viewer Applet (model_viewer.so) which will be a
     - [ ] Per applet config ({APPLET_CONFIG_DIR}/my_applet.ini)
     - [ ] App home dir ({USER_HOME_DIR}/.csr)
   - [ ] Library
-    - [ ] Modern string impl. (length based)
+    - [ ] Modern string impl. (immutable, length based)
     - [ ] Arena memory allocator (heap und pool allocators coming later)
     - [ ] File I/O (OS level R/W API)
 
@@ -129,7 +129,7 @@ The main focus lies on the Model Viewer Applet (model_viewer.so) which will be a
     - [ ] Builtin procedural meshes (Cube, Sphere, Torus, ...)
     - [ ] Loaders for Wavefront OBJ / glTF files
     - [ ] Debug materials (Point Cloud, Wireframe, Normals, UVs, Solid, Textured)
-    - [ ] Integration of the ImGizmo Library
+    - [ ] Integration of the ImGuizmo Library
 
 <br/>
 
