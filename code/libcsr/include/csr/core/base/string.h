@@ -43,13 +43,16 @@ struct string string_substr(struct string str, s32 offset, s32 length);
 s32 string_find(struct string str, u8 delimiter);
 s32 string_rfind(struct string str, u8 delimiter);
 
-// s32 string_find_str(struct string str, struct string other);
+s32 string_find_at(struct string str, u32 position, u8 delimiter);
+s32 string_rfind_at(struct string str, u32 position, u8 delimiter);
 
 struct string string_trim(struct string str);
 struct string string_rtrim(struct string str);
 
 struct string string_chop(struct string str, u32 length);
 struct string string_rchop(struct string str, u32 length);
+
+struct string_pair string_cut(struct string str, u32 position);
 
 // void string_join();
 // void string_split();
@@ -60,4 +63,3 @@ struct string string_rchop(struct string str, u32 length);
 // printf helpers
 #define string_fmt "%.*s"
 #define string_fmt_arg(str) (s32)(str).length, (str).ptr
-

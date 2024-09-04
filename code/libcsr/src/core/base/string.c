@@ -140,9 +140,21 @@ error:
 
 s32 string_find(struct string str, u8 delimiter)
 {
-    check_expr(string_is_valid(str));
+    return string_find_at(str, 0, delimiter);
+}
 
-    for (u32 i = 0; i < str.length; i++)
+s32 string_rfind(struct string str, u8 delimiter)
+{
+    return string_rfind_at(str, str.length - 1, delimiter);
+}
+
+s32 string_find_at(struct string str, u32 position, u8 delimiter)
+{
+    check_expr(string_is_valid(str));
+    check_expr(position >= 0 && position < str.length);
+
+    // left to right
+    for (u32 i = position; i < str.length; i++)
     {
         if (str.ptr[i] == delimiter) {
             return i;
@@ -153,11 +165,13 @@ error:
     return -1;
 }
 
-s32 string_rfind(struct string str, u8 delimiter)
+s32 string_rfind_at(struct string str, u32 position, u8 delimiter)
 {
     check_expr(string_is_valid(str));
+    check_expr(position >= 0 && position < str.length);
 
-    for (s32 i = str.length - 1; i >= 0; i--)
+    // right to left
+    for (s32 i = position; i >= 0; i--)
     {
         if (str.ptr[i] == delimiter) {
             return i;
@@ -206,4 +220,18 @@ struct string string_chop(struct string str, u32 length)
 struct string string_rchop(struct string str, u32 length)
 {
     return string_substr(str, 0, length);
+}
+
+struct string_pair string_cut(struct string str, u32 position)
+{
+    check_expr(string_is_valid(str));
+
+    struct string_pair pair = {0};
+    pair.left = string_rchop(str, position);
+    pair.right = string_chop(str, position + 1);
+
+    return pair;
+
+error:
+    return (struct string_pair) {0};
 }

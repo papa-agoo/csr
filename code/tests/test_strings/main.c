@@ -39,6 +39,7 @@ void _test_string_trim_chop()
         clog_info("trim() => [" string_fmt "]", string_fmt_arg(string_trim(str)));
         clog_info("rtrim() => [" string_fmt "]", string_fmt_arg(string_rtrim(str)));
         clog_info("rtrim(trim()) => [" string_fmt "]", string_fmt_arg(string_rtrim(string_trim(str))));
+        clog_info("trim(rtrim()) => [" string_fmt "]", string_fmt_arg(string_trim(string_rtrim(str))));
     }
 
     // chop
@@ -47,10 +48,16 @@ void _test_string_trim_chop()
         clog_info(">> [" string_fmt "]", string_fmt_arg(str));
 
         clog_info("chop(1) => [" string_fmt "]", string_fmt_arg(string_chop(str, 1)));      // foo/bar.png
+        clog_info("chop(-1) => [" string_fmt "]", string_fmt_arg(string_chop(str, -1)));      // g
+
         clog_info("chop(4) => [" string_fmt "]", string_fmt_arg(string_chop(str, 4)));      // /bar.png
+        clog_info("chop(-4) => [" string_fmt "]", string_fmt_arg(string_chop(str, -4)));      // .png
 
         clog_info("rchop(1) => [" string_fmt "]", string_fmt_arg(string_rchop(str, 1)));    // /
-        clog_info("rchop(4) => [" string_fmt "]", string_fmt_arg(string_rchop(str, 4)));    // /foo/bar
+        clog_info("rchop(-1) => [" string_fmt "]", string_fmt_arg(string_rchop(str, -1)));    // /foo/bar.pn
+
+        clog_info("rchop(4) => [" string_fmt "]", string_fmt_arg(string_rchop(str, 4)));    // /foo
+        clog_info("rchop(-4) => [" string_fmt "]", string_fmt_arg(string_rchop(str, -4)));    // /foo/bar
     }
 
     // find + chop
@@ -73,13 +80,30 @@ void _test_string_trim_chop()
 
 
         clog_info("chop(find('.')) => [" string_fmt "]", string_fmt_arg(string_chop(str, string_find(str, '.'))));              // .so
-        clog_info("chop(find('/') + 1) => [" string_fmt "]", string_fmt_arg(string_chop(str, string_find(str, '/') + 1)));      // /applets/model_viewer.so
+        clog_info("chop(find('/') + 1) => [" string_fmt "]", string_fmt_arg(string_chop(str, string_find(str, '/') + 1)));      // applets/model_viewer.so
 
         clog_info("chop(rfind('.')) => [" string_fmt "]", string_fmt_arg(string_chop(str, string_rfind(str, '.'))));            // .so
         clog_info("chop(rfind('/') + 1) => [" string_fmt "]", string_fmt_arg(string_chop(str, string_rfind(str, '/') + 1)));    // model_viewer.so
 
         clog_info("rchop(find('/')) => [" string_fmt "]", string_fmt_arg(string_rchop(str, string_find(str, '/'))));            // {FOO}
         clog_info("rchop(find('}') + 1) => [" string_fmt "]", string_fmt_arg(string_rchop(str, string_find(str, '}') + 1)));    // {FOO}
+    }
+
+    // find + cut
+    {
+        struct string path = make_string("{FOO}/applets/model_viewer.so");
+        clog_info(">> [" string_fmt "] (length: %ld chars)", string_fmt_arg(path), path.length);
+
+        struct string_pair parts = {0};
+
+        parts = string_cut(path, string_find(path, '/'));
+        clog_info("cut(find('/')) => ["string_fmt"], ["string_fmt"]", string_fmt_arg(parts.left), string_fmt_arg(parts.right)); // [{FOO}], [applets/model_viewer.so]
+
+        parts = string_cut(path, string_rfind(path, '/'));
+        clog_info("cut(rfind('/')) => ["string_fmt"], ["string_fmt"]", string_fmt_arg(parts.left), string_fmt_arg(parts.right));// [{FOO}/applets], [model_viewer.so]
+
+        parts = string_cut(path, string_rfind(path, '.'));
+        clog_info("cut(rfind('.')) => ["string_fmt"], ["string_fmt"]", string_fmt_arg(parts.left), string_fmt_arg(parts.right));// [{FOO}/applets/model_viewer], [so]
     }
 }
 
@@ -90,14 +114,50 @@ void _test_string_substr()
         struct string str = make_string("/foo/bar.so");
         clog_info(">> [" string_fmt "]", string_fmt_arg(str));
 
-        clog_info("substr(0, 0) => "string_fmt, string_fmt_arg(string_substr(str, 0, 0)));      // /foo/bar.so
-        clog_info("substr(0, 5) => "string_fmt, string_fmt_arg(string_substr(str, 0, 5)));      // /foo/
-        clog_info("substr(1, -7) => "string_fmt, string_fmt_arg(string_substr(str, 1, -7)));    // foo
-        clog_info("substr(5, -3) => "string_fmt, string_fmt_arg(string_substr(str, 5, -3)));    // bar
+        struct string str_out = {0};
 
-        clog_info("substr(5, 0) => "string_fmt, string_fmt_arg(string_substr(str, 5, 0)));      // bar.so
-        clog_info("substr(-6, 3) => "string_fmt, string_fmt_arg(string_substr(str, -6, 3)));    // bar
-        clog_info("substr(-3, 0) => "string_fmt, string_fmt_arg(string_substr(str, -3, 0)));    // .so
+        str_out = string_substr(str, 0, 0);
+        clog_info("substr(0, 0) => "string_fmt, string_fmt_arg(str_out));      // /foo/bar.so
+
+        str_out = string_substr(str, 1, 0);
+        clog_info("substr(1, 0) => "string_fmt, string_fmt_arg(str_out));       // foo/bar.so
+
+        str_out = string_substr(str, 0, -1);
+        clog_info("substr(0, -1) => "string_fmt, string_fmt_arg(str_out));      // /foo/bar.s
+
+        str_out = string_substr(str, 1, -1);
+        clog_info("substr(1, -1) => "string_fmt, string_fmt_arg(str_out));      // foo/bar.s
+
+        str_out = string_substr(str, 0, 5);
+        clog_info("substr(0, 5) => "string_fmt, string_fmt_arg(str_out));       // /foo/
+
+        str_out = string_substr(str, 1, -7);
+        clog_info("substr(1, -7) => "string_fmt, string_fmt_arg(str_out));      // foo
+
+        str_out = string_substr(str, 5, -3);
+        clog_info("substr(5, -3) => "string_fmt, string_fmt_arg(str_out));      // bar
+
+        str_out = string_substr(str, 5, 0);
+        clog_info("substr(5, 0) => "string_fmt, string_fmt_arg(str_out));       // bar.so
+
+        str_out = string_substr(str, -6, 3);
+        clog_info("substr(-6, 3) => "string_fmt, string_fmt_arg(str_out));      // bar
+
+        str_out = string_substr(str, -3, 0);
+        clog_info("substr(-3, 0) => "string_fmt, string_fmt_arg(str_out));      // .so
+
+        // out of range tests. all of them will trigger an error (returned substr equals to input str)
+        str_out = string_substr(str, 99, 0);
+        clog_info("substr(99, 0) => "string_fmt, string_fmt_arg(str_out));      // /foo/bar.so
+
+        str_out = string_substr(str, -99, 0);
+        clog_info("substr(-99, 0) => "string_fmt, string_fmt_arg(str_out));     // /foo/bar.so
+
+        str_out = string_substr(str, 0, 99);
+        clog_info("substr(0, 99) => "string_fmt, string_fmt_arg(str_out));      // /foo/bar.so
+
+        str_out = string_substr(str, 0, -99);
+        clog_info("substr(0, -99) => "string_fmt, string_fmt_arg(str_out));     // /foo/bar.so
     }
 
     // perl tests
@@ -114,8 +174,6 @@ void _test_string_substr()
 
 result_e main()
 {
-    // NOTE check results using single step debugging
-    // FIXME make unit tests
     _test_string_checks();
     _test_string_substr();
     _test_string_trim_chop();
@@ -124,6 +182,8 @@ result_e main()
 
     // mutable storage (allocators needed)
     {
+        // struct arena *arena = NULL;
+
         // struct string foo = make_string("/foo/%s/baz", "bar")
         // clog_info(foo);
 
@@ -136,7 +196,6 @@ result_e main()
     // string lists
     {
         // struct string path = make_string("/path/to/foo/bar.png")
-        // struct string_list items = string_split(path, "/");
     }
 
     return RC_SUCCESS;
