@@ -66,3 +66,9 @@
 // stolen from google chromium :)
 #define COUNT_OF(x) \
     ((sizeof(x)/sizeof(0[x])) / ((size_t)(!(sizeof(x) % sizeof(0[x])))))
+
+////////////////////////////////////////////////////////////////////////////////
+
+#define KiloBytes(n) (1024 * n)
+#define MegaBytes(n) (1024 * KiloBytes(n))
+#define GigaBytes(n) (1024 * MegaBytes(n))
