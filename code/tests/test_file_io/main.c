@@ -12,8 +12,6 @@
 
 result_e main()
 {
-    struct arena *arena = NULL;
-
     struct string path_abs = make_string("/opt/csr");
     struct string path_rel = make_string("resources/fonts/Consolas.ttf");
 
@@ -61,7 +59,7 @@ result_e main()
     // test path api
     {
         // str_in = path_meh;
-        // str_out = fio_fs_normalize_path(str_in, arena);
+        // str_out = fio_fs_normalize_path(str_in);
         // _print_result_ab("fio_fs_normalize_path", str_in, str_out);         // /foo/bar/baz
 
         result = fio_fs_is_valid_path(path_abs);                            // true
@@ -75,7 +73,7 @@ result_e main()
 
         ////////////////////////////////////////////////////////////
 
-        str_out = fio_fs_get_current_path(arena);
+        str_out = fio_fs_get_current_path();
         _print_result_a("fio_fs_get_current_path", str_out);                // <your shell cwd>
         
         str_in = path_abs;
@@ -87,7 +85,7 @@ result_e main()
         _print_result_ab("fio_fs_get_parent_path", str_in, str_out);        // resources/fonts
 
         str_in = path_rel;
-        str_out = fio_fs_get_absolute_path(str_in, arena);
+        str_out = fio_fs_get_absolute_path(str_in);
         _print_result_ab("fio_fs_get_absolute_path", str_in, str_out);      // /opt/csr/resources/fonts/Consolas.ttf
 
         // str_in = str_out;

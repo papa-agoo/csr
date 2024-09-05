@@ -37,4 +37,5 @@ target_sources(${MY_TARGET}
         math/transform.c
 
         memory/arena.c
+        memory/arena_priv.c
 )

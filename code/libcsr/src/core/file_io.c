@@ -1,23 +1,11 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include <csr/core/file_io.h>
+#include <csr/core/memory/arena_priv.h>
 
 #include <sys/stat.h>
 #include <unistd.h>
 #include <ftw.h>
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
-// FIXME this is needed until cstr_from_string() is impl.
-#define STR_BUF_SIZE 256
-static u8 g_str_buf[STR_BUF_SIZE];
-
-static inline string_cstr _cstr_from_string(struct string str)
-{
-    snprintf(g_str_buf, STR_BUF_SIZE, string_fmt, string_fmt_arg(str));
-
-    return g_str_buf;
-}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -111,8 +99,10 @@ fio_file* fio_open(struct string path, enum fio_mode mode)
         }
     }
 
-    file->stream = fopen(_cstr_from_string(path), mode_cstr);
-    check(file->stream, "could not open file : "string_fmt, string_fmt_arg(path));
+    string_cstr path_cstr = cstr_from_string(_arena_priv_ptr(), path);
+
+    file->stream = fopen(path_cstr, mode_cstr);
+    check(file->stream, "could not open file : %s", path_cstr);
 
     struct stat buffer = {0};
     check_expr(fstat(fileno(file->stream), &buffer) == 0);
@@ -245,7 +235,7 @@ error:
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-struct string fio_fs_normalize_path(struct string path, struct arena *arena)
+struct string fio_fs_normalize_path(struct string path)
 {
     check_quiet(string_is_valid(path));
 
@@ -254,7 +244,8 @@ struct string fio_fs_normalize_path(struct string path, struct arena *arena)
         path.length--;
     }
 
-    // FIXME need arena impl.
+    struct arena *arena = _arena_priv_ptr();
+    check_ptr(arena);
 
 error:
     return path;
@@ -281,14 +272,29 @@ bool fio_fs_is_relative_path(struct string path)
     return !fio_fs_is_absolute_path(path);
 }
 
-struct string fio_fs_get_current_path(struct arena *arena)
+struct string fio_fs_get_current_path()
 {
-    // check_ptr(arena);
+    struct arena *arena = _arena_priv_ptr();
+    check_ptr(arena);
 
-    string_cstr cwd = getcwd(NULL, 0);
-    check_ptr(cwd);
+    static string_cstr cwd = NULL;
 
-    // FIXME need arena impl.
+    if (!cwd)
+    {
+        // get current workdir and its length
+        u8* cwd_tmp = getcwd(NULL, 0);
+        check_ptr(cwd_tmp);
+
+        size_t str_len = strlen(cwd_tmp);
+
+        // try to copy the cwd to our arena space
+        cwd = memcpy(arena_push(arena, str_len), cwd_tmp, str_len);
+
+        // cwd_tmp is not needed anymore
+        free(cwd_tmp);
+
+        check_ptr(cwd);
+    }
 
     return make_string_from_cstr(cwd);
 
@@ -306,15 +312,14 @@ error:
     return path;
 }
 
-struct string fio_fs_get_absolute_path(struct string path, struct arena *arena)
+struct string fio_fs_get_absolute_path(struct string path)
 {
     check_expr(string_is_valid(path));
-    // check_ptr(arena);
 
-    string_cstr real_path = realpath(_cstr_from_string(path), NULL);
+    string_cstr path_cstr = cstr_from_string(_arena_priv_ptr(), path);
+
+    string_cstr real_path = realpath(path_cstr, NULL);
     check_ptr(real_path);
-
-    // FIXME need arena impl.
 
     return make_string_from_cstr(real_path);
 
@@ -371,8 +376,10 @@ static enum fio_file_type _get_file_type(struct string path)
 {
     check_expr(string_is_valid(path));
 
+    string_cstr path_cstr = cstr_from_string(_arena_priv_ptr(), path);
+
     struct stat buffer = {0};
-    check_quiet(lstat(_cstr_from_string(path), &buffer)== 0);
+    check_quiet(lstat(path_cstr, &buffer)== 0);
 
     // for now only regular files and directories are needed
     if (S_ISREG(buffer.st_mode)) return FIO_FILE_TYPE_REGULAR_FILE;
@@ -410,21 +417,26 @@ result_e fio_fs_create_directory(struct string path)
 
     s32 position = -1;
 
+    // create the full path recursively
     do {
+        // find each '/' and chop the right side from that position.
+        // use the result to create a directory for that level of depth (if possible).
         position = string_find_at(path, position + 1, '/');
 
-        struct string my_path = string_substr(path, 0, position + 1);
-        my_path = fio_fs_normalize_path(my_path, NULL);
+        struct string my_path = string_rchop(path, position + 1);
+        my_path = fio_fs_normalize_path(my_path);
+
+        string_cstr path_cstr = cstr_from_string(_arena_priv_ptr(), my_path);
 
         // no file conflict
         //   - create the directory and continue the loop :)
         if (!fio_fs_exists(my_path))
         {
-            clog_trace("creating (directory) "string_fmt" ...", string_fmt_arg(my_path));
+            clog_trace("creating (directory) %s ...", path_cstr);
 
             // file perms: rwx for owner and group, rx for others
-            s32 result = mkdir(_cstr_from_string(my_path), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-            check(result == 0, "could not create directory : "string_fmt, string_fmt_arg(my_path));
+            s32 result = mkdir(path_cstr, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+            check(result == 0, "could not create directory : %s", path_cstr);
 
             continue;
         }
@@ -432,7 +444,7 @@ result_e fio_fs_create_directory(struct string path)
         // file conflict
         //   - if it's a directory, just skip it
         //   - if it's a file of some kind (regular, symlink, ...)
-        check(fio_fs_is_directory(my_path), "file conflict, aborting ... ("string_fmt")", string_fmt_arg(my_path));
+        check(fio_fs_is_directory(my_path), "file conflict, aborting ... (%s)", path_cstr);
 
     } while (position != -1);
 
@@ -453,8 +465,10 @@ result_e fio_fs_remove(struct string path)
 {
     check_expr(fio_fs_exists(path));
 
-    s32 result = nftw(_cstr_from_string(path), _on_remove_element, 64, FTW_DEPTH | FTW_PHYS);
-    check(result == 0, "could not remove file or directory ... ("string_fmt")", string_fmt_arg(path));
+    string_cstr path_cstr = cstr_from_string(_arena_priv_ptr(), path);
+
+    s32 result = nftw(path_cstr, _on_remove_element, 64, FTW_DEPTH | FTW_PHYS);
+    check(result == 0, "could not remove file or directory ... (%s)", path_cstr);
 
     return RC_SUCCESS;
 

@@ -3,7 +3,6 @@
 #pragma once
 
 #include <csr/core/base.h>
-#include <csr/core/memory.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -59,7 +58,7 @@ FILE* fio_get_stream(fio_file *file);
 ////////////////////////////////////////////////////////////
 
 // try to normalize an ugly path (ie. //foo/bar/./baz/ -> /foo/bar/baz)
-struct string fio_fs_normalize_path(struct string path, struct arena *arena);
+struct string fio_fs_normalize_path(struct string path);
 
 
 // check if a path is valid
@@ -73,13 +72,13 @@ bool fio_fs_is_relative_path(struct string path);
 
 
 // current working directory
-struct string fio_fs_get_current_path(struct arena *arena);
+struct string fio_fs_get_current_path();
 
 // get the full path to the parent (normally a directory)
 struct string fio_fs_get_parent_path(struct string path);
 
 // get the full path to the relative path
-struct string fio_fs_get_absolute_path(struct string relative_path, struct arena *arena);
+struct string fio_fs_get_absolute_path(struct string relative_path);
 
 // get path relative to current path (working directory)
 // struct string fio_fs_get_relative_path(struct string absolute_path);
