@@ -4,10 +4,15 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+#define _arena_zero_mem(arena) \
+    memset(arena->data + arena->position, 0, arena->size_free);
+
 struct arena
 {
-    u64 size;
     u64 position;
+
+    u64 size;
+    u64 size_free;
 
     u8 *data;
 };
@@ -20,6 +25,7 @@ struct arena* arena_create(u64 size)
     check_mem(arena);
 
     arena->size = size;
+    arena->size_free = size;
     arena->position = 0;
 
     arena->data = calloc(1, size);
@@ -48,10 +54,11 @@ error:
 void* arena_push(struct arena *arena, u64 size)
 {
     check_ptr(arena);
-    check_expr(size > 0 && size < (arena->size - arena->position));
+    check_expr(size > 0 && size < arena->size_free);
 
     void* ptr = arena->data + arena->position;
     arena->position += size;
+    arena->size_free -= size;
 
     return ptr;
 
@@ -59,14 +66,45 @@ error:
     return NULL;
 }
 
-void arena_pop(struct arena *arena, u64 position)
+void arena_pop(struct arena *arena, u64 size)
+{
+    check_ptr(arena);
+    check_expr(size >= 0 && size <= arena->position);
+
+    arena->position -= size;
+    arena->size_free += size;
+
+error:
+    return;
+}
+
+void arena_pop_zero(struct arena *arena, u64 size)
+{
+    arena_pop(arena, size);
+
+    _arena_zero_mem(arena);
+
+error:
+    return;
+}
+
+void arena_pop_to(struct arena *arena, u64 position)
 {
     check_ptr(arena);
     check_expr(position >= 0 && position <= arena->position);
 
     arena->position = position;
+    arena->size_free = arena->size - arena->position;
 
-    // FIXME memset() zero for arena_reset() ?
+error:
+    return;
+}
+
+void arena_pop_to_zero(struct arena *arena, u64 position)
+{
+    arena_pop_to(arena, position);
+
+    _arena_zero_mem(arena);
 
 error:
     return;
