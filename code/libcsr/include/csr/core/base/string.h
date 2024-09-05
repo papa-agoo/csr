@@ -25,12 +25,11 @@ typedef const char* string_cstr;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-string_cstr cstr_from_string(struct arena *arena, struct string str);
-
 struct string string_create(const u8* str, u64 length);
-
 struct string string_create_fmt(struct arena *arena, string_cstr fmt, ...);
 struct string string_create_vfmt(struct arena *arena, string_cstr fmt, va_list args);
+
+string_cstr cstr_from_string(struct arena *arena, struct string str);
 
 bool string_is_valid(struct string str);
 bool string_equals(struct string str, struct string other);

@@ -182,13 +182,26 @@ result_e main()
 
     // mutable storage (allocators needed)
     {
-        // struct arena *arena = NULL;
+        struct arena *arena = make_arena();
+        check_ptr(arena);
 
-        // struct string foo = make_string("/foo/%s/baz", "bar")
-        // clog_info(foo);
+        struct string str = {0};
+        string_cstr cstr = "";
 
-        // struct string baz = string_replace(bar, ".so", ".ini")
-        // clog_info(baz);
+        str = string_create_fmt(arena, "%s", "foo");
+        clog_info("merged str: "string_fmt, string_fmt_arg(str));
+
+        cstr = cstr_from_string(arena, str);
+        clog_info("built cstr: %s", cstr);
+
+
+        str = string_create_fmt(arena, "%s/%s.%s", "{FOO}", "bar/baz", "so");
+        clog_info("merged str: "string_fmt, string_fmt_arg(str));
+
+        cstr = cstr_from_string(arena, str);
+        clog_info("built cstr: %s", cstr);
+
+        arena_destroy(arena);
     }
 
     ////////////////////////////////////////
@@ -199,4 +212,7 @@ result_e main()
     }
 
     return RC_SUCCESS;
+
+error:
+    return RC_FAILURE;
 }

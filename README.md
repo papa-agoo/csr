@@ -100,9 +100,9 @@ The main focus lies on the Model Viewer Applet (model_viewer.so) which will be a
     - [ ] Per applet config ({APPLET_CONFIG_DIR}/my_applet.ini)
     - [x] App home dir ({USER_HOME_DIR}/.csr)
   - [ ] Library
-    - [ ] Modern string impl. (immutable, length based)
+    - [x] Modern string impl. (immutable, length based)
     - [ ] Arena memory allocator (heap und pool allocators coming later)
-    - [ ] File I/O (OS level R/W API)
+    - [x] File I/O (OS level R/W API)
 
 <br/>
 

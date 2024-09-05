@@ -4,6 +4,23 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+string_cstr cstr_from_string(struct arena *arena, struct string str)
+{
+    check_ptr(arena);
+    check_expr(string_is_valid(str));
+
+    void* ptr = arena_push(arena, str.length + 1);
+    check_ptr(ptr);
+
+    s32 bytes_written = snprintf(ptr, str.length + 1, string_fmt, string_fmt_arg(str));
+    check_expr(bytes_written == str.length);
+
+    return ptr;
+
+error:
+    return "";
+}
+
 struct string string_create(const u8* str, u64 length)
 {
     return (struct string) {.ptr = str, .length = length};
@@ -11,16 +28,21 @@ struct string string_create(const u8* str, u64 length)
 
 struct string string_create_fmt(struct arena *arena, string_cstr fmt, ...)
 {
-    struct string str = {0};
+    check_ptr(arena);
+    check_ptr(fmt);
 
-    // 1. calc formatted string length
-    //      - str.length = snprintf(0, 0, ...)
+    ////////////////////////////////////////
 
-    // 2. allocate memory
-    //      - str.ptr = arena_allocate()
+    va_list args;
+    va_start(args, fmt);
 
-    // 3. write the formatted string
-    //      - snprintf(str.ptr, str.length, ...)
+    struct string str = string_create_vfmt(arena, fmt, args);
+
+    va_end(args);
+
+    ////////////////////////////////////////
+
+    return str;
 
 error:
     return make_string("");
@@ -28,6 +50,34 @@ error:
 
 struct string string_create_vfmt(struct arena *arena, string_cstr fmt, va_list args)
 {
+    check_ptr(arena);
+    check_ptr(fmt);
+    check_ptr(args);
+
+    ////////////////////////////////////////
+
+    va_list args_new;
+    va_copy(args_new, args);
+
+    // 1. calc formatted string length (including null terminator)
+    u64 str_length = vsnprintf(NULL, 0, fmt, args) + 1;
+    check_expr(str_length > 1);
+
+    // 2. request memory address
+    void* str_ptr = arena_push(arena, str_length);
+    check_ptr(str_ptr);
+
+    // 3. write the formatted string (including null terminator)
+    s32 bytes_written = vsnprintf(str_ptr, str_length, fmt, args_new);
+    check_expr(bytes_written == str_length - 1);
+
+    va_end(args_new);
+
+    ////////////////////////////////////////
+
+    // exclude null terminator for str_length
+    return (struct string) {.length = str_length - 1, .ptr = str_ptr};
+
 error:
     return make_string("");
 }
