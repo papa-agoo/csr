@@ -6,10 +6,15 @@
 #include <csr/applet/applet_mgr.h>
 #include <csr/applet/applet_priv.h>
 
+// >>> FIXME
+#include <csr/core/path.h> // kio_env_xxx()
+// <<< FIXME
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #define applet_ptr() applet_mgr_get_applet()
 #define applet_state_ptr() (&applet_ptr()->state)
+#define applet_arena_ptr() (applet_state_ptr()->arena)
 
 #define check_applet_initialized() check_expr(applet_ptr() && applet_ptr()->is_initialized)
 
@@ -17,39 +22,36 @@
 ////////////////////////////////////////////////////////////////////////////////
 // logging
 ////////////////////////////////////////////////////////////////////////////////
-void aio_log_message(enum log_level_type level, const char* message, ...)
+void aio_log_message(enum log_level_type level, string_cstr fmt, ...)
 {
     check_applet_initialized();
 
     check_expr(level <= LOG_LEVEL_MAX);
-    check_ptr(message);
+    check_ptr(fmt);
+
+    struct arena *arena = applet_arena_ptr();
+    check_ptr(arena);
 
     ////////////////////////////////////////
 
     va_list args;
-    va_start(args, message);
+    va_start(args, fmt);
 
-    va_list args_dupe;
-    va_copy(args_dupe, args);
-
-    size_t msg_len = vsnprintf(NULL, 0, message, args);
-    char *msg_tmp = malloc(msg_len+1);
-
-    vsnprintf(msg_tmp, msg_len + 1, message, args_dupe);
+    struct string message = string_create_vfmt(arena, fmt, args);
 
     va_end(args);
-    va_end(args_dupe);
 
     ////////////////////////////////////////
 
-    const char *applet_filename = applet_get_filename(applet_ptr());
+    // FIXME scratch arena (pop strings after kio_log_message())
+    string_cstr message_cstr = cstr_from_string(arena, message);
+    string_cstr filename_cstr = cstr_from_string(arena, applet_get_filename(applet_ptr()));
 
-    kio_log_message(level, applet_filename, msg_tmp);
+    kio_log_message(level, filename_cstr, message_cstr);
 
 error:
     return;
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // user config
@@ -58,9 +60,38 @@ struct config* aio_get_config()
 {
     check_applet_initialized();
 
-    klog_error("per applet configs not impl. yet :)");
+    struct arena *arena = applet_arena_ptr();
+    check_ptr(arena);
 
-    // return applet_state_ptr()->config;
+    ////////////////////////////////////////
+
+    if (!applet_state_ptr()->config)
+    {
+        // string_cstr config_dir = kio_env_expand_var("APPLET_CONFIG_DIR");
+        // string_cstr config_file = string_replace(arena, applet_get_filename(applet_ptr()), ".so", ".ini");
+        // struct string config_path = string_create_fmt(arena, "%s/%s", config_dir, config_file);
+
+        // >>> FIXME ugly stuff
+        string_cstr path_cstr = NULL;
+        {
+            struct string filename = applet_get_filename(applet_ptr());
+            filename = string_rchop(filename, string_rfind(filename, '.'));
+
+            struct string config_dir = make_string_from_cstr(path_get("{APPLET_CONFIG_DIR}"));
+
+            struct string path = string_create_fmt(arena, string_fmt"/"string_fmt".ini",
+                string_fmt_arg(config_dir), string_fmt_arg(filename));
+
+            path_cstr = cstr_from_string(arena, path);
+        }
+        // <<< FIXME
+
+        klog_trace("loading ini file ... (%s)", path_cstr);
+
+        applet_state_ptr()->config = config_create_from_ini(path_cstr);
+    }
+
+    return applet_state_ptr()->config;
 
 error:
     return NULL;
@@ -118,7 +149,7 @@ error:
 ////////////////////////////////////////////////////////////////////////////////
 // user interface
 ////////////////////////////////////////////////////////////////////////////////
-result_e aio_add_ui_menu(const char *key, struct ui_menu *menu)
+result_e aio_add_ui_menu(string_cstr key, struct ui_menu *menu)
 {
     check_applet_initialized();
 
@@ -128,7 +159,7 @@ error:
     return RC_FAILURE;
 }
 
-struct ui_menu* aio_get_ui_menu(const char *key)
+struct ui_menu* aio_get_ui_menu(string_cstr key)
 {
     check_applet_initialized();
 
@@ -138,7 +169,7 @@ error:
     return NULL;
 }
 
-result_e aio_add_ui_window(const char* key, struct ui_window *window)
+result_e aio_add_ui_window(string_cstr  key, struct ui_window *window)
 {
     check_applet_initialized();
 
@@ -148,7 +179,7 @@ error:
     return RC_FAILURE;
 }
 
-struct ui_window* aio_get_ui_window(const char* key)
+struct ui_window* aio_get_ui_window(string_cstr  key)
 {
     check_applet_initialized();
 
@@ -249,7 +280,7 @@ error:
     return;
 }
 
-struct screen* aio_add_screen(const char *key, struct screen_create_info *ci)
+struct screen* aio_add_screen(string_cstr key, struct screen_create_info *ci)
 {
     check_applet_initialized();
 
@@ -266,26 +297,31 @@ struct screen* aio_add_screen(const char *key, struct screen_create_info *ci)
     check_ptr(screen);
 
     // show screen info
-    const char *screen_name = screen_get_name(screen);
+    string_cstr screen_name = screen_get_name(screen);
     struct vec2 screen_size = screen_get_size(screen);
 
     enum screen_surface_type surface_type = screen_get_surface_type(screen);
-    const char *surface_type_str = screen_surface_type_cstr(surface_type);
+    string_cstr surface_type_str = screen_surface_type_cstr(surface_type);
 
     alog_info("adding screen (%s) ...", screen_name);
     alog_info(" - %s (%.0fx%.0f)", surface_type_str, screen_size.w, screen_size.h);
 
     ////////////////////////////////////////
 
+    struct arena *arena = applet_arena_ptr();
+    check_ptr(arena);
+
     // create window
     struct ui_window *window = calloc(1, sizeof(struct ui_window));
     check_mem(window);
 
-    char win_title[64];
-    snprintf(win_title, 64, "%s##%s", screen_name, applet_get_filename(applet_ptr())); // FIXME make_string();
+    // >>> FIXME ugly stuff
+    struct string applet_filename = applet_get_filename(applet_ptr());
+    struct string win_title = string_create_fmt(arena, "%s##"string_fmt, screen_name, string_fmt_arg(applet_filename));
 
-    ui_window_init(window, win_title);
+    ui_window_init(window, cstr_from_string(arena, win_title));
     ui_view_init(&window->view, UI_VIEW_TYPE_SCREEN, screen);
+    // <<< FIXME
 
     // window and screen ownership go to the ui ctx (will be freed there)
     aio_add_ui_window(key, window);
@@ -296,7 +332,7 @@ error:
     return NULL;
 }
 
-struct screen* aio_get_screen(const char *key)
+struct screen* aio_get_screen(string_cstr key)
 {
     check_applet_initialized();
 

@@ -1,7 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#include <csr/core/path.h>
-
 #define KLOG_MODULE_NAME applet_mgr
 #include <csr/kernel/kio.h>
 
@@ -31,11 +29,14 @@ result_e applet_mgr_init(struct applet_mgr_init_info *init_info)
     csr_assert(!mgr_ptr()->is_initialized);
 
     check_ptr(init_info);
-    check_ptr(init_info->db_scan_path);
+    check_expr(string_is_valid(init_info->db_scan_path));
 
     ////////////////////////////////////////
 
-    mgr_ptr()->applet_db = applet_db_create(init_info->db_scan_path);
+    struct arena* arena = kio_mem_get_arena_allocator();
+    check_ptr(arena);
+
+    mgr_ptr()->applet_db = applet_db_create(arena, init_info->db_scan_path);
     check_ptr(mgr_ptr()->applet_db);
 
     mgr_ptr()->callbacks = init_info->callbacks;
@@ -90,10 +91,16 @@ void applet_mgr_update_db()
 
     klog_info("updating applet db ...");
 
+    struct arena* arena = kio_mem_get_arena_allocator();
+    check_ptr(arena);
+
     struct applet_db *applet_db = mgr_ptr()->applet_db;
-    applet_db_update(applet_db);
+    applet_db_update(arena, applet_db);
 
     klog_info("  - applets found : %d", applet_db_get_entry_count(applet_db));
+
+error:
+    return;
 }
 
 bool applet_mgr_is_applet_loaded()
@@ -101,11 +108,11 @@ bool applet_mgr_is_applet_loaded()
     return mgr_ptr()->applet != NULL;
 }
 
-result_e applet_mgr_load_applet(const char* filename)
+result_e applet_mgr_load_applet(struct string filename)
 {
     csr_assert(mgr_ptr()->is_initialized);
 
-    check_ptr(filename);
+    check_expr(string_is_valid(filename));
 
     ////////////////////////////////////////
 
@@ -113,14 +120,20 @@ result_e applet_mgr_load_applet(const char* filename)
         applet_mgr_unload_applet();
     }
 
-    klog_notice("loading applet : %s", filename);
+    klog_notice("loading applet : "string_fmt, string_fmt_arg(filename));
 
-    const char *db_scan_path = applet_db_get_scan_path(mgr_ptr()->applet_db);
-    const char *path_to_file = path_merge(db_scan_path, filename); // FIXME improve path api
+    // build applet path
+    struct arena* arena = kio_mem_get_arena_allocator();
+    check_ptr(arena);
+
+    struct string db_scan_path = applet_db_get_scan_path(mgr_ptr()->applet_db);
+
+    struct string path_to_file = string_create_fmt(arena,
+        string_fmt"/"string_fmt, string_fmt_arg(db_scan_path), string_fmt_arg(filename));
 
     // load applet
     struct applet *applet = applet_create(path_to_file);
-    check(applet != NULL, "could not load applet : %s", path_to_file);
+    check(applet != NULL, "could not load applet : "string_fmt, string_fmt_arg(path_to_file));
 
     mgr_ptr()->applet = applet;
 
@@ -136,7 +149,7 @@ result_e applet_mgr_load_applet(const char* filename)
 
     if (R_FAILURE(result))
     {
-        klog_error("applet->startup() failed (%s) ...", applet_get_filename(applet));
+        klog_error("applet->startup() failed ("string_fmt") ...", string_fmt_arg(applet_get_filename(applet)));
 
         applet_mgr_unload_applet();
 
@@ -175,7 +188,7 @@ void applet_mgr_unload_applet()
         mgr_ptr()->callbacks.on_pre_applet_unload(applet);
     }
 
-    klog_notice("unloading applet : %s", applet_get_filename(applet));
+    klog_notice("unloading applet : "string_fmt, string_fmt_arg(applet_get_filename(applet)));
 
     applet_destroy(applet);
 

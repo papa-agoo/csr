@@ -7,6 +7,7 @@
 
 #include <csr/platform.h>
 #include <csr/core/clock.h>
+#include <csr/core/memory.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -23,6 +24,11 @@ struct ksrv_core
 
     struct mainloop* mainloop;
     void (*kernel_tick_cb)();
+
+    // allocators
+    struct {
+        struct arena* arena;
+    } allocator;
 
     struct ksrv_core_conf *conf;
 };

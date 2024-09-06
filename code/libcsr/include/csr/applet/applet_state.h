@@ -12,8 +12,12 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+struct arena;
+
 struct applet_state
 {
+    struct arena *arena;
+
     struct clock *clock;
     struct config *config;
 

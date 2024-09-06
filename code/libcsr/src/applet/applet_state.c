@@ -1,5 +1,8 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+#include <csr/core/file_io.h>
+#include <csr/core/memory/arena.h>
+
 #include <csr/applet/applet_priv.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -14,13 +17,13 @@ void applet_state_init(struct applet *applet)
 
     struct applet_state *state = &applet->state;
 
+    // arena allocator
+    state->arena = make_arena();
+    check_ptr(state->arena);
+
     // clock
     state->clock = clock_create("VTC");
     check_ptr(state->clock);
-
-    // config
-    state->config = config_create();
-    check_ptr(state->config);
 
     // ui
     state->ui = ui_ctx_create("Applet");
@@ -67,10 +70,26 @@ void applet_state_quit(struct applet *applet)
     ui_ctx_destroy(state->ui);
 
     // config
-    config_destroy(state->config);
+    if (state->config)
+    {
+        // create the config dir
+        struct string config_path = make_string_from_cstr(config_get_filename(state->config));
+        struct string config_dir = fio_fs_get_parent_path(config_path);
+
+        if (!fio_fs_exists(config_dir)) {
+            fio_fs_create_directory(config_dir);
+        }
+
+        // save config file
+        config_flush(state->config);
+        config_destroy(state->config);
+    }
 
     // clock
     clock_destroy(state->clock);
+
+    // arena
+    arena_destroy(state->arena);
 
     ////////////////////////////////////////
 

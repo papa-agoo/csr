@@ -5,16 +5,16 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-struct applet* applet_create(const char* path_to_file)
+struct applet* applet_create(struct string path)
 {
-    check_ptr(path_to_file);
+    check_expr(string_is_valid(path));
 
     struct applet* applet = calloc(1, sizeof(struct applet));
     check_mem(applet);
 
     // load plugin
-    result_e result = applet_plugin_load(&applet->plugin, path_to_file);
-    check_result(result, "applet_plugin_load() failed : %s", path_to_file);
+    result_e result = applet_plugin_load(&applet->plugin, path);
+    check_result(result, "applet_plugin_load() failed : "string_fmt, string_fmt_arg(path));
 
     applet_state_init(applet);
 
@@ -97,44 +97,44 @@ error:
     return;
 }
 
-const char* applet_get_name(struct applet* applet)
+struct string applet_get_name(struct applet* applet)
 {
     check_ptr(applet);
 
     return applet->plugin.get_name();
 
 error:
-    return "<unknown>";
+    return make_string("<unknown>");
 }
 
-const char* applet_get_description(struct applet* applet)
+struct string applet_get_description(struct applet* applet)
 {
     check_ptr(applet);
 
     return applet->plugin.get_description();
 
 error:
-    return "<unknown>";
+    return make_string("<unknown>");
 }
 
-const char* applet_get_version_str(struct applet* applet)
+struct string applet_get_version_str(struct applet* applet)
 {
     check_ptr(applet);
 
     return version_str(applet->plugin.get_version());
 
 error:
-    return "<unknown>";
+    return make_string("<unknown>");
 }
 
-const char* applet_get_filename(struct applet* applet)
+struct string applet_get_filename(struct applet* applet)
 {
     check_ptr(applet);
 
     return applet->plugin.filename;
 
 error:
-    return "<unknown>";
+    return make_string("<unknown>");
 }
 
 struct ui_ctx* applet_get_ui_ctx(struct applet *applet)

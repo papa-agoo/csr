@@ -64,14 +64,14 @@ error:
     return;
 }
 
-static const char* _plugin_get_name()
+static struct string _plugin_get_name()
 {
-    return "Hello Pixelbuffer";
+    return make_string("Hello Pixelbuffer");
 }
 
-static const char* _plugin_get_description()
+static struct string _plugin_get_description()
 {
-    return "Pixelbuffer rasterization Examples.";
+    return make_string("Pixelbuffer rasterization Examples.");
 }
 
 static struct version _plugin_get_version()

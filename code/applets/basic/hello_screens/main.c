@@ -6,14 +6,14 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-static const char* _plugin_get_name()
+static struct string _plugin_get_name()
 {
-    return "Hello Screens";
+    return make_string("Hello Screens");
 }
 
-static const char* _plugin_get_description()
+static struct string _plugin_get_description()
 {
-    return "Examples for Pixelbuffers and XGL / OpenGL Framebuffer usage";
+    return make_string("Examples for Pixelbuffers and XGL / OpenGL Framebuffer usage");
 }
 
 static struct version _plugin_get_version()

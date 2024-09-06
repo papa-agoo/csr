@@ -4,14 +4,14 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-static const char* _plugin_get_name()
+static struct string _plugin_get_name()
 {
-    return "Minimal";
+    return make_string("Minimal");
 }
 
-static const char* _plugin_get_description()
+static struct string _plugin_get_description()
 {
-    return "Minimal Example (no ui, no rendering, nothing ...)";
+    return make_string("Minimal Example (no ui, no rendering, nothing ...)");
 }
 
 static struct version _plugin_get_version()

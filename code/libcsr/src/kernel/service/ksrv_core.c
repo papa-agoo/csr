@@ -202,6 +202,10 @@ result_e ksrv_core_init(struct ksrv_core_init_info *init_info)
 
     ////////////////////////////////////////
 
+    // create allocators
+    srv->allocator.arena = make_arena();
+    check_ptr(srv->allocator.arena);
+
     // create clock
     srv->clock = clock_create("main");
     check_ptr(srv->clock);
@@ -245,6 +249,8 @@ void ksrv_core_quit()
     platform_quit();
 
     log_db_destroy(srv->log_db);
+
+    arena_destroy(srv->allocator.arena);
 
     ////////////////////////////////////////
 

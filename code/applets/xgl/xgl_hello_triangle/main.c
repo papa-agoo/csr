@@ -71,14 +71,14 @@ error:
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-static const char* _plugin_get_name()
+static struct string _plugin_get_name()
 {
-    return "XGL Hello Triangle";
+    return make_string("XGL Hello Triangle");
 }
 
-static const char* _plugin_get_description()
+static struct string _plugin_get_description()
 {
-    return "Rendering a Triangle using XGL";
+    return make_string("Rendering a Triangle using XGL");
 }
 
 static struct version _plugin_get_version()

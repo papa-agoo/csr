@@ -15,7 +15,7 @@ struct applet_mgr_callbacks
 
 struct applet_mgr_init_info
 {
-    const char *db_scan_path;
+    struct string db_scan_path;
 
     struct applet_mgr_callbacks callbacks;
 };
@@ -28,7 +28,7 @@ void applet_mgr_tick();
 void applet_mgr_update_db();
 
 bool applet_mgr_is_applet_loaded();
-result_e applet_mgr_load_applet(const char* filename);
+result_e applet_mgr_load_applet(struct string filename);
 void applet_mgr_unload_applet();
 
 void applet_mgr_request_applet_unload(); // FIXME need message system

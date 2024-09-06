@@ -70,7 +70,7 @@ static result_e init_app_home_dir()
 
     }
 
-    klog_info("using app home dir : "string_fmt, string_fmt_arg(app_home_dir));
+    klog_trace("using app home dir : "string_fmt, string_fmt_arg(app_home_dir));
 
     return RC_SUCCESS;
 
@@ -84,7 +84,7 @@ static result_e init_user_config()
 
     const char *ini_file = path_get(ENV_APP_INI_FILE);
 
-    klog_info("loading user config ( %s ) ...", ini_file);
+    klog_trace("loading user config ( %s ) ...", ini_file);
 
     conf->user = config_create_from_ini(ini_file);
     check_ptr(conf->user);
@@ -530,7 +530,7 @@ result_e application_init()
     klog_notice("initializing applet manager ...");
     {
         struct applet_mgr_init_info init_info = {0};
-        init_info.db_scan_path = ENV_APPLET_DIR;
+        init_info.db_scan_path = make_string(ENV_APPLET_DIR);
         init_info.callbacks.on_post_applet_load = on_post_applet_load;
         init_info.callbacks.on_pre_applet_unload = on_pre_applet_unload;
 

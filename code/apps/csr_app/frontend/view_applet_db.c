@@ -6,23 +6,31 @@
 
 static void _on_draw_applet_entry(struct applet_db_entry *entry, void *data)
 {
+    struct arena* arena = kio_mem_get_arena_allocator();
+    check_ptr(arena);
+
+    ////////////////////////////////////////
+
     igTableNextRow(0, 0);
 
+    // name
     igTableNextColumn();
-    igText(entry->name);
+    igText(string_fmt, string_fmt_arg(entry->name));
 
+    // description
     igTableNextColumn();
-    igText(entry->description);
+    igText(string_fmt, string_fmt_arg(entry->description));
 
+    // version string
     igTableNextColumn();
-    igText(entry->version_str);
+    igText(string_fmt, string_fmt_arg(entry->version_str));
 
-    // applet filename is unique id
+    // applet filename (unique id)
     igTableNextColumn();
     {
         ImGuiSelectableFlags flags = ImGuiSelectableFlags_SpanAllColumns;
 
-        if (igSelectable_Bool(entry->filename, false, flags, make_ImVec2_zero()))
+        if (igSelectable_Bool(cstr_from_string(arena, entry->filename), false, flags, make_ImVec2_zero()))
         {
             result_e result = applet_mgr_load_applet(entry->filename);
 
@@ -36,6 +44,11 @@ static void _on_draw_applet_entry(struct applet_db_entry *entry, void *data)
             }
         }
     }
+
+    ////////////////////////////////////////
+
+error:
+    return;
 }
 
 void draw_applet_db_view(struct ui_view* view, struct ui_style *style)

@@ -1,6 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#include <csr/core/path.h>
 #include <csr/core/vector.h>
 
 #include <csr/applet/applet_db.h>
@@ -10,7 +9,7 @@
 #define __USE_XOPEN2K8 // alphasort
 #endif
 
-#include <dirent.h>
+#include <dirent.h> // FIXME fio_traverse_tree()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -19,38 +18,37 @@ static s32 _name_filter(const struct dirent* entry)
     return (strcmp(entry->d_name, ".so") > 0);
 }
 
-static void _scan_applet_path(const char* dirname, struct vector* db)
+static void _scan_applet_path(struct arena* arena, struct string path, struct vector* db)
 {
-    check_ptr(dirname);
-    check_ptr(db);
+    string_cstr path_cstr = cstr_from_string(arena, path);
 
     struct dirent** name_list;
 
-    s32 name_count = scandir(dirname, &name_list, _name_filter, alphasort);
+    s32 name_count = scandir(path_cstr, &name_list, _name_filter, alphasort);
 
     for (s32 i = 0; i < name_count; i++)
     {
-        const char* filename = name_list[i]->d_name;
+        // build relative path to the applet
+        string_cstr filename_cstr = name_list[i]->d_name;
 
-        const char *path_to_file = path_merge(dirname, filename);
+        struct string my_path = string_create_fmt(arena, "%s/%s", path_cstr, filename_cstr);
 
+        // load plugin to access some info
         struct applet_plugin plugin = {0};
 
-        result_e result = applet_plugin_load(&plugin, path_to_file);
+        result_e result = applet_plugin_load(&plugin, my_path);
         if (!R_SUCCESS(result)) continue;
 
-        ////////////////////////////////////////
-
+        // create db entry and add to the db
         struct applet_db_entry entry = {0};
-        entry.name = strdup(plugin.get_name());
-        entry.description = strdup(plugin.get_description());
+        entry.name = string_copy(arena, plugin.get_name());
+        entry.description = string_copy(arena, plugin.get_description());
         entry.version_str = version_str(plugin.get_version());
-        entry.filename = strdup(plugin.filename);
+        entry.filename = string_copy(arena, plugin.filename);
 
         vector_push_back(db, entry);
 
-        ////////////////////////////////////////
-
+        // plugin not needed anymore
         applet_plugin_unload(&plugin);
     }
 
@@ -62,24 +60,24 @@ error:
 
 struct applet_db
 {
-    const char *scan_path;
+    struct string scan_path;
 
     struct vector *entries;
 };
 
-struct applet_db *applet_db_create(const char* scan_path)
+struct applet_db *applet_db_create(struct arena* arena, struct string scan_path)
 {
-    check_ptr(scan_path);
+    check_expr(string_is_valid(scan_path));
 
     struct applet_db *db = calloc(1, sizeof(struct applet_db));
     check_mem(db);
 
-    db->scan_path = strdup(scan_path);
+    db->scan_path = scan_path;
 
     db->entries = vector_create(1, sizeof(struct applet_db_entry));
     check_ptr(db->entries);
 
-    applet_db_update(db);
+    applet_db_update(arena, db);
 
     return db;
 
@@ -99,28 +97,28 @@ error:
     return;
 }
 
-void applet_db_update(struct applet_db* db)
+void applet_db_update(struct arena* arena, struct applet_db *db)
 {
     check_ptr(db);
-    check_ptr(db->scan_path);
+    check_expr(string_is_valid(db->scan_path));
     check_ptr(db->entries);
 
     vector_reset(db->entries);
 
-    _scan_applet_path(db->scan_path, db->entries);
+    _scan_applet_path(arena, db->scan_path, db->entries);
 
 error:
     return;
 }
 
-const char* applet_db_get_scan_path(struct applet_db *db)
+struct string applet_db_get_scan_path(struct applet_db *db)
 {
     check_ptr(db);
 
     return db->scan_path;
 
 error:
-    return NULL;
+    return make_string("");
 }
 
 u32 applet_db_get_entry_count(struct applet_db *db)

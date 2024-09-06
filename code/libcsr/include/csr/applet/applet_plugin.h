@@ -8,10 +8,10 @@
 
 struct applet_plugin
 {
-    const char *filename;
+    struct string filename;
 
-    const char* (*get_name)();
-    const char* (*get_description)();
+    struct string (*get_name)();
+    struct string (*get_description)();
     struct version (*get_version)();
 
     result_e (*startup)();
@@ -21,7 +21,7 @@ struct applet_plugin
     void* handle;
 };
 
-result_e applet_plugin_load(struct applet_plugin *plugin, const char *path_to_file);
+result_e applet_plugin_load(struct applet_plugin *plugin, struct string path_to_file);
 void applet_plugin_unload(struct applet_plugin* plugin);
 
 typedef void (*applet_plugin_export_cb_t)(struct applet_plugin* plugin);

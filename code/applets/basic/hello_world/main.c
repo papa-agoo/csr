@@ -34,14 +34,14 @@ static void _draw_menu_command_cb(struct ui_menu *menu, struct ui_style *style)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-static const char* _plugin_get_name()
+static struct string _plugin_get_name()
 {
-    return "Hello World";
+    return make_string("Hello World");
 }
 
-static const char* _plugin_get_description()
+static struct string _plugin_get_description()
 {
-    return "Simple Example showing the Applet IO Layer in Action";
+    return make_string("Simple Example showing the Applet IO Layer in Action");
 }
 
 static struct version _plugin_get_version()

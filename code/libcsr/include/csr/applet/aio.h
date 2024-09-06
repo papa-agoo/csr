@@ -23,7 +23,7 @@
 #define alog_error(msg, ...) _mcall(aio_log_message(LOG_LEVEL_ERROR, msg, ##__VA_ARGS__))
 #define alog_trace(msg, ...) _mcall(aio_log_message(LOG_LEVEL_TRACE, msg, ##__VA_ARGS__))
 
-void aio_log_message(enum log_level_type level, const char* message, ...);
+void aio_log_message(enum log_level_type level, string_cstr message, ...);
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -49,18 +49,18 @@ f64 aio_time_elapsed_delta();
 ////////////////////////////////////////////////////////////////////////////////
 // user interface
 ////////////////////////////////////////////////////////////////////////////////
-result_e aio_add_ui_menu(const char *key, struct ui_menu *menu);
-struct ui_menu* aio_get_ui_menu(const char *key);
+result_e aio_add_ui_menu(string_cstr key, struct ui_menu *menu);
+struct ui_menu* aio_get_ui_menu(string_cstr key);
 
-result_e aio_add_ui_window(const char* key, struct ui_window *window);
-struct ui_window* aio_get_ui_window(const char* key);
+result_e aio_add_ui_window(string_cstr  key, struct ui_window *window);
+struct ui_window* aio_get_ui_window(string_cstr  key);
 
 
 ////////////////////////////////////////////////////////////////////////////////
 // video
 ////////////////////////////////////////////////////////////////////////////////
-struct screen* aio_add_screen(const char *key, struct screen_create_info *ci);
-struct screen* aio_get_screen(const char *key);
+struct screen* aio_add_screen(string_cstr key, struct screen_create_info *ci);
+struct screen* aio_get_screen(string_cstr key);
 
 
 ////////////////////////////////////////////////////////////////////////////////

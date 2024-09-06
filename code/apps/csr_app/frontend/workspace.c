@@ -2,6 +2,10 @@
 
 #include <application.h>
 
+// >>> FIXME
+#include <csr/core/memory/arena_priv.h> // use scratch arena
+// <<< FIXME
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 static void on_draw_windows(struct ui_ctx *ctx, void *style)
@@ -46,10 +50,17 @@ static void _draw_menu_tail(struct ui_style *style)
 
     // applet state
     {
+        struct vec4 color = style->color.applet_unloaded;
+        string_cstr text = "no applet loaded";
+
         struct applet *applet = applet_mgr_get_applet();
 
-        struct vec4 color = (applet) ? style->color.applet_loaded : style->color.applet_unloaded;
-        const char *text = (applet) ? applet_get_filename(applet) : "no applet loaded";
+        if (applet)
+        {
+            // FIXME use scratch arena
+            color = style->color.applet_loaded;
+            text = cstr_from_string(_arena_priv_ptr(), applet_get_filename(applet));
+        }
 
         struct ImVec2 text_size = {0};
         igCalcTextSize(&text_size, text, NULL, false, -1.0f);
