@@ -99,7 +99,7 @@ fio_file* fio_open(struct string path, enum fio_mode mode)
         }
     }
 
-    string_cstr path_cstr = cstr_from_string(_arena_priv_ptr(), path);
+    string_cstr path_cstr = string_get_cstr(_arena_priv_ptr(), path);
 
     file->stream = fopen(path_cstr, mode_cstr);
     check(file->stream, "could not open file : %s", path_cstr);
@@ -316,7 +316,7 @@ struct string fio_fs_get_absolute_path(struct string path)
 {
     check_expr(string_is_valid(path));
 
-    string_cstr path_cstr = cstr_from_string(_arena_priv_ptr(), path);
+    string_cstr path_cstr = string_get_cstr(_arena_priv_ptr(), path);
 
     string_cstr real_path = realpath(path_cstr, NULL);
     check_ptr(real_path);
@@ -376,7 +376,7 @@ static enum fio_file_type _get_file_type(struct string path)
 {
     check_expr(string_is_valid(path));
 
-    string_cstr path_cstr = cstr_from_string(_arena_priv_ptr(), path);
+    string_cstr path_cstr = string_get_cstr(_arena_priv_ptr(), path);
 
     struct stat buffer = {0};
     check_quiet(lstat(path_cstr, &buffer)== 0);
@@ -426,7 +426,7 @@ result_e fio_fs_create_directory(struct string path)
         struct string my_path = string_rchop(path, position + 1);
         my_path = fio_fs_normalize_path(my_path);
 
-        string_cstr path_cstr = cstr_from_string(_arena_priv_ptr(), my_path);
+        string_cstr path_cstr = string_get_cstr(_arena_priv_ptr(), my_path);
 
         // no file conflict
         //   - create the directory and continue the loop :)
@@ -465,7 +465,7 @@ result_e fio_fs_remove(struct string path)
 {
     check_expr(fio_fs_exists(path));
 
-    string_cstr path_cstr = cstr_from_string(_arena_priv_ptr(), path);
+    string_cstr path_cstr = string_get_cstr(_arena_priv_ptr(), path);
 
     s32 result = nftw(path_cstr, _on_remove_element, 64, FTW_DEPTH | FTW_PHYS);
     check(result == 0, "could not remove file or directory ... (%s)", path_cstr);

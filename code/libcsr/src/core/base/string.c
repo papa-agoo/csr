@@ -4,7 +4,7 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-string_cstr cstr_from_string(struct arena *arena, struct string str)
+string_cstr string_get_cstr(struct arena *arena, struct string str)
 {
     check_ptr(arena);
     check_expr(string_is_valid(str));

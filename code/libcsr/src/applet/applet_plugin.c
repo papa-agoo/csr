@@ -53,7 +53,7 @@ result_e applet_plugin_load(struct applet_plugin *plugin, struct string path_to_
     ////////////////////////////////////////
 
     // FIXME use scratch arena
-    string_cstr path_cstr = cstr_from_string(_arena_priv_ptr(), path_to_file);
+    string_cstr path_cstr = string_get_cstr(_arena_priv_ptr(), path_to_file);
 
     // open library
     plugin->handle = dlopen(path_cstr, RTLD_NOW);

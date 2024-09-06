@@ -30,7 +30,7 @@ static void _on_draw_applet_entry(struct applet_db_entry *entry, void *data)
     {
         ImGuiSelectableFlags flags = ImGuiSelectableFlags_SpanAllColumns;
 
-        if (igSelectable_Bool(cstr_from_string(arena, entry->filename), false, flags, make_ImVec2_zero()))
+        if (igSelectable_Bool(string_get_cstr(arena, entry->filename), false, flags, make_ImVec2_zero()))
         {
             result_e result = applet_mgr_load_applet(entry->filename);
 

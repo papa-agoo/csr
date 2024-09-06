@@ -55,6 +55,6 @@ void arena_pop_to_zero(struct arena *arena, u64 position);
 // void arena_scratch_end(struct arena_scratch scratch);
 
 // struct arena_scratch scratch = arena_scratch_begin(my_arena);
-// string_cstr scan_path = cstr_from_string(scratch.arena, make_string("foobar"));
+// string_cstr scan_path = string_get_cstr(scratch.arena, make_string("foobar"));
 // ... use cstr ...
 // arena_scratch_end(scratch);

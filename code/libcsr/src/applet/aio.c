@@ -44,8 +44,8 @@ void aio_log_message(enum log_level_type level, string_cstr fmt, ...)
     ////////////////////////////////////////
 
     // FIXME scratch arena (pop strings after kio_log_message())
-    string_cstr message_cstr = cstr_from_string(arena, message);
-    string_cstr filename_cstr = cstr_from_string(arena, applet_get_filename(applet_ptr()));
+    string_cstr message_cstr = string_get_cstr(arena, message);
+    string_cstr filename_cstr = string_get_cstr(arena, applet_get_filename(applet_ptr()));
 
     kio_log_message(level, filename_cstr, message_cstr);
 
@@ -82,7 +82,7 @@ struct config* aio_get_config()
             struct string path = string_create_fmt(arena, string_fmt"/"string_fmt".ini",
                 string_fmt_arg(config_dir), string_fmt_arg(filename));
 
-            path_cstr = cstr_from_string(arena, path);
+            path_cstr = string_get_cstr(arena, path);
         }
         // <<< FIXME
 
@@ -319,7 +319,7 @@ struct screen* aio_add_screen(string_cstr key, struct screen_create_info *ci)
     struct string applet_filename = applet_get_filename(applet_ptr());
     struct string win_title = string_create_fmt(arena, "%s##"string_fmt, screen_name, string_fmt_arg(applet_filename));
 
-    ui_window_init(window, cstr_from_string(arena, win_title));
+    ui_window_init(window, string_get_cstr(arena, win_title));
     ui_view_init(&window->view, UI_VIEW_TYPE_SCREEN, screen);
     // <<< FIXME
 

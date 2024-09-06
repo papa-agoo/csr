@@ -191,14 +191,14 @@ result_e main()
         str = string_create_fmt(arena, "%s", "foo");
         clog_info("merged str: "string_fmt, string_fmt_arg(str));
 
-        cstr = cstr_from_string(arena, str);
+        cstr = string_get_cstr(arena, str);
         clog_info("built cstr: %s", cstr);
 
 
         str = string_create_fmt(arena, "%s/%s.%s", "{FOO}", "bar/baz", "so");
         clog_info("merged str: "string_fmt, string_fmt_arg(str));
 
-        cstr = cstr_from_string(arena, str);
+        cstr = string_get_cstr(arena, str);
         clog_info("built cstr: %s", cstr);
 
         arena_destroy(arena);

@@ -25,13 +25,20 @@ typedef const char* string_cstr;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-string_cstr cstr_from_string(struct arena *arena, struct string str);
+string_cstr string_get_cstr(struct arena *arena, struct string str);
 
 struct string string_create(const u8* str, u64 length);
+
 struct string string_create_fmt(struct arena *arena, string_cstr fmt, ...);
+// string_cstr string_create_fmt_cstr(struct arena *arena, string_cstr fmt, ...);
+
 struct string string_create_vfmt(struct arena *arena, string_cstr fmt, va_list args);
+// string_cstr string_create_vfmt_cstr(struct arena *arena, string_cstr fmt, va_list args);
 
 struct string string_copy(struct arena *arena, struct string str_in);
+
+// struct string string_replace(struct arena *arena, struct string str, string_cstr old, string_cstr new);
+// string_cstr string_replace_cstr(struct arena *arena, struct string str, string_cstr old, string_cstr new);
 
 bool string_is_valid(struct string str);
 bool string_equals(struct string str, struct string other);
@@ -58,7 +65,6 @@ struct string_pair string_cut(struct string str, u32 position);
 // string lists
 // void string_join();
 // void string_split();
-// void string_replace();
 
 ////////////////////////////////////////////////////////////////////////////////
 

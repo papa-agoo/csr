@@ -59,7 +59,7 @@ static void _draw_menu_tail(struct ui_style *style)
         {
             // FIXME use scratch arena
             color = style->color.applet_loaded;
-            text = cstr_from_string(_arena_priv_ptr(), applet_get_filename(applet));
+            text = string_get_cstr(_arena_priv_ptr(), applet_get_filename(applet));
         }
 
         struct ImVec2 text_size = {0};

@@ -20,7 +20,7 @@ static s32 _name_filter(const struct dirent* entry)
 
 static void _scan_applet_path(struct arena* arena, struct string path, struct vector* db)
 {
-    string_cstr path_cstr = cstr_from_string(arena, path);
+    string_cstr path_cstr = string_get_cstr(arena, path);
 
     struct dirent** name_list;
 
