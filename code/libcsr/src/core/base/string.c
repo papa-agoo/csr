@@ -82,6 +82,24 @@ error:
     return make_string("");
 }
 
+struct string string_copy(struct arena *arena, struct string str_in)
+{
+    check_ptr(arena);
+    check_expr(string_is_valid(str_in));
+
+    void* data = memcpy(arena_push(arena, str_in.length), str_in.ptr, str_in.length);
+    check_ptr(data);
+
+    struct string str_out = {0};
+    str_out.length = str_in.length;
+    str_out.ptr = data;
+
+    return str_out;
+
+error:
+    return make_string("");
+}
+
 bool string_is_valid(struct string str)
 {
     return str.ptr != NULL && str.length > 0;
