@@ -3,6 +3,7 @@
 #pragma once
 
 #include "../log_db.h"
+#include "../env_vars.h"
 
 #include <csr/platform/platform.h>
 

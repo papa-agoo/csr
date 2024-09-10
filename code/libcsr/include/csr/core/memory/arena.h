@@ -6,23 +6,17 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// - how to determine initial size?
-//      - scratch: (ie 1kb), user: arena_create(MegaBytes(1))
-//
-// - how to grow properly without realloc?
-//      - virtual address space? (stable pointers)
-//      - growing stack: struct arena_storage (block)
-//
-// - alignment handling?
-
 struct arena;
 
 #define make_arena() arena_create(KiloBytes(64))
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 struct arena* arena_create(u64 size);
 void arena_destroy(struct arena *arena);
+
+void* arena_get_current_ptr(struct arena *arena);
+u64 arena_get_current_position(struct arena *arena);
 
 // advance the current position by size bytes and return the current address ptr
 void* arena_push(struct arena *arena, u64 size);
@@ -44,12 +38,12 @@ void arena_pop_to_zero(struct arena *arena, u64 position);
 
 ////////////////////////////////////////////////////////////////////////////////
 
-// struct arena_scratch
-// {
-//     struct arena *arena;
+struct arena_scratch
+{
+    struct arena *arena;
 
-//     u64 position;
-// };
+    u64 position;
+};
 
 // struct arena_scratch arena_scratch_begin(struct arena *arena);
 // void arena_scratch_end(struct arena_scratch scratch);

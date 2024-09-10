@@ -250,6 +250,8 @@ void ksrv_core_quit()
 
     log_db_destroy(srv->log_db);
 
+    env_vars_destroy(srv->env_vars);
+
     arena_destroy(srv->allocator.arena);
 
     ////////////////////////////////////////
@@ -273,6 +275,22 @@ struct log_db* ksrv_get_log_db()
     }
 
     return srv->log_db;
+
+error:
+    return NULL;
+}
+
+struct env_vars* ksrv_get_env_vars()
+{
+    struct ksrv_core *srv = ksrv_core_ptr();
+
+    if (!srv->env_vars)
+    {
+        srv->env_vars = env_vars_create();
+        check_ptr(srv->env_vars);
+    }
+
+    return srv->env_vars;
 
 error:
     return NULL;

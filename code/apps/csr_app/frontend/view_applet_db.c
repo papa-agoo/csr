@@ -6,8 +6,10 @@
 
 static void _on_draw_applet_entry(struct applet_db_entry *entry, void *data)
 {
-    struct arena* arena = kio_mem_get_arena_allocator();
-    check_ptr(arena);
+    // FIXME arena_scratch_begin()
+    struct arena_scratch scratch = {0};
+    scratch.arena = kio_mem_get_arena_allocator();
+    scratch.position = arena_get_current_position(scratch.arena);
 
     ////////////////////////////////////////
 
@@ -30,7 +32,7 @@ static void _on_draw_applet_entry(struct applet_db_entry *entry, void *data)
     {
         ImGuiSelectableFlags flags = ImGuiSelectableFlags_SpanAllColumns;
 
-        if (igSelectable_Bool(string_get_cstr(arena, entry->filename), false, flags, make_ImVec2_zero()))
+        if (igSelectable_Bool(string_get_cstr(scratch.arena, entry->filename), false, flags, make_ImVec2_zero()))
         {
             result_e result = applet_mgr_load_applet(entry->filename);
 
@@ -46,6 +48,9 @@ static void _on_draw_applet_entry(struct applet_db_entry *entry, void *data)
     }
 
     ////////////////////////////////////////
+
+    // FIXME arena_scratch_end()
+    arena_pop_to(scratch.arena, scratch.position);
 
 error:
     return;

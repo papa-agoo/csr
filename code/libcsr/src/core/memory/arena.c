@@ -1,5 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+#include <csr/core/base/assert.h>
 #include <csr/core/memory/arena.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -51,10 +52,31 @@ error:
     return;
 }
 
+void* arena_get_current_ptr(struct arena *arena)
+{
+    check_ptr(arena);
+    check_ptr(arena->data);
+
+    return arena->data + arena->position;
+
+error:
+    return NULL;
+}
+
+u64 arena_get_current_position(struct arena *arena)
+{
+    check_ptr(arena);
+
+    return arena->position;
+
+error:
+    return 0;
+}
+
 void* arena_push(struct arena *arena, u64 size)
 {
     check_ptr(arena);
-    check_expr(size > 0 && size < arena->size_free);
+    csr_assert(size > 0 && size < arena->size_free);
 
     void* ptr = arena->data + arena->position;
     arena->position += size;

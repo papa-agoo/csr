@@ -48,6 +48,11 @@ static void _draw_menu_tail(struct ui_style *style)
 
     ////////////////////////////////////////
 
+    // FIXME arena_scratch_begin()
+    struct arena_scratch scratch = {0};
+    scratch.arena = _arena_priv_ptr();
+    scratch.position = arena_get_current_position(scratch.arena);
+
     // applet state
     {
         struct vec4 color = style->color.applet_unloaded;
@@ -57,9 +62,8 @@ static void _draw_menu_tail(struct ui_style *style)
 
         if (applet)
         {
-            // FIXME use scratch arena
             color = style->color.applet_loaded;
-            text = string_get_cstr(_arena_priv_ptr(), applet_get_filename(applet));
+            text = string_get_cstr(scratch.arena, applet_get_filename(applet));
         }
 
         struct ImVec2 text_size = {0};
@@ -69,7 +73,11 @@ static void _draw_menu_tail(struct ui_style *style)
         igSetCursorPosX(cursor_pos);
 
         igTextColored(make_ImVec4_from_vec4(color), text);
+
     }
+
+    // FIXME arena_scratch_end()
+    arena_pop_to(scratch.arena, scratch.position);
 
 error:
     return;

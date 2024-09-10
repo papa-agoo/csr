@@ -22,6 +22,7 @@ set_target_properties(${MY_TARGET}
 target_sources(${MY_TARGET}
     PRIVATE
         log_db.c
+        env_vars.c
         event_bus.c
         mainloop.c
         mainloop_api.c

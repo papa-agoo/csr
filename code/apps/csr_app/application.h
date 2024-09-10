@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include <csr/core/path.h>
 #include <csr/core/config.h>
 #include <csr/core/file_io.h>
 
@@ -16,7 +15,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #define ENV_APP_NAME                "CSR"
-#define ENV_APP_VERSION             "0.0.3"
+#define ENV_APP_VERSION             "0.0.4"
 
 #define ENV_APPLET_DIR              "./applets"
 #define ENV_RESOURCE_DIR            "./resources"
@@ -27,6 +26,9 @@
 
 #define ENV_APP_INI_FILE            "{APP_CONFIG_DIR}/application.ini"
 #define ENV_IMGUI_INI_FILE          "{APP_CONFIG_DIR}/imgui.ini"
+
+// #define ENV_APPLET_PLUGIN_FILE      "{APPLET_DIR}/{applet_name}.so
+// #define ENV_APPLET_CONFIG_FILE      "{APPLET_CONFIG_DIR}/{applet_name}.ini
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 

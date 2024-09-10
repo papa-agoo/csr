@@ -77,6 +77,36 @@ void kio_log_message(enum log_level_type level, const char* module, const char* 
 
 
 ////////////////////////////////////////////////////////////////////////////////
+// env vars
+////////////////////////////////////////////////////////////////////////////////
+bool kio_env_set_var(string_cstr name, string_cstr value)
+{
+    return env_vars_set_var(ksrv_get_env_vars(), name, value);
+}
+
+struct string kio_env_get_var(string_cstr name)
+{
+    return env_vars_get_var(ksrv_get_env_vars(), name);
+}
+
+string_cstr kio_env_get_var_cstr(string_cstr name)
+{
+    return env_vars_get_var_cstr(ksrv_get_env_vars(), name);
+}
+
+struct string kio_env_expand_str(string_cstr str)
+{
+    return env_vars_expand_str(ksrv_get_env_vars(), str);
+}
+
+string_cstr kio_env_expand_str_cstr(string_cstr str)
+{
+    return env_vars_expand_str_cstr(ksrv_get_env_vars(), str);
+}
+
+
+
+////////////////////////////////////////////////////////////////////////////////
 // memory
 ////////////////////////////////////////////////////////////////////////////////
 struct arena* kio_mem_get_arena_allocator()

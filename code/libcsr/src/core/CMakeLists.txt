@@ -26,7 +26,6 @@ target_sources(${MY_TARGET}
         hashmap.c
         object_pool.c
         config.c
-        path.c
         file_io.c
         clock.c
         stopwatch.c

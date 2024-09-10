@@ -6,10 +6,6 @@
 #include <csr/applet/applet_mgr.h>
 #include <csr/applet/applet_priv.h>
 
-// >>> FIXME
-#include <csr/core/path.h> // kio_env_xxx()
-// <<< FIXME
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #define applet_ptr() applet_mgr_get_applet()
@@ -67,28 +63,19 @@ struct config* aio_get_config()
 
     if (!applet_state_ptr()->config)
     {
-        // string_cstr config_dir = kio_env_expand_var("APPLET_CONFIG_DIR");
-        // string_cstr config_file = string_replace(arena, applet_get_filename(applet_ptr()), ".so", ".ini");
-        // struct string config_path = string_create_fmt(arena, "%s/%s", config_dir, config_file);
+        struct string applet_filename = applet_get_filename(applet_ptr());
 
-        // >>> FIXME ugly stuff
-        string_cstr path_cstr = NULL;
-        {
-            struct string filename = applet_get_filename(applet_ptr());
-            filename = string_rchop(filename, string_rfind(filename, '.'));
+        // construct config path
+        struct string config_dir = kio_env_expand_str("{APPLET_CONFIG_DIR}");
+        struct string config_file = string_replace(arena, applet_filename, make_string(".so"), make_string(".ini"));
 
-            struct string config_dir = make_string_from_cstr(path_get("{APPLET_CONFIG_DIR}"));
+        struct string config_path = string_create_fmt(arena, string_fmt"/"string_fmt,
+            string_fmt_arg(config_dir), string_fmt_arg(config_file));
 
-            struct string path = string_create_fmt(arena, string_fmt"/"string_fmt".ini",
-                string_fmt_arg(config_dir), string_fmt_arg(filename));
+        // load config
+        klog_trace("loading ini file ... ("string_fmt")", string_fmt_arg(config_path));
 
-            path_cstr = string_get_cstr(arena, path);
-        }
-        // <<< FIXME
-
-        klog_trace("loading ini file ... (%s)", path_cstr);
-
-        applet_state_ptr()->config = config_create_from_ini(path_cstr);
+        applet_state_ptr()->config = config_create_from_ini(string_get_cstr(arena, config_path));
     }
 
     return applet_state_ptr()->config;

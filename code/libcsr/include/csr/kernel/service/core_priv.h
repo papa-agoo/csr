@@ -18,6 +18,7 @@ struct ksrv_core
     bool is_initialized;
 
     struct log_db* log_db;
+    struct env_vars* env_vars;
 
     struct clock* clock;
     struct frame_stats frame_stats;
@@ -46,3 +47,4 @@ result_e ksrv_core_init(struct ksrv_core_init_info *init_info);
 void ksrv_core_quit();
 
 struct log_db* ksrv_get_log_db();
+struct env_vars* ksrv_get_env_vars();
