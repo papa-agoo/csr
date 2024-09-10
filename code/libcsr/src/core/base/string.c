@@ -61,7 +61,7 @@ struct string string_create_vfmt(struct arena *arena, string_cstr fmt, va_list a
 
     // 1. calc formatted string length (including null terminator)
     u64 str_length = vsnprintf(NULL, 0, fmt, args) + 1;
-    check_expr(str_length > 1);
+    check_quiet(str_length > 1);
 
     // 2. request memory address
     void* str_ptr = arena_push(arena, str_length);
@@ -85,8 +85,24 @@ error:
 struct string string_replace(struct arena *arena, struct string str, struct string old, struct string new)
 {
     check_ptr(arena);
+    check_expr(string_is_valid(new));
 
-    // FIXME
+    s32 position_old = -1;
+
+    while ((position_old = string_find_str(str, old)) != -1)
+    {
+        // calc offsets
+        s32 old_begin = position_old;
+        s32 old_end = old_begin + old.length;
+
+        // extract left + right sides
+        struct string left = (old_begin > 0) ? string_substr(str, 0, old_begin) : make_string("");
+        struct string right = (old_end < str.length) ? string_substr(str, old_end, 0) : make_string("");
+
+        // merge left + middle (new) + right
+        str = string_create_fmt(arena, string_fmt""string_fmt""string_fmt,
+            string_fmt_arg(left), string_fmt_arg(new), string_fmt_arg(right));
+    }
 
 error:
     return str;
@@ -240,25 +256,18 @@ s32 string_find_str(struct string str, struct string pattern)
 {
     check_expr(string_is_valid(pattern));
 
-    if (str.length < pattern.length ) {
-        return false;
+    if (str.length < pattern.length) {
+        return -1;
     }
 
-    s32 idx = 0;
+    s32 position = -1;
     u8 delimiter = pattern.ptr[0];
 
-    while((idx = string_find(str, delimiter)) >= 0)
+    while((position = string_find_at(str, position + 1, delimiter)) != -1)
     {
-        // chop everything till the first matching char
-        str = string_chop(str, idx);
-
-        // check wether the remaining string starts with the wanted pattern
-        if (string_starts_with(str, pattern)) {
-            return idx;
+        if (string_starts_with(string_chop(str, position), pattern)) {
+            return position;
         }
-
-        // advance one char for the next string_find() call
-        str = string_substr(str, 1, 0);
     }
 
 error:

@@ -29,6 +29,39 @@ void _test_string_checks()
     contains = string_contains(str, make_string("fo"));                 // true
 }
 
+void _test_string_find()
+{
+    s32 idx = 0;
+    struct string str = make_string("{FOO}/applets/model_viewer.so");
+
+    // find
+    {
+        // FIXME
+    }
+
+    // find at
+    {
+        // FIXME
+    }
+
+    // find_str
+    {
+        idx = string_find_str(str, make_string(""));                    // -1 (string_is_valid() check triggers an error)
+        idx = string_find_str(str, make_string("{Foo}"));               // -1
+        idx = string_find_str(str, make_string("apples"));              // -1
+        idx = string_find_str(str, make_string("Model_Viewer.so"));     // -1
+
+        idx = string_find_str(str, make_string("{FOO}"));               // 0
+        idx = string_find_str(str, make_string("applets"));             // 6
+        idx = string_find_str(str, make_string("model_viewer.so"));     // 14
+
+        str = make_string("{FOO}/{BAR}/{BAZ}");
+        idx = string_find_str(str, make_string("{FOO}"));               // 0
+        idx = string_find_str(str, make_string("{BAR}"));               // 6
+        idx = string_find_str(str, make_string("{BAZ}"));               // 12
+    }
+}
+
 void _test_string_trim_chop()
 {
     // trim
@@ -172,44 +205,100 @@ void _test_string_substr()
     }
 }
 
+void _test_mutable_api()
+{
+    struct arena *arena = make_arena();
+    check_ptr(arena);
+
+    // string to cstr
+    {
+        string_cstr cstr = "";
+
+        cstr = string_get_cstr(arena, make_string(""));                         // string_is_valid() triggers an error
+        clog_info("get_cstr: %s", cstr);                                        // <empty>
+
+        cstr = string_get_cstr(arena, make_string("hallo popo"));
+        clog_info("get_cstr: %s", cstr);                                        // hallo popo
+    }
+
+    // format
+    {
+        struct string str = {0};
+
+        str = string_create_fmt(arena, "%s", "");
+        clog_info("create_fmt: "string_fmt, string_fmt_arg(str));               // <empty>
+
+        str = string_create_fmt(arena, "%s", "foo");
+        clog_info("create_fmt: "string_fmt, string_fmt_arg(str));               // foo
+
+        str = string_create_fmt(arena, "%s/%s.%s", "{FOO}", "bar/baz", "so");
+        clog_info("create_fmt: "string_fmt, string_fmt_arg(str));               // {FOO}/bar/baz.so
+    }
+
+    // replace
+    {
+        struct string var_work_dir = make_string("/opt/csr");
+        struct string var_applet_name = make_string("model_viewer.so");
+
+        struct string str = make_string("{WORK_DIR}/applets/{APPLET_NAME}");
+        clog_info("str: "string_fmt, string_fmt_arg(str));                                  // {WORK_DIR}/applets/{APPLET_NAME}
+
+        str = string_replace(arena, str, make_string("{WORK_DIR}"), var_work_dir);
+        clog_info("str: "string_fmt, string_fmt_arg(str));                                  // /opt/csr/applets/{APPLET_NAME}
+
+        str = string_replace(arena, str, make_string("{APPLET_NAME}"), var_applet_name);
+        clog_info("str: "string_fmt, string_fmt_arg(str));                                  // /opt/csr/applets/model_viewer.so
+
+        ////////////////////////////////////////
+
+        struct string var_foo = make_string("a");
+        struct string var_bar = make_string("b");
+
+        str = make_string("{FOO}/{BAR}/{FOO}/{BAR}");
+        clog_info("str: "string_fmt, string_fmt_arg(str));                                  // {FOO}/{BAR}/{FOO}/{BAR}
+
+        str = string_replace(arena, str, make_string("{FOO}"), var_foo);
+        clog_info("str: "string_fmt, string_fmt_arg(str));                                  // a/{BAR}/a/{BAR}
+
+        str = string_replace(arena, str, make_string("{BAR}"), var_bar);
+        clog_info("str: "string_fmt, string_fmt_arg(str));                                  // a/b/a/b
+
+        str = string_replace(arena, str, make_string("{BAZ}"), var_bar);
+        clog_info("str: "string_fmt, string_fmt_arg(str));                                  // a/b/a/b (nothing replaced)
+    }
+
+    // copy
+    {
+        struct string copy = string_copy(arena, make_string(""));   // string_is_valid() triggers an error
+        bool equals = string_equals(copy, make_string(""));         // false, string_is_valid() triggers an error
+
+        copy = string_copy(arena, make_string("foo"));
+        equals = string_equals(copy, make_string("foo"));           // true
+
+        copy = string_copy(arena, make_string("Foo"));
+        equals = string_equals(copy, make_string("foo"));           // false
+
+    }
+
+    arena_destroy(arena);
+
+error:
+    return;
+}
+
+void _test_string_lists()
+{
+    // struct string path = make_string("/path/to/foo/bar.png")
+}
+
 result_e main()
 {
     _test_string_checks();
+    _test_string_find();
     _test_string_substr();
     _test_string_trim_chop();
-
-    ////////////////////////////////////////
-
-    // mutable storage (allocators needed)
-    {
-        struct arena *arena = make_arena();
-        check_ptr(arena);
-
-        struct string str = {0};
-        string_cstr cstr = "";
-
-        str = string_create_fmt(arena, "%s", "foo");
-        clog_info("merged str: "string_fmt, string_fmt_arg(str));
-
-        cstr = string_get_cstr(arena, str);
-        clog_info("built cstr: %s", cstr);
-
-
-        str = string_create_fmt(arena, "%s/%s.%s", "{FOO}", "bar/baz", "so");
-        clog_info("merged str: "string_fmt, string_fmt_arg(str));
-
-        cstr = string_get_cstr(arena, str);
-        clog_info("built cstr: %s", cstr);
-
-        arena_destroy(arena);
-    }
-
-    ////////////////////////////////////////
-
-    // string lists
-    {
-        // struct string path = make_string("/path/to/foo/bar.png")
-    }
+    _test_mutable_api();
+    // _test_string_lists();
 
     return RC_SUCCESS;
 
