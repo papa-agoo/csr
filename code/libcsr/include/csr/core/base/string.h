@@ -35,10 +35,10 @@ struct string string_create_fmt(struct arena *arena, string_cstr fmt, ...);
 struct string string_create_vfmt(struct arena *arena, string_cstr fmt, va_list args);
 // string_cstr string_create_vfmt_cstr(struct arena *arena, string_cstr fmt, va_list args);
 
-struct string string_copy(struct arena *arena, struct string str_in);
-
-// struct string string_replace(struct arena *arena, struct string str, string_cstr old, string_cstr new);
+struct string string_replace(struct arena *arena, struct string str, struct string old, struct string new);
 // string_cstr string_replace_cstr(struct arena *arena, struct string str, string_cstr old, string_cstr new);
+
+struct string string_copy(struct arena *arena, struct string str_in);
 
 bool string_is_valid(struct string str);
 bool string_equals(struct string str, struct string other);
@@ -53,6 +53,9 @@ s32 string_rfind(struct string str, u8 delimiter);
 
 s32 string_find_at(struct string str, u32 position, u8 delimiter);
 s32 string_rfind_at(struct string str, u32 position, u8 delimiter);
+
+s32 string_find_str(struct string str, struct string pattern);
+// s32 string_rfind_str(struct string str, struct string pattern);
 
 struct string string_trim(struct string str);
 struct string string_rtrim(struct string str);

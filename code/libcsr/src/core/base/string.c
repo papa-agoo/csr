@@ -82,6 +82,16 @@ error:
     return make_string("");
 }
 
+struct string string_replace(struct arena *arena, struct string str, struct string old, struct string new)
+{
+    check_ptr(arena);
+
+    // FIXME
+
+error:
+    return str;
+}
+
 struct string string_copy(struct arena *arena, struct string str_in)
 {
     check_ptr(arena);
@@ -122,31 +132,7 @@ error:
 
 bool string_contains(struct string str, struct string pattern)
 {
-    check_expr(string_is_valid(pattern));
-
-    if (str.length < pattern.length ) {
-        return false;
-    }
-
-    s32 idx = 0;
-    u8 delimiter = pattern.ptr[0];
-
-    while((idx = string_find(str, delimiter)) >= 0)
-    {
-        // chop everything till the first matching char
-        str = string_chop(str, idx);
-
-        // check wether the remaining string starts with the wanted pattern
-        if (string_starts_with(str, pattern)) {
-            return true;
-        }
-
-        // advance one char for the next string_find() call
-        str = string_substr(str, 1, 0);
-    }
-
-error:
-    return false;
+    return string_find_str(str, pattern) != -1;
 }
 
 bool string_starts_with(struct string str, struct string pattern)
@@ -244,6 +230,35 @@ s32 string_rfind_at(struct string str, u32 position, u8 delimiter)
         if (str.ptr[i] == delimiter) {
             return i;
         }
+    }
+
+error:
+    return -1;
+}
+
+s32 string_find_str(struct string str, struct string pattern)
+{
+    check_expr(string_is_valid(pattern));
+
+    if (str.length < pattern.length ) {
+        return false;
+    }
+
+    s32 idx = 0;
+    u8 delimiter = pattern.ptr[0];
+
+    while((idx = string_find(str, delimiter)) >= 0)
+    {
+        // chop everything till the first matching char
+        str = string_chop(str, idx);
+
+        // check wether the remaining string starts with the wanted pattern
+        if (string_starts_with(str, pattern)) {
+            return idx;
+        }
+
+        // advance one char for the next string_find() call
+        str = string_substr(str, 1, 0);
     }
 
 error:
