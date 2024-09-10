@@ -95,13 +95,13 @@ The main focus lies on the Model Viewer Applet (model_viewer.so) which will be a
 <br/>
 
 * **Milestone 1 (Prep Work)**
-  - [ ] Application
-    - [ ] Env vars service (support for something like {FOO}/{BAR}.baz at runtime)
+  - [x] Application
+    - [x] Env Vars (support for something like {FOO}/{BAR}.baz at runtime)
     - [x] Per applet config ({APPLET_CONFIG_DIR}/my_applet.ini)
     - [x] App home dir ({USER_HOME_DIR}/.csr)
-  - [ ] Library
+  - [x] Library
     - [x] Modern string impl. (immutable, length based)
-    - [ ] Arena memory allocator (heap und pool allocators coming later)
+    - [x] Arena memory allocator (bare bones)
     - [x] File I/O (OS level R/W API)
 
 <br/>
