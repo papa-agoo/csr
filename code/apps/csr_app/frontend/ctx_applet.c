@@ -17,6 +17,11 @@ static void _draw_applet_menu_cb(struct ui_menu *menu, struct ui_style *style)
 
     igMenuItem_Bool("About", NULL, false, false);
 
+    if (igMenuItem_Bool("Reload", NULL, false, true))
+    {
+        applet_mgr_request_applet_reload();
+    }
+
     if (igMenuItem_Bool("Quit", NULL, false, true))
     {
         applet_mgr_request_applet_unload();

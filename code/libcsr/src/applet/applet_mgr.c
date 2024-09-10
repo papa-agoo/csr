@@ -10,6 +10,8 @@
 struct applet_mgr
 {
     bool is_initialized;
+
+    bool needs_applet_reload; // FIXME message system
     bool needs_applet_unload; // FIXME message system
 
     struct applet *applet;
@@ -70,7 +72,12 @@ void applet_mgr_tick()
 {
     csr_assert(mgr_ptr()->is_initialized);
 
+
     ////////////////////////////////////////
+
+    if (mgr_ptr()->needs_applet_reload) {
+        applet_mgr_reload_applet();
+    }
 
     if (mgr_ptr()->needs_applet_unload) {
         applet_mgr_unload_applet();
@@ -167,6 +174,21 @@ error:
 
 }
 
+void applet_mgr_reload_applet()
+{
+    csr_assert(mgr_ptr()->is_initialized);
+
+    struct applet *applet = mgr_ptr()->applet;
+    check_ptr(applet);
+
+    applet_mgr_load_applet(applet_get_filename(applet));
+
+error:
+    mgr_ptr()->needs_applet_reload = false;
+
+    return;
+}
+
 void applet_mgr_unload_applet()
 {
     csr_assert(mgr_ptr()->is_initialized);
@@ -198,7 +220,13 @@ error:
     mgr_ptr()->needs_applet_unload = false;
 
     return;
-   
+}
+
+void applet_mgr_request_applet_reload()
+{
+    csr_assert(mgr_ptr()->is_initialized);
+
+    mgr_ptr()->needs_applet_reload = true;
 }
 
 void applet_mgr_request_applet_unload()

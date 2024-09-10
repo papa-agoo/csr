@@ -29,8 +29,10 @@ void applet_mgr_update_db();
 
 bool applet_mgr_is_applet_loaded();
 result_e applet_mgr_load_applet(struct string filename);
+void applet_mgr_reload_applet();
 void applet_mgr_unload_applet();
 
+void applet_mgr_request_applet_reload(); // FIXME need message system
 void applet_mgr_request_applet_unload(); // FIXME need message system
 
 struct applet* applet_mgr_get_applet();
