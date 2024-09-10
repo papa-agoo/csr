@@ -55,6 +55,11 @@ FILE* fio_get_stream(fio_file *file);
 
 // result_e fio_read_line(fio_file *file, struct fio_buffer *buffer);
 
+// lib api
+void* fio_lib_open(struct string path);
+void fio_lib_close(void* handle);
+void* fio_lib_get_symbol_ptr(void* handle, string_cstr symbol);
+
 ////////////////////////////////////////////////////////////
 
 // try to normalize an ugly path (ie. //foo/bar/./baz/ -> /foo/bar/baz)

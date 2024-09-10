@@ -3,12 +3,6 @@
 #include <csr/core/file_io.h>
 #include <csr/applet/applet_plugin.h>
 
-// >>> FIXME
-#include <dlfcn.h> // use file_io
-#include <dirent.h> // use file_io
-#include <csr/core/memory/arena_priv.h> // use scratch arena
-// <<< FIXME
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 static struct string _plugin_get_name() { return make_string("Stub"); }
@@ -52,16 +46,13 @@ result_e applet_plugin_load(struct applet_plugin *plugin, struct string path_to_
 
     ////////////////////////////////////////
 
-    // FIXME use scratch arena
-    string_cstr path_cstr = string_get_cstr(_arena_priv_ptr(), path_to_file);
-
     // open library
-    plugin->handle = dlopen(path_cstr, RTLD_NOW);
-    check(plugin->handle != NULL, "%s", dlerror());
+    plugin->handle = fio_lib_open(path_to_file);
+    check_ptr(plugin->handle);
 
     // export plugin symbols
-    applet_plugin_export_cb_t export_plugin_cb = dlsym(plugin->handle, "applet_plugin_export");
-    check(export_plugin_cb != NULL, "%s", dlerror());
+    applet_plugin_export_cb_t export_plugin_cb = fio_lib_get_symbol_ptr(plugin->handle, "applet_plugin_export");
+    check_ptr(export_plugin_cb);
 
     export_plugin_cb(plugin);
 
@@ -80,7 +71,7 @@ void applet_plugin_unload(struct applet_plugin* plugin)
     check_ptr(plugin);
 
     if (plugin->handle) {
-        dlclose(plugin->handle);
+        fio_lib_close(plugin->handle);
     }
 
     _init_plugin_defaults(plugin);

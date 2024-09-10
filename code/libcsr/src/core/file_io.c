@@ -7,6 +7,9 @@
 #include <unistd.h>
 #include <ftw.h>
 
+// dlopen, dlclose, dlsym
+#include <dlfcn.h>
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 struct fio_file
@@ -231,6 +234,43 @@ result_e fio_read_line(fio_file *file, struct fio_buffer *buffer)
 
 error:
     return RC_FAILURE;
+}
+
+void* fio_lib_open(struct string path)
+{
+    check_expr(string_is_valid(path));
+
+    void* handle = dlopen(string_get_cstr(_arena_priv_ptr(), path), RTLD_NOW);
+    check(handle != NULL, "%s", dlerror());
+
+    return handle;
+
+error:
+    return NULL;
+}
+
+void fio_lib_close(void* handle)
+{
+    check_ptr(handle);
+
+    dlclose(handle);
+
+error:
+    return;
+}
+
+void* fio_lib_get_symbol_ptr(void* handle, string_cstr symbol)
+{
+    check_ptr(handle);
+    check_ptr(symbol);
+
+    void* symbol_ptr = dlsym(handle, symbol);
+    check(symbol_ptr != NULL, "%s", dlerror());
+
+    return symbol_ptr;
+
+error:
+    return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
