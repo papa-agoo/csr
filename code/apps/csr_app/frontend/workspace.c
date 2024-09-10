@@ -50,7 +50,7 @@ static void _draw_menu_tail(struct ui_style *style)
 
     // FIXME arena_scratch_begin()
     struct arena_scratch scratch = {0};
-    scratch.arena = _arena_priv_ptr();
+    scratch.arena = kio_mem_get_frame_arena();
     scratch.position = arena_get_current_position(scratch.arena);
 
     // applet state

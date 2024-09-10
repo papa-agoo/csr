@@ -28,7 +28,8 @@ struct ksrv_core
 
     // allocators
     struct {
-        struct arena* arena;
+        struct arena* arena_main;
+        struct arena* arena_frame;
     } allocator;
 
     struct ksrv_core_conf *conf;

@@ -109,16 +109,25 @@ string_cstr kio_env_expand_str_cstr(string_cstr str)
 ////////////////////////////////////////////////////////////////////////////////
 // memory
 ////////////////////////////////////////////////////////////////////////////////
-struct arena* kio_mem_get_arena_allocator()
+struct arena* kio_mem_get_main_arena()
 {
     check_expr(ksrv_core_ptr()->is_initialized);
 
-    return ksrv_core_ptr()->allocator.arena;
+    return ksrv_core_ptr()->allocator.arena_main;
 
 error:
     return NULL;
 }
 
+struct arena* kio_mem_get_frame_arena()
+{
+    check_expr(ksrv_core_ptr()->is_initialized);
+
+    return ksrv_core_ptr()->allocator.arena_frame;
+
+error:
+    return NULL;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // time

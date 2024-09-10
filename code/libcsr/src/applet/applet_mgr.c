@@ -35,7 +35,7 @@ result_e applet_mgr_init(struct applet_mgr_init_info *init_info)
 
     ////////////////////////////////////////
 
-    struct arena* arena = kio_mem_get_arena_allocator();
+    struct arena* arena = kio_mem_get_main_arena();
     check_ptr(arena);
 
     mgr_ptr()->applet_db = applet_db_create(arena, init_info->db_scan_path);
@@ -98,7 +98,7 @@ void applet_mgr_update_db()
 
     klog_info("updating applet db ...");
 
-    struct arena* arena = kio_mem_get_arena_allocator();
+    struct arena* arena = kio_mem_get_main_arena();
     check_ptr(arena);
 
     struct applet_db *applet_db = mgr_ptr()->applet_db;
@@ -130,7 +130,7 @@ result_e applet_mgr_load_applet(struct string filename)
     klog_notice("loading applet : "string_fmt, string_fmt_arg(filename));
 
     // build applet path
-    struct arena* arena = kio_mem_get_arena_allocator();
+    struct arena* arena = kio_mem_get_main_arena();
     check_ptr(arena);
 
     struct string db_scan_path = applet_db_get_scan_path(mgr_ptr()->applet_db);

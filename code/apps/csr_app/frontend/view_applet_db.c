@@ -8,7 +8,7 @@ static void _on_draw_applet_entry(struct applet_db_entry *entry, void *data)
 {
     // FIXME arena_scratch_begin()
     struct arena_scratch scratch = {0};
-    scratch.arena = kio_mem_get_arena_allocator();
+    scratch.arena = kio_mem_get_frame_arena();
     scratch.position = arena_get_current_position(scratch.arena);
 
     ////////////////////////////////////////

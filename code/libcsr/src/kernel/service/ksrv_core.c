@@ -156,6 +156,9 @@ static bool _mainloop_tick(struct mainloop* mainloop)
     _update_global_clocks();
     _update_frame_stats();
 
+    // reset arena for the next frame (no memset(0))
+    arena_reset(ksrv_core_ptr()->allocator.arena_frame);
+
     return mainloop->is_running;
 }
 
@@ -203,8 +206,11 @@ result_e ksrv_core_init(struct ksrv_core_init_info *init_info)
     ////////////////////////////////////////
 
     // create allocators
-    srv->allocator.arena = make_arena();
-    check_ptr(srv->allocator.arena);
+    srv->allocator.arena_main = make_arena();
+    check_ptr(srv->allocator.arena_main);
+
+    srv->allocator.arena_frame = make_arena();
+    check_ptr(srv->allocator.arena_frame);
 
     // create clock
     srv->clock = clock_create("main");
@@ -252,7 +258,8 @@ void ksrv_core_quit()
 
     env_vars_destroy(srv->env_vars);
 
-    arena_destroy(srv->allocator.arena);
+    arena_destroy(srv->allocator.arena_frame);
+    arena_destroy(srv->allocator.arena_main);
 
     ////////////////////////////////////////
 
