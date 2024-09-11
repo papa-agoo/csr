@@ -6,16 +6,10 @@
 
 string_cstr string_get_cstr(struct arena *arena, struct string str)
 {
-    check_ptr(arena);
     check_expr(string_is_valid(str));
 
-    void* ptr = arena_push(arena, str.length + 1);
-    check_ptr(ptr);
-
-    s32 bytes_written = snprintf(ptr, str.length + 1, string_fmt, string_fmt_arg(str));
-    check_expr(bytes_written == str.length);
-
-    return ptr;
+    // string_create_fmt() actually creates a null terminated string, so we'll exploit it :)
+    return string_create_fmt(arena, string_fmt, string_fmt_arg(str)).ptr;
 
 error:
     return "";
@@ -208,6 +202,28 @@ error:
     return str;
 }
 
+s32 string_find_str(struct string str, struct string pattern)
+{
+    check_expr(string_is_valid(pattern));
+
+    if (str.length < pattern.length) {
+        return -1;
+    }
+
+    s32 position = -1;
+    u8 delimiter = pattern.ptr[0];
+
+    while((position = string_find_at(str, position + 1, delimiter)) != -1)
+    {
+        if (string_starts_with(string_chop(str, position), pattern)) {
+            return position;
+        }
+    }
+
+error:
+    return -1;
+}
+
 s32 string_find(struct string str, u8 delimiter)
 {
     return string_find_at(str, 0, delimiter);
@@ -245,28 +261,6 @@ s32 string_rfind_at(struct string str, u32 position, u8 delimiter)
     {
         if (str.ptr[i] == delimiter) {
             return i;
-        }
-    }
-
-error:
-    return -1;
-}
-
-s32 string_find_str(struct string str, struct string pattern)
-{
-    check_expr(string_is_valid(pattern));
-
-    if (str.length < pattern.length) {
-        return -1;
-    }
-
-    s32 position = -1;
-    u8 delimiter = pattern.ptr[0];
-
-    while((position = string_find_at(str, position + 1, delimiter)) != -1)
-    {
-        if (string_starts_with(string_chop(str, position), pattern)) {
-            return position;
         }
     }
 
