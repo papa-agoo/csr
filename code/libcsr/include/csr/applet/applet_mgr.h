@@ -18,7 +18,7 @@ static void applet_mgr_conf_defaults(struct applet_mgr_conf *conf)
     check_ptr(conf);
 
     conf->remember_applet = true;
-    conf->applet_name = NULL;
+    conf->applet_name = "";
 
 error:
     return;

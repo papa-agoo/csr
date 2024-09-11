@@ -2,10 +2,6 @@
 
 #include <application.h>
 
-// >>> FIXME
-#include <csr/core/memory/arena_priv.h> // use scratch arena
-// <<< FIXME
-
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 static void on_draw_windows(struct ui_ctx *ctx, void *style)

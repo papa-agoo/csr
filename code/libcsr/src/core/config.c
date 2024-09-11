@@ -619,11 +619,12 @@ error:
     return false;   
 }
 
-bool config_map_str(struct config *cfg, string_cstr key, string_cstr * value)
+bool config_map_str(struct config *cfg, string_cstr key, string_cstr *value)
 {
     check_ptr(cfg);
     check_ptr(key);
     check_ptr(value);
+    check_ptr(*value);
 
     config_get_str(cfg, key, value);
     config_set_str(cfg, key, *value);
