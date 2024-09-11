@@ -113,7 +113,7 @@ The main focus lies on the Model Viewer Applet (model_viewer.so) which will be a
   - [ ] Library
     - [ ] SoftGL Rasterizer
   - [ ] Applets
-    - [ ] ecs_hello_world.so (some tests with Flecs)
+    - [x] ecs_hello_world.so (some tests with Flecs)
     - [ ] xgl_hello_cube.so (textured)
     - [ ] model_viewer.so
       - [ ] 3D scene (Base Grid, Orbit Camera, Orientantion Gizmo, Unit Cube AABB)
