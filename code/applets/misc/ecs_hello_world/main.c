@@ -33,7 +33,7 @@ static result_e _plugin_startup()
 
     // get entity component and print its position
     const struct vec3 *p = ecs_mesh_get_position(my_mesh);
-    alog_info("ecs_mesh_get_position() => {%.2f, %.2f, %.2f}\n",  p->x, p->y, p->z);
+    alog_info("ecs_mesh_get_position() => {%.2f, %.2f, %.2f}",  p->x, p->y, p->z);
 
     ////////////////////////////////////////
 
