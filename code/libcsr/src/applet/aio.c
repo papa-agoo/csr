@@ -75,7 +75,7 @@ struct config* aio_get_config()
         // load config
         klog_trace("loading ini file ... ("string_fmt")", string_fmt_arg(config_path));
 
-        applet_state_ptr()->config = config_create_from_ini(string_get_cstr(arena, config_path));
+        applet_state_ptr()->config = config_create_from_ini(config_path);
     }
 
     return applet_state_ptr()->config;

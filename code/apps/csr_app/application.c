@@ -74,9 +74,9 @@ static result_e init_user_config()
 {
     struct application_conf *conf = application_conf_ptr();
 
-    string_cstr ini_file = kio_env_expand_str_cstr(ENV_APP_INI_FILE);
+    struct string ini_file = kio_env_expand_str(ENV_APP_INI_FILE);
 
-    klog_trace("loading user config ( %s ) ...", ini_file);
+    klog_trace("loading user config ( "string_fmt" ) ...", string_fmt_arg(ini_file));
 
     conf->user = config_create_from_ini(ini_file);
     check_ptr(conf->user);

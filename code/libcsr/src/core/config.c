@@ -13,10 +13,11 @@ static char g_str_buf[STR_BUF_SIZE];
 
 struct config
 {
-    const char *filename;
+    struct string filename;
 
     // internal storage
     dictionary *ini;
+    struct arena* arena;
 
     // external storage (pointers)
     struct {
@@ -33,29 +34,29 @@ struct config
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // internal helpers
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-static s32 _iniparser_error_callback(const char *format, ...) { return 0; }
+static s32 _iniparser_error_callback(string_cstr format, ...) { return 0; }
 
 CSR_INLINE bool _config_has_entries(struct config *cfg)
 {
     return iniparser_getnsec(cfg->ini) > 0;
 }
 
-CSR_INLINE bool _config_key_valid(struct config *cfg, const char *key)
+CSR_INLINE bool _config_key_valid(struct config *cfg, string_cstr key)
 {
     // FIXME
     return true;
 }
 
-CSR_INLINE const char* _get_section_from_key(const char *key)
+CSR_INLINE string_cstr  _get_section_from_key(string_cstr key)
 {
     char *str = strdup(key);
 
     return strsep(&str, ":");
 }
 
-CSR_INLINE bool _ini_set_value(dictionary *ini, const char *key, const char *value)
+CSR_INLINE bool _ini_set_value(dictionary *ini, string_cstr key, string_cstr value)
 {
-    const char *section = _get_section_from_key(key);
+    string_cstr section = _get_section_from_key(key);
     check(section, "failed to extract section");
 
     iniparser_set(ini, section, NULL);
@@ -67,7 +68,7 @@ error:
     return false;
 }
 
-CSR_INLINE s32 _sync_int_ini_to_ref(const char* key, void* data, void* user_data)
+CSR_INLINE s32 _sync_int_ini_to_ref(string_cstr  key, void* data, void* user_data)
 {
     struct config *cfg = user_data;
     s32 *value = data;
@@ -79,7 +80,7 @@ CSR_INLINE s32 _sync_int_ini_to_ref(const char* key, void* data, void* user_data
     return 0;
 }
 
-CSR_INLINE s32 _sync_int_ref_to_ini(const char* key, void* data, void* user_data)
+CSR_INLINE s32 _sync_int_ref_to_ini(string_cstr  key, void* data, void* user_data)
 {
     struct config *cfg = user_data;
     s32 *value = data;
@@ -91,7 +92,7 @@ CSR_INLINE s32 _sync_int_ref_to_ini(const char* key, void* data, void* user_data
     return 0;
 }
 
-CSR_INLINE s32 _sync_float_ini_to_ref(const char* key, void* data, void* user_data)
+CSR_INLINE s32 _sync_float_ini_to_ref(string_cstr  key, void* data, void* user_data)
 {
     struct config *cfg = user_data;
     f32 *value = data;
@@ -103,7 +104,7 @@ CSR_INLINE s32 _sync_float_ini_to_ref(const char* key, void* data, void* user_da
     return 0;
 }
 
-CSR_INLINE s32 _sync_float_ref_to_ini(const char* key, void* data, void* user_data)
+CSR_INLINE s32 _sync_float_ref_to_ini(string_cstr  key, void* data, void* user_data)
 {
     struct config *cfg = user_data;
     f32 *value = data;
@@ -115,7 +116,7 @@ CSR_INLINE s32 _sync_float_ref_to_ini(const char* key, void* data, void* user_da
     return 0;
 }
 
-CSR_INLINE s32 _sync_bool_ini_to_ref(const char* key, void* data, void* user_data)
+CSR_INLINE s32 _sync_bool_ini_to_ref(string_cstr  key, void* data, void* user_data)
 {
     struct config *cfg = user_data;
     bool *value = data;
@@ -127,7 +128,7 @@ CSR_INLINE s32 _sync_bool_ini_to_ref(const char* key, void* data, void* user_dat
     return 0;
 }
 
-CSR_INLINE s32 _sync_bool_ref_to_ini(const char* key, void* data, void* user_data)
+CSR_INLINE s32 _sync_bool_ref_to_ini(string_cstr  key, void* data, void* user_data)
 {
     struct config *cfg = user_data;
     bool *value = data;
@@ -139,10 +140,10 @@ CSR_INLINE s32 _sync_bool_ref_to_ini(const char* key, void* data, void* user_dat
     return 0;
 }
 
-CSR_INLINE s32 _sync_str_ini_to_ref(const char* key, void* data, void* user_data)
+CSR_INLINE s32 _sync_str_ini_to_ref(string_cstr  key, void* data, void* user_data)
 {
     struct config *cfg = user_data;
-    const char **value = data;
+    string_cstr *value = data;
 
     config_get_str(cfg, key, value);
 
@@ -151,10 +152,10 @@ CSR_INLINE s32 _sync_str_ini_to_ref(const char* key, void* data, void* user_data
     return 0;
 }
 
-CSR_INLINE s32 _sync_str_ref_to_ini(const char* key, void* data, void* user_data)
+CSR_INLINE s32 _sync_str_ref_to_ini(string_cstr  key, void* data, void* user_data)
 {
     struct config *cfg = user_data;
-    const char **value = data;
+    string_cstr *value = data;
 
     config_set_str(cfg, key, *value);
 
@@ -163,7 +164,7 @@ CSR_INLINE s32 _sync_str_ref_to_ini(const char* key, void* data, void* user_data
     return 0;
 }
 
-CSR_INLINE s32 _sync_vec2_ini_to_ref(const char* key, void* data, void* user_data)
+CSR_INLINE s32 _sync_vec2_ini_to_ref(string_cstr  key, void* data, void* user_data)
 {
     struct config *cfg = user_data;
     struct vec2* value = data;
@@ -175,7 +176,7 @@ CSR_INLINE s32 _sync_vec2_ini_to_ref(const char* key, void* data, void* user_dat
     return 0;
 }
 
-CSR_INLINE s32 _sync_vec2_ref_to_ini(const char* key, void* data, void* user_data)
+CSR_INLINE s32 _sync_vec2_ref_to_ini(string_cstr  key, void* data, void* user_data)
 {
     struct config *cfg = user_data;
     struct vec2* value = data;
@@ -187,7 +188,7 @@ CSR_INLINE s32 _sync_vec2_ref_to_ini(const char* key, void* data, void* user_dat
     return 0;
 }
 
-CSR_INLINE s32 _sync_vec3_ini_to_ref(const char* key, void* data, void* user_data)
+CSR_INLINE s32 _sync_vec3_ini_to_ref(string_cstr  key, void* data, void* user_data)
 {
     struct config *cfg = user_data;
     struct vec3* value = data;
@@ -199,7 +200,7 @@ CSR_INLINE s32 _sync_vec3_ini_to_ref(const char* key, void* data, void* user_dat
     return 0;
 }
 
-CSR_INLINE s32 _sync_vec3_ref_to_ini(const char* key, void* data, void* user_data)
+CSR_INLINE s32 _sync_vec3_ref_to_ini(string_cstr  key, void* data, void* user_data)
 {
     struct config *cfg = user_data;
     struct vec3* value = data;
@@ -211,7 +212,7 @@ CSR_INLINE s32 _sync_vec3_ref_to_ini(const char* key, void* data, void* user_dat
     return 0;
 }
 
-CSR_INLINE s32 _sync_vec4_ini_to_ref(const char* key, void* data, void* user_data)
+CSR_INLINE s32 _sync_vec4_ini_to_ref(string_cstr  key, void* data, void* user_data)
 {
     struct config *cfg = user_data;
     struct vec4* value = data;
@@ -223,7 +224,7 @@ CSR_INLINE s32 _sync_vec4_ini_to_ref(const char* key, void* data, void* user_dat
     return 0;
 }
 
-CSR_INLINE s32 _sync_vec4_ref_to_ini(const char* key, void* data, void* user_data)
+CSR_INLINE s32 _sync_vec4_ref_to_ini(string_cstr  key, void* data, void* user_data)
 {
     struct config *cfg = user_data;
     struct vec4* value = data;
@@ -239,9 +240,9 @@ CSR_INLINE s32 _sync_vec4_ref_to_ini(const char* key, void* data, void* user_dat
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // public api
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-struct config* config_create_from_ini(const char *filename)
+struct config* config_create_from_ini(struct string filename)
 {
-    check_ptr(filename);
+    check_expr(string_is_valid(filename));
 
     struct config *cfg = config_create();
     check_ptr(cfg);
@@ -259,7 +260,10 @@ struct config* config_create()
     struct config *cfg = calloc(1, sizeof(struct config));
     check_mem(cfg);
 
-    cfg->filename = NULL;
+    cfg->filename = make_string("");
+
+    cfg->arena = make_arena();
+    check_ptr(cfg->arena);
 
     cfg->ini = dictionary_new(0);
     check_mem(cfg->ini);
@@ -310,6 +314,7 @@ void config_destroy(struct config *cfg)
     hashmap_destroy(cfg->map.vec4s);
 
     iniparser_freedict(cfg->ini);
+    arena_destroy(cfg->arena);
 
 error:
     return;
@@ -333,7 +338,7 @@ error:
 void config_flush(struct config *cfg)
 {
     check_ptr(cfg);
-    check(cfg->filename, "ini filename not set, cannot flush config");
+    check(string_is_valid(cfg->filename), "ini filename not set, cannot flush config");
 
     if (_config_has_entries(cfg)) {
         config_save_ini(cfg, cfg->filename);
@@ -347,30 +352,30 @@ void config_dump(struct config *cfg)
 {
     check_ptr(cfg);
 
-    const char *filename = (cfg->filename) ? (cfg->filename) : "???";
+    struct string filename = (string_is_valid(cfg->filename)) ? (cfg->filename) : make_string("???");
 
-    clog_info(">>> dump : %s", filename);
+    clog_info(">>> dump : "string_fmt, string_fmt_arg(filename));
 
     iniparser_dump_ini(cfg->ini, stdout);
 
-    clog_info("<<< dump : %s", filename);
+    clog_info("<<< dump : "string_fmt, string_fmt_arg(filename));
 
 error:
     return;
 }
 
-result_e config_load_ini(struct config *cfg, const char *filename)
+result_e config_load_ini(struct config *cfg, struct string filename)
 {
     check_ptr(cfg);
-    check_ptr(filename);
+    check_expr(string_is_valid(filename));
 
-    clog_trace("loading config from ini : %s", filename);
+    clog_trace("loading config from ini : "string_fmt, string_fmt_arg(filename));
 
     ////////////////////////////////////////
 
-    cfg->filename = strdup(filename);
+    cfg->filename = filename;
 
-    dictionary *ini = iniparser_load(filename);
+    dictionary *ini = iniparser_load(string_get_cstr(cfg->arena, filename));
     check_quiet(ini);
 
     if (cfg->ini) {
@@ -398,12 +403,12 @@ error:
     return RC_FAILURE;
 }
 
-result_e config_save_ini(struct config *cfg, const char *filename)
+result_e config_save_ini(struct config *cfg, struct string filename)
 {
     check_ptr(cfg);
-    check_ptr(filename);
+    check_expr(string_is_valid(filename));
 
-    clog_trace("saving config to ini : %s", filename);
+    clog_trace("saving config to ini : "string_fmt, string_fmt_arg(filename));
 
     check_expr(_config_has_entries(cfg));
 
@@ -420,9 +425,8 @@ result_e config_save_ini(struct config *cfg, const char *filename)
 
     ////////////////////////////////////////
 
-    // FIXME obsolete after migration to the new strings :)
-    fio_file *file = fio_open(make_string_from_cstr(filename), FIO_MODE_WRITE_ONLY);
-    check(file, "could not open file for writing : %s", filename);
+    fio_file *file = fio_open(filename, FIO_MODE_WRITE_ONLY);
+    check(file, "could not open file for writing : "string_fmt, string_fmt_arg(filename));
 
     iniparser_dump_ini(cfg->ini, fio_get_stream(file));
 
@@ -436,19 +440,19 @@ error:
     return RC_FAILURE;
 }
 
-const char* config_get_filename(struct config *cfg)
+struct string config_get_filename(struct config *cfg)
 {
     check_ptr(cfg);
 
     return cfg->filename;
 
 error:
-    return NULL;
+    return make_string("");
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-bool config_get_int(struct config *cfg, const char *key, s32 *out)
+bool config_get_int(struct config *cfg, string_cstr key, s32 *out)
 {
     check_ptr(cfg);
     check_ptr(key);
@@ -462,7 +466,7 @@ error:
     return false;
 }
 
-bool config_set_int(struct config *cfg, const char *key, s32 value)
+bool config_set_int(struct config *cfg, string_cstr key, s32 value)
 {
     check_ptr(cfg);
     check_ptr(key);
@@ -475,7 +479,7 @@ error:
     return false;
 }
 
-bool config_map_int(struct config *cfg, const char *key, s32* value)
+bool config_map_int(struct config *cfg, string_cstr key, s32* value)
 {
     check_ptr(cfg);
     check_ptr(key);
@@ -496,7 +500,7 @@ error:
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-bool config_get_float(struct config *cfg, const char *key, f32 *out)
+bool config_get_float(struct config *cfg, string_cstr key, f32 *out)
 {
     check_ptr(cfg);
     check_ptr(key);
@@ -510,7 +514,7 @@ error:
     return false;
 }
 
-bool config_set_float(struct config *cfg, const char *key, f32 value)
+bool config_set_float(struct config *cfg, string_cstr key, f32 value)
 {
     check_ptr(cfg);
     check_ptr(key);
@@ -523,7 +527,7 @@ error:
     return false;
 }
 
-bool config_map_float(struct config *cfg, const char *key, f32* value)
+bool config_map_float(struct config *cfg, string_cstr key, f32* value)
 {
     check_ptr(cfg);
     check_ptr(key);
@@ -544,7 +548,7 @@ error:
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-bool config_get_bool(struct config *cfg, const char *key, bool *out)
+bool config_get_bool(struct config *cfg, string_cstr key, bool *out)
 {
     check_ptr(cfg);
     check_ptr(key);
@@ -556,7 +560,7 @@ error:
     return false;
 }
 
-bool config_set_bool(struct config *cfg, const char *key, bool value)
+bool config_set_bool(struct config *cfg, string_cstr key, bool value)
 {
     check_ptr(cfg);
     check_ptr(key);
@@ -569,7 +573,7 @@ error:
     return false;
 }
 
-bool config_map_bool(struct config *cfg, const char *key, bool* value)
+bool config_map_bool(struct config *cfg, string_cstr key, bool* value)
 {
     check_ptr(cfg);
     check_ptr(key);
@@ -590,7 +594,7 @@ error:
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-bool config_get_str(struct config *cfg, const char *key, const char **out)
+bool config_get_str(struct config *cfg, string_cstr key, string_cstr *out)
 {
     check_ptr(cfg);
     check_ptr(key);
@@ -604,7 +608,7 @@ error:
     return false;   
 }
 
-bool config_set_str(struct config *cfg, const char *key, const char *value)
+bool config_set_str(struct config *cfg, string_cstr key, string_cstr value)
 {
     check_ptr(cfg);
     check_ptr(key);
@@ -615,7 +619,7 @@ error:
     return false;   
 }
 
-bool config_map_str(struct config *cfg, const char *key, const char** value)
+bool config_map_str(struct config *cfg, string_cstr key, string_cstr * value)
 {
     check_ptr(cfg);
     check_ptr(key);
@@ -636,22 +640,22 @@ error:
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-bool config_get_vec2(struct config *cfg, const char *key, struct vec2 *out)
+bool config_get_vec2(struct config *cfg, string_cstr key, struct vec2 *out)
 {
     check_ptr(cfg);
     check_ptr(key);
     check_ptr(out);
 
-    const char *str_ro = iniparser_getstring(cfg->ini, key, NULL);
+    string_cstr str_ro = iniparser_getstring(cfg->ini, key, NULL);
 
     if (str_ro)
     {
         char *str = strdup(str_ro);
 
-        const char *x_str = strsep(&str, ",");
+        string_cstr x_str = strsep(&str, ",");
         check_ptr(x_str);
 
-        const char *y_str = strsep(&str, ",");
+        string_cstr y_str = strsep(&str, ",");
         check_ptr(y_str);
 
         out->x = (f32) atof(x_str);
@@ -664,7 +668,7 @@ error:
     return false;
 }
 
-bool config_set_vec2(struct config *cfg, const char *key, struct vec2 value)
+bool config_set_vec2(struct config *cfg, string_cstr key, struct vec2 value)
 {
     check_ptr(cfg);
     check_ptr(key);
@@ -677,7 +681,7 @@ error:
     return false;   
 }
 
-bool config_map_vec2(struct config *cfg, const char *key, struct vec2* value)
+bool config_map_vec2(struct config *cfg, string_cstr key, struct vec2* value)
 {
     check_ptr(cfg);
     check_ptr(key);
@@ -698,25 +702,25 @@ error:
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-bool config_get_vec3(struct config *cfg, const char *key, struct vec3 *out)
+bool config_get_vec3(struct config *cfg, string_cstr key, struct vec3 *out)
 {
     check_ptr(cfg);
     check_ptr(key);
     check_ptr(out);
 
-    const char *str_ro = iniparser_getstring(cfg->ini, key, NULL);
+    string_cstr str_ro = iniparser_getstring(cfg->ini, key, NULL);
 
     if (str_ro)
     {
         char *str = strdup(str_ro);
 
-        const char *x_str = strsep(&str, ",");
+        string_cstr x_str = strsep(&str, ",");
         check_ptr(x_str);
 
-        const char *y_str = strsep(&str, ",");
+        string_cstr y_str = strsep(&str, ",");
         check_ptr(y_str);
 
-        const char *z_str = strsep(&str, ",");
+        string_cstr z_str = strsep(&str, ",");
         check_ptr(z_str);
 
         out->x = (f32) atof(x_str);
@@ -730,7 +734,7 @@ error:
     return false;
 }
 
-bool config_set_vec3(struct config *cfg, const char *key, struct vec3 value)
+bool config_set_vec3(struct config *cfg, string_cstr key, struct vec3 value)
 {
     check_ptr(cfg);
     check_ptr(key);
@@ -743,7 +747,7 @@ error:
     return false;   
 }
 
-bool config_map_vec3(struct config *cfg, const char *key, struct vec3* value)
+bool config_map_vec3(struct config *cfg, string_cstr key, struct vec3* value)
 {
     check_ptr(cfg);
     check_ptr(key);
@@ -764,28 +768,28 @@ error:
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-bool config_get_vec4(struct config *cfg, const char *key, struct vec4 *out)
+bool config_get_vec4(struct config *cfg, string_cstr key, struct vec4 *out)
 {
     check_ptr(cfg);
     check_ptr(key);
     check_ptr(out);
 
-    const char *str_ro = iniparser_getstring(cfg->ini, key, NULL);
+    string_cstr str_ro = iniparser_getstring(cfg->ini, key, NULL);
 
     if (str_ro)
     {
         char *str = strdup(str_ro);
 
-        const char *x_str = strsep(&str, ",");
+        string_cstr x_str = strsep(&str, ",");
         check_ptr(x_str);
 
-        const char *y_str = strsep(&str, ",");
+        string_cstr y_str = strsep(&str, ",");
         check_ptr(y_str);
 
-        const char *z_str = strsep(&str, ",");
+        string_cstr z_str = strsep(&str, ",");
         check_ptr(z_str);
 
-        const char *w_str = strsep(&str, ",");
+        string_cstr w_str = strsep(&str, ",");
         check_ptr(w_str);
 
         out->x = (f32) atof(x_str);
@@ -800,7 +804,7 @@ error:
     return false;
 }
 
-bool config_set_vec4(struct config *cfg, const char *key, struct vec4 value)
+bool config_set_vec4(struct config *cfg, string_cstr key, struct vec4 value)
 {
     check_ptr(cfg);
     check_ptr(key);
@@ -813,7 +817,7 @@ error:
     return false;
 }
 
-bool config_map_vec4(struct config *cfg, const char *key, struct vec4* value)
+bool config_map_vec4(struct config *cfg, string_cstr key, struct vec4* value)
 {
     check_ptr(cfg);
     check_ptr(key);

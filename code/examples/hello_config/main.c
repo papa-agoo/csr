@@ -31,7 +31,7 @@ static void internal_storage_new_config()
     ////////////////////////////////////////
 
     // save config
-    config_save_ini(config, PATH_INI_FILE);
+    config_save_ini(config, make_string(PATH_INI_FILE));
 
     // print and destroy config
     config_dump(config);
@@ -48,7 +48,7 @@ static void internal_storage_existing_config()
     s32 new = 7;
 
     // load ini file
-    struct config *config = config_create_from_ini(PATH_INI_FILE);
+    struct config *config = config_create_from_ini(make_string(PATH_INI_FILE));
     check_ptr(config);
 
     // get value from config
@@ -85,13 +85,13 @@ static void external_storage_new_config()
     config_map_float(config, "my_conf:ratio", &ratio);
 
     // override mapped / referenced data using values from ini (if existing)
-    config_load_ini(config, PATH_INI_FILE);
+    config_load_ini(config, make_string(PATH_INI_FILE));
 
     // change data manually
     count = 2;
 
     // save config (mapped values are synced automatically when saving)
-    config_save_ini(config, PATH_INI_FILE);
+    config_save_ini(config, make_string(PATH_INI_FILE));
 
     // print and destroy config
     config_dump(config);
@@ -143,7 +143,7 @@ static void external_storage_existing_config()
     my_conf_set_defaults(&data);
 
     // load ini file
-    struct config *config = config_create_from_ini(PATH_INI_FILE);
+    struct config *config = config_create_from_ini(make_string(PATH_INI_FILE));
     check_ptr(config);
 
     // map values (automatically writes loaded data to referenced values)

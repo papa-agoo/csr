@@ -73,7 +73,7 @@ void applet_state_quit(struct applet *applet)
     if (state->config)
     {
         // create the config dir
-        struct string config_path = make_string_from_cstr(config_get_filename(state->config));
+        struct string config_path = config_get_filename(state->config);
         struct string config_dir = fio_fs_get_parent_path(config_path);
 
         if (!fio_fs_exists(config_dir)) {

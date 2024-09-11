@@ -178,7 +178,7 @@ void platform_get_info_impl(struct platform_info *info)
     // provide backend info
     struct platform_backend_info *backend = &info->backend;
     {
-        backend->name = strdup("GLFW");
+        backend->name = "GLFW";
         backend->type = PLATFORM_BACKEND_GLFW3;
 
         struct version v = {0};
@@ -192,7 +192,7 @@ void platform_get_info_impl(struct platform_info *info)
     // provide renderer info
     struct platform_renderer_info *renderer = &info->renderer;
     {
-        renderer->name = strdup("OpenGL");
+        renderer->name = "OpenGL";
         renderer->type = PLATFORM_RENDERER_OPENGL;
 
         // opengl version
