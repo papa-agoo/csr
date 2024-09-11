@@ -107,9 +107,9 @@ The main focus lies on the Model Viewer Applet (model_viewer.so) which will be a
 <br/>
 
 * **Milestone 2 (Foundations)**
-  - [ ] Application
-    - [ ] Reload current applet
-    - [ ] Remember last loaded applet
+  - [x] Application
+    - [x] Reload current applet
+    - [x] Remember last loaded applet
   - [ ] Library
     - [ ] SoftGL Rasterizer
   - [ ] Applets

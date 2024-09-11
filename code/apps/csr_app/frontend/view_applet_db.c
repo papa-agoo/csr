@@ -74,6 +74,15 @@ void draw_applet_db_view(struct ui_view* view, struct ui_style *style)
 
     ////////////////////////////////////////
 
+    if (igCollapsingHeader_TreeNodeFlags("Settings", 0))
+    {
+        struct applet_mgr_conf *conf = &application_conf_ptr()->applet_mgr;
+
+        igCheckbox("Remember Applet", &conf->remember_applet);
+    }
+
+    ////////////////////////////////////////
+
     ImGuiTableFlags table_flags = 0;
     table_flags |= ImGuiTableFlags_Borders;
     table_flags |= ImGuiTableFlags_RowBg;

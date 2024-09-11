@@ -7,6 +7,26 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+struct applet_mgr_conf
+{
+    bool remember_applet;
+    string_cstr applet_name;
+};
+
+static void applet_mgr_conf_defaults(struct applet_mgr_conf *conf)
+{
+    check_ptr(conf);
+
+    conf->remember_applet = true;
+    conf->applet_name = NULL;
+
+error:
+    return;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
 struct applet_mgr_callbacks
 {
     void (*on_post_applet_load)(struct applet *applet);
@@ -15,6 +35,8 @@ struct applet_mgr_callbacks
 
 struct applet_mgr_init_info
 {
+    struct applet_mgr_conf *conf;
+
     struct string db_scan_path;
 
     struct applet_mgr_callbacks callbacks;

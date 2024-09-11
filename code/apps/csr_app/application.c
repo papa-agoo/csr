@@ -366,6 +366,21 @@ error:
     return;
 }
 
+static void init_applet_mgr_config()
+{
+    struct application_conf *conf = application_conf_ptr();
+
+    ////////////////////////////////////////
+
+    struct applet_mgr_conf *mgr_conf = &conf->applet_mgr;
+    {
+        applet_mgr_conf_defaults(mgr_conf);
+
+        config_map_bool(conf->user, "applet_mgr:remember_applet", &mgr_conf->remember_applet);
+        config_map_str(conf->user, "applet_mgr:applet_name", &mgr_conf->applet_name);
+    }
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // application
@@ -521,7 +536,10 @@ result_e application_init()
 
     klog_notice("initializing applet manager ...");
     {
+        init_applet_mgr_config();
+
         struct applet_mgr_init_info init_info = {0};
+        init_info.conf = &conf->applet_mgr;
         init_info.db_scan_path = make_string(ENV_APPLET_DIR);
         init_info.callbacks.on_post_applet_load = on_post_applet_load;
         init_info.callbacks.on_pre_applet_unload = on_pre_applet_unload;
@@ -565,8 +583,6 @@ void application_quit()
 
     ////////////////////////////////////////
 
-    struct application_conf *conf = application_conf_ptr();
-
     klog_notice("quitting applet manager ...");
     {
         applet_mgr_quit();
@@ -579,6 +595,8 @@ void application_quit()
 
     klog_notice("quitting env ...");
     {
+        struct application_conf *conf = application_conf_ptr();
+
         config_flush(conf->user);
         config_destroy(conf->user);
     }

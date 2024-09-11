@@ -18,6 +18,7 @@ struct applet_mgr
     struct applet_db *applet_db;
 
     struct applet_mgr_callbacks callbacks;
+    struct applet_mgr_conf *conf;
 };
 
 static struct applet_mgr g_mgr = {0};
@@ -31,6 +32,7 @@ result_e applet_mgr_init(struct applet_mgr_init_info *init_info)
     csr_assert(!mgr_ptr()->is_initialized);
 
     check_ptr(init_info);
+    check_ptr(init_info->conf);
     check_expr(string_is_valid(init_info->db_scan_path));
 
     ////////////////////////////////////////
@@ -42,12 +44,26 @@ result_e applet_mgr_init(struct applet_mgr_init_info *init_info)
     check_ptr(mgr_ptr()->applet_db);
 
     mgr_ptr()->callbacks = init_info->callbacks;
+    mgr_ptr()->conf = init_info->conf;
 
     mgr_ptr()->is_initialized = true;
 
     ////////////////////////////////////////
 
+    // update applet db
     applet_mgr_update_db();
+
+    // load last applet
+    struct applet_mgr_conf *conf = mgr_ptr()->conf;
+
+    if (conf->remember_applet)
+    {
+        struct string applet_name = make_string_from_cstr(conf->applet_name);
+
+        if (string_is_valid(applet_name)) {
+            applet_mgr_load_applet(applet_name);
+        }
+    }
 
     return RC_SUCCESS;
 
@@ -71,7 +87,6 @@ void applet_mgr_quit()
 void applet_mgr_tick()
 {
     csr_assert(mgr_ptr()->is_initialized);
-
 
     ////////////////////////////////////////
 
@@ -121,11 +136,12 @@ result_e applet_mgr_load_applet(struct string filename)
 
     check_expr(string_is_valid(filename));
 
-    ////////////////////////////////////////
-
+    // if an applet is already loaded, unload it first
     if (mgr_ptr()->applet) {
         applet_mgr_unload_applet();
     }
+
+    ////////////////////////////////////////
 
     klog_notice("loading applet : "string_fmt, string_fmt_arg(filename));
 
@@ -144,6 +160,7 @@ result_e applet_mgr_load_applet(struct string filename)
 
     mgr_ptr()->applet = applet;
 
+    // run post load callback(s)
     if (mgr_ptr()->callbacks.on_post_applet_load) {
         mgr_ptr()->callbacks.on_post_applet_load(applet);
     }
@@ -164,6 +181,13 @@ result_e applet_mgr_load_applet(struct string filename)
     }
 
     klog_trace("applet started");
+
+    ////////////////////////////////////////
+
+    // remember started applet
+    if (mgr_ptr()->conf->remember_applet) {
+        mgr_ptr()->conf->applet_name = string_get_cstr(arena, filename);
+    }
 
     return RC_SUCCESS;
 

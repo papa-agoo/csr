@@ -43,6 +43,7 @@ struct application_conf
     } kernel;
 
     struct ui_conf ui;
+    struct applet_mgr_conf applet_mgr;
 };
 
 struct application
