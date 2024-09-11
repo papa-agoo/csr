@@ -3,6 +3,7 @@
 #define KLOG_MODULE_NAME applet_mgr
 #include <csr/kernel/kio.h>
 
+#include <csr/core/file_io.h>
 #include <csr/applet/applet_mgr.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -77,9 +78,7 @@ void applet_mgr_quit()
 
     applet_db_destroy(mgr_ptr()->applet_db);
 
-    if (mgr_ptr()->applet) {
-        applet_mgr_unload_applet();
-    }
+    applet_mgr_unload_applet();
 
     mgr_ptr()->is_initialized = false;
 }
@@ -137,9 +136,7 @@ result_e applet_mgr_load_applet(struct string filename)
     check_expr(string_is_valid(filename));
 
     // if an applet is already loaded, unload it first
-    if (mgr_ptr()->applet) {
-        applet_mgr_unload_applet();
-    }
+    applet_mgr_unload_applet();
 
     ////////////////////////////////////////
 
@@ -153,8 +150,10 @@ result_e applet_mgr_load_applet(struct string filename)
 
     struct string path_to_file = string_create_fmt(arena,
         string_fmt"/"string_fmt, string_fmt_arg(db_scan_path), string_fmt_arg(filename));
-
+    
     // load applet
+    check_expr(fio_fs_is_file(path_to_file));
+
     struct applet *applet = applet_create(path_to_file);
     check(applet != NULL, "could not load applet : "string_fmt, string_fmt_arg(path_to_file));
 
@@ -192,6 +191,8 @@ result_e applet_mgr_load_applet(struct string filename)
     return RC_SUCCESS;
 
 error:
+    klog_error("something went wrong ... see terminal output :(");
+
     applet_mgr_unload_applet();
 
     return RC_FAILURE;
@@ -218,7 +219,7 @@ void applet_mgr_unload_applet()
     csr_assert(mgr_ptr()->is_initialized);
 
     struct applet *applet = mgr_ptr()->applet;
-    check_ptr(applet);
+    check_quiet(applet);
 
     ////////////////////////////////////////
 
