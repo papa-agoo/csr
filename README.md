@@ -4,10 +4,12 @@
 
 ## Overview
 
-- [Introduction](#introduction)  
-- [Build and Run](#build-and-run)  
-- [Roadmap](#roadmap)  
-- [Media](#media)  
+- [CSR](#csr)
+  - [Overview](#overview)
+  - [Introduction](#introduction)
+  - [Build and Run](#build-and-run)
+  - [Roadmap](#roadmap)
+  - [Media](#media)
 
 ## Introduction
 
@@ -114,7 +116,7 @@ The main focus lies on the Model Viewer Applet (model_viewer.so) which will be a
     - [ ] SoftGL Rasterizer
   - [ ] Applets
     - [x] ecs_hello_world.so (some tests with Flecs)
-    - [ ] xgl_hello_cube.so (textured)
+    - [x] xgl_hello_cube.so (textured)
     - [ ] model_viewer.so
       - [ ] 3D scene (Base Grid, Orbit Camera, Orientantion Gizmo, Unit Cube AABB)
       - [ ] User Interface (Model, Camera, Renderers, Debug Info)

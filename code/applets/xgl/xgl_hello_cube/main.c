@@ -92,10 +92,6 @@ static result_e _plugin_startup()
     // create resources
     check_expr(create_resources() == RC_SUCCESS);
 
-    // update shader bindings / params
-    // update_shader_bindings();
-    // update_shader_params();
-
     // create ui
     register_ui();
 
