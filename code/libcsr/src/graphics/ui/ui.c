@@ -22,7 +22,7 @@ result_e ui_init(struct ui_init_info *init_info)
 
     ui_ptr()->conf = init_info->conf;
     ui_ptr()->workspace = init_info->workspace;
-    ui_ptr()->fonts_dir = strdup(init_info->fonts_dir);
+    ui_ptr()->fonts_dir = init_info->fonts_dir;
 
     ////////////////////////////////////////
 
@@ -187,7 +187,7 @@ void ui_menu_init(struct ui_menu *menu, const char *title)
     check_ptr(menu);
     check_ptr(title);
 
-    menu->title = strdup(title);
+    menu->title = title;
 
     menu->key = NULL;
 
@@ -261,7 +261,7 @@ void ui_window_init(struct ui_window *window, const char *title)
     check_ptr(title);
 
     window->key = NULL;
-    window->title = strdup(title);
+    window->title = title;
     window->is_opened = false;
 
     window->priv.flags = ImGuiWindowFlags_None;
@@ -400,15 +400,13 @@ void ui_build_fonts()
     if (ui_conf_ptr()->font.use_custom_font)
     {
         struct ui_font *my_font = &ui_ptr()->font.custom;
-        my_font->info.name = strdup(ui_conf_ptr()->font.name);
+        my_font->info.name = ui_conf_ptr()->font.name;
         my_font->info.size = ui_conf_ptr()->font.size;
         my_font->info.size_scaled = ceilf(my_font->info.size * scale_factor);
 
-        // FIXME make_string(...)
-        char str_buf[256];
-        snprintf(str_buf, 256, "%s/%s", ui_ptr()->fonts_dir, my_font->info.name);
+        string_cstr font_path = string_create_fmt(kio_mem_get_main_arena(), "%s/%s", ui_ptr()->fonts_dir, my_font->info.name).ptr;
 
-        my_font->data = ImFontAtlas_AddFontFromFileTTF(font_atlas, str_buf, my_font->info.size_scaled, NULL, NULL);
+        my_font->data = ImFontAtlas_AddFontFromFileTTF(font_atlas, font_path, my_font->info.size_scaled, NULL, NULL);
 
         if (my_font->data)
         {
@@ -416,7 +414,7 @@ void ui_build_fonts()
         }
         else
         {
-            klog_error("could not load font : %s ...", str_buf);
+            klog_error("could not load font : %s ...", font_path);
 
             ui_conf_ptr()->font.use_custom_font = false;
         }

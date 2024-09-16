@@ -9,7 +9,9 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #define applet_ptr() applet_mgr_get_applet()
+
 #define applet_state_ptr() (&applet_ptr()->state)
+#define applet_plugin_ptr() (&applet_ptr()->plugin)
 
 #define applet_arena_main_ptr() (applet_state_ptr()->allocator.arena_main)
 #define applet_arena_frame_ptr() (applet_state_ptr()->allocator.arena_frame)
@@ -42,7 +44,7 @@ void aio_log_message(enum log_level_type level, string_cstr fmt, ...)
     ////////////////////////////////////////
 
     string_cstr message_cstr = string_get_cstr(arena_frame, message);
-    string_cstr filename_cstr = string_get_cstr(arena_frame, applet_get_filename(applet_ptr()));
+    string_cstr filename_cstr = string_get_cstr(arena_frame, applet_plugin_ptr()->filename);
 
     kio_log_message(level, filename_cstr, message_cstr);
 
@@ -103,11 +105,9 @@ struct config* aio_get_config()
 
     if (!applet_state_ptr()->config)
     {
-        struct string applet_filename = applet_get_filename(applet_ptr());
-
         // construct config path
         struct string config_dir = kio_env_expand_str("{APPLET_CONFIG_DIR}");
-        struct string config_file = string_replace(arena, applet_filename, make_string(".so"), make_string(".ini"));
+        struct string config_file = string_replace(arena, applet_plugin_ptr()->filename, make_string(".so"), make_string(".ini"));
 
         struct string config_path = string_create_fmt(arena, string_fmt"/"string_fmt,
             string_fmt_arg(config_dir), string_fmt_arg(config_file));
@@ -176,9 +176,18 @@ error:
 ////////////////////////////////////////////////////////////////////////////////
 // user interface
 ////////////////////////////////////////////////////////////////////////////////
+#define _get_unique_ui_name(name) \
+    (string_create_fmt(applet_arena_main_ptr(), "%s##"string_fmt, name, string_fmt_arg(applet_plugin_ptr()->filename)).ptr)
+
 result_e aio_add_ui_menu(string_cstr key, struct ui_menu *menu)
 {
     check_applet_initialized();
+
+    check_ptr(menu);
+    check_ptr(menu->title);
+
+    // make menu name unique (ie. My Entry -> My Entry##my_applet.so)
+    menu->title = _get_unique_ui_name(menu->title);
 
     return ui_ctx_add_menu(applet_state_ptr()->ui, key, menu);
 
@@ -199,6 +208,12 @@ error:
 result_e aio_add_ui_window(string_cstr  key, struct ui_window *window)
 {
     check_applet_initialized();
+
+    check_ptr(window);
+    check_ptr(window->title);
+
+    // make window name unique (ie. My Window -> My Window##my_applet.so)
+    window->title = _get_unique_ui_name(window->title);
 
     return ui_ctx_add_window(applet_state_ptr()->ui, key, window);
 
@@ -335,20 +350,12 @@ struct screen* aio_add_screen(string_cstr key, struct screen_create_info *ci)
 
     ////////////////////////////////////////
 
-    struct arena *arena = applet_arena_main_ptr();
-    check_ptr(arena);
-
     // create window
     struct ui_window *window = calloc(1, sizeof(struct ui_window));
     check_mem(window);
 
-    // >>> FIXME ugly stuff
-    struct string applet_filename = applet_get_filename(applet_ptr());
-    struct string win_title = string_create_fmt(arena, "%s##"string_fmt, screen_name, string_fmt_arg(applet_filename));
-
-    ui_window_init(window, string_get_cstr(arena, win_title));
+    ui_window_init(window, screen_name);
     ui_view_init(&window->view, UI_VIEW_TYPE_SCREEN, screen);
-    // <<< FIXME
 
     // window and screen ownership go to the ui ctx (will be freed there)
     aio_add_ui_window(key, window);
