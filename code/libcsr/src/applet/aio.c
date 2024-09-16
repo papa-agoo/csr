@@ -52,6 +52,30 @@ error:
 
 
 ////////////////////////////////////////////////////////////////////////////////
+// env vars
+////////////////////////////////////////////////////////////////////////////////
+struct string aio_env_get_var(string_cstr name)
+{
+    return kio_env_get_var(name);
+}
+
+string_cstr aio_env_get_var_cstr(string_cstr name)
+{
+    return kio_env_get_var_cstr(name);
+}
+
+struct string aio_env_expand_str(string_cstr str)
+{
+    return kio_env_expand_str(str);
+}
+
+string_cstr aio_env_expand_str_cstr(string_cstr str)
+{
+    return kio_env_expand_str_cstr(str);
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
 // memory
 ////////////////////////////////////////////////////////////////////////////////
 struct arena* aio_get_main_arena()
