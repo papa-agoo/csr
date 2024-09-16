@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <csr/core/memory/arena.h>
+
 #include <csr/core/clock.h>
 #include <csr/core/config.h>
 
@@ -12,11 +14,12 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-struct arena;
-
 struct applet_state
 {
-    struct arena *arena;
+    struct {
+        struct arena *arena_main;
+        struct arena *arena_frame;
+    } allocator;
 
     struct clock *clock;
     struct config *config;

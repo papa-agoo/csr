@@ -93,6 +93,8 @@ void applet_tick(struct applet* applet, f64 dt)
 
     applet->plugin.tick();
 
+    arena_reset(applet->state.allocator.arena_frame);
+
 error:
     return;
 }

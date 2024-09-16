@@ -1,7 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include <csr/core/file_io.h>
-#include <csr/core/memory/arena.h>
 
 #include <csr/applet/applet_priv.h>
 
@@ -17,9 +16,12 @@ void applet_state_init(struct applet *applet)
 
     struct applet_state *state = &applet->state;
 
-    // arena allocator
-    state->arena = make_arena();
-    check_ptr(state->arena);
+    // allocators
+    state->allocator.arena_main = make_arena();
+    check_ptr(state->allocator.arena_main);
+
+    state->allocator.arena_frame = make_arena();
+    check_ptr(state->allocator.arena_frame);
 
     // clock
     state->clock = clock_create("VTC");
@@ -88,8 +90,9 @@ void applet_state_quit(struct applet *applet)
     // clock
     clock_destroy(state->clock);
 
-    // arena
-    arena_destroy(state->arena);
+    // allocators
+    arena_destroy(state->allocator.arena_main);
+    arena_destroy(state->allocator.arena_frame);
 
     ////////////////////////////////////////
 
