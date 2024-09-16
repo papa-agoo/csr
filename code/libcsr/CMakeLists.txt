@@ -12,6 +12,7 @@ target_include_directories(${MY_TARGET}
     PUBLIC
         include
     PUBLIC
+        $<TARGET_PROPERTY:stb::image,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:bstrlib::bstrlib,INTERFACE_INCLUDE_DIRECTORIES>
 )
 

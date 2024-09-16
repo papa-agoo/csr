@@ -1,7 +1,12 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+#include <csr/core/memory/arena_priv.h>
+
 #include <csr/core/math/utils.h>
 #include <csr/graphics/pixelbuffer.h>
+
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -95,11 +100,50 @@ error:
     return NULL;
 }
 
+struct pixelbuffer* pixelbuffer_create_from_file(struct string filename, bool flip_y_axis)
+{
+    check_expr(string_is_valid(filename));
+
+    ////////////////////////////////////////
+
+    stbi_set_flip_vertically_on_load(flip_y_axis);
+
+    s32 width, height, num_chans;
+
+    u8* image_data;
+    {
+        // FIXME arena_scratch_begin()
+        struct arena_scratch scratch = {0};
+        scratch.arena = _arena_priv_ptr();
+        scratch.position = arena_get_current_position(scratch.arena);
+
+        // load image data
+        image_data = stbi_load(string_get_cstr(scratch.arena, filename), &width, &height, &num_chans, 4);
+
+        // FIXME arena_scratch_end()
+        arena_pop_to(scratch.arena, scratch.position);
+    }
+    check(image_data, "stbi_load() failed");
+
+    ////////////////////////////////////////
+
+    struct pixelbuffer* pb = pixelbuffer_create(width, height);
+    check_ptr(pb);
+
+    pb->pixels = (struct color32*) image_data;
+
+    ////////////////////////////////////////
+
+    return pb;
+
+error:
+    return NULL;
+}
+
 void pixelbuffer_destroy(struct pixelbuffer *pb)
 {
     check_ptr(pb);
 
-    // release color buffer
     if (pb->pixels) {
         free(pb->pixels);
     }
@@ -109,7 +153,7 @@ void pixelbuffer_destroy(struct pixelbuffer *pb)
     }
 
 error:
-    free(pb);
+    if (pb) free(pb);
 
     return;
 }

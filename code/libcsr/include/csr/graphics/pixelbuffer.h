@@ -20,6 +20,8 @@ struct pixelbuffer
 };
 
 struct pixelbuffer* pixelbuffer_create(u32 width, u32 height);
+struct pixelbuffer* pixelbuffer_create_from_file(struct string filename, bool flip_y_axis);
+
 void pixelbuffer_destroy(struct pixelbuffer* pb);
 void pixelbuffer_resize(struct pixelbuffer* pb, u32 width, u32 height);
 
