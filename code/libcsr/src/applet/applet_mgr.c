@@ -25,6 +25,7 @@ struct applet_mgr
 static struct applet_mgr g_mgr = {0};
 
 #define mgr_ptr() (&g_mgr)
+#define mgr_conf_ptr() (mgr_ptr()->conf)
 
 ////////////////////////////////////////////////////////////
 
@@ -55,11 +56,9 @@ result_e applet_mgr_init(struct applet_mgr_init_info *init_info)
     applet_mgr_update_db();
 
     // load last applet
-    struct applet_mgr_conf *conf = mgr_ptr()->conf;
-
-    if (conf->remember_applet)
+    if (mgr_conf_ptr()->remember_applet)
     {
-        struct string applet_name = make_string_from_cstr(conf->applet_name);
+        struct string applet_name = make_string_from_cstr(mgr_conf_ptr()->applet_name);
 
         if (string_is_valid(applet_name)) {
             applet_mgr_load_applet(applet_name);
@@ -184,8 +183,8 @@ result_e applet_mgr_load_applet(struct string filename)
     ////////////////////////////////////////
 
     // remember started applet
-    if (mgr_ptr()->conf->remember_applet) {
-        mgr_ptr()->conf->applet_name = string_get_cstr(arena, filename);
+    if (mgr_conf_ptr()->remember_applet) {
+        mgr_conf_ptr()->applet_name = string_get_cstr(arena, filename);
     }
 
     return RC_SUCCESS;
