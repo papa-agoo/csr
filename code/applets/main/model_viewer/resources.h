@@ -25,6 +25,8 @@ struct mv_resources
 
     // models
     struct {
+        struct model *dummy;
+
         struct {
             struct model *axes;
             struct model *grid;

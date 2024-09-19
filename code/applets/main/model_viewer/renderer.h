@@ -30,7 +30,7 @@ static void mv_renderer_conf_defaults(struct mv_renderer_conf *conf)
 {
     check_ptr(conf);
 
-    conf->color.background = make_vec3(0.17f, 0.17f, 0.17f);
+    conf->color.background = make_vec3(0.20f, 0.20f, 0.20f);
 
     conf->color.aabb = make_vec3(0.75, 0.75, 0.75);
     conf->color.grid = make_vec3(0.35, 0.35, 0.35);
@@ -57,14 +57,33 @@ struct mv_renderer
     struct
     {
         struct {
+            struct {
+                struct mat44 view;
+                struct mat44 projection;
+                struct mat44 view_projection;
+            } frame;
+        } uniform_buffer;
+
+        struct {
+            xgl_sampler foo;
+        } sampler;
+
+        struct {
+            xgl_shader vs_solid;
+            xgl_shader vs_wireframe;
+
+            xgl_shader fs_pass_through;
+        } shader;
+
+        struct {
+            xgl_pipeline debug_uvs;
+            xgl_pipeline debug_normals;
+
             xgl_pipeline points;
             xgl_pipeline wireframe;
             xgl_pipeline solid;
             xgl_pipeline textured;
             xgl_pipeline full;
-
-            xgl_pipeline debug_uvs;
-            xgl_pipeline debug_normals;
         } pso;
     } resources;
 };

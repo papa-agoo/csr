@@ -250,6 +250,17 @@ static void _camera_ctl_first_person_update_cb(struct camera *camera, struct cam
 
 static result_e _create_scene()
 {
+    // create dummy model
+    {
+        struct model_create_info create_info = {0};
+        create_info.name = make_string("Dummy");
+
+        struct model *model = model_create(&create_info);
+        check_ptr(model);
+
+        mv_resources_ptr()->model.dummy = model;
+    }
+
     // create main camera
     {
         struct camera_create_info create_info = {0};
@@ -303,6 +314,7 @@ static result_e _create_scene()
     }
 
     // set default camera + controller
+    mv_scene_ptr()->model = mv_resources_ptr()->model.dummy;
     mv_scene_ptr()->camera = mv_resources_ptr()->camera.main;
     mv_scene_ptr()->camera_ctl = &mv_resources_ptr()->camera.controller.orbital;
 
@@ -328,8 +340,143 @@ error:
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // resources
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+static result_e _create_axes_gizmo()
+{
+    // struct {
+    //     struct vec3 position;
+    //     struct vec3 color;
+    // } vertex;
+
+    // u32 vertex_format = VERTEX_FORMAT_POSITION | VERTEX_FORMAT_COLOR;
+
+    // ////////////////////////////////////////
+
+    // // 3 axes, 2 vertices for each axis
+    // struct vector *vertices = vector_create(3 * 2, sizeof(vertex));
+    // check_mem(vertices);
+
+    // // x axis
+    // vertex.color = mv_renderer_conf_ptr()->color.axis_x;
+
+    // vertex.position = make_vec3(0, 0, 0);
+    // vector_push_back(vertices, vertex);
+
+    // vertex.position = make_vec3_x_axis();
+    // vector_push_back(vertices, vertex);
+
+    // // y axis
+    // vertex.color = mv_renderer_conf_ptr()->color.axis_y;
+
+    // vertex.position = make_vec3(0, 0, 0);
+    // vector_push_back(vertices, vertex);
+
+    // vertex.position = make_vec3_y_axis();
+    // vector_push_back(vertices, vertex);
+
+    // // z axis
+    // vertex.color = mv_renderer_conf_ptr()->color.axis_z;
+
+    // vertex.position = make_vec3(0, 0, 0);
+    // vector_push_back(vertices, vertex);
+
+    // vertex.position = make_vec3_z_axis();
+    // vector_push_back(vertices, vertex);
+
+    // ////////////////////////////////////////
+
+    return RC_SUCCESS;
+
+error:
+    return RC_FAILURE;
+}
+
+static result_e _create_grid_gizmo(f32 size_qm)
+{
+    check_expr(size_qm >= 1);
+
+    // f32 e = size_qm / 2.0;
+    // f32 step_size = e / e;
+
+    // ////////////////////////////////////////
+
+    // struct {
+    //     struct vec3 position;
+    //     struct vec3 color;
+    // } vertex;
+
+    // u32 num_lines = (2 * (size_qm + 1)) + 2;
+
+    // struct vector *vertices = vector_create(num_lines * 2, sizeof(vertex));
+    // check_mem(vertices);
+
+    // ////////////////////////////////////////
+
+    // // generate grid lines
+    // for (f32 i = -e; i <= e; i += step_size)
+    // {
+    //     vertex.color = mv_renderer_conf_ptr()->color.grid;
+
+    //     // along x axis
+    //     {
+    //         // p1
+    //         vertex.position = make_vec3(-e, 0, i);
+    //         vector_push_back(vertices, vertex);
+
+    //         // p2
+    //         vertex.position = (i == 0) ? make_vec3(0, 0, 0) : make_vec3(e, 0, i);
+    //         vector_push_back(vertices, vertex);
+    //     }
+
+    //     // along z axis
+    //     {
+    //         // p1
+    //         vertex.position = make_vec3(i, 0, -e);
+    //         vector_push_back(vertices, vertex);
+
+    //         // p2
+    //         vertex.position = (i == 0) ? make_vec3(0, 0, 0) : make_vec3(i, 0, e);
+    //         vector_push_back(vertices, vertex);
+    //     }
+    // }
+
+    // // colored x axis from origin to e
+    // {
+    //     vertex.color = mv_renderer_conf_ptr()->color.axis_x;
+
+    //     vertex.position = make_vec3(0, 0, 0);
+    //     vector_push_back(vertices, vertex);
+
+    //     vertex.position = make_vec3(e, 0, 0);
+    //     vector_push_back(vertices, vertex);
+    // }
+
+    // // colored z axis from origin to e
+    // {
+    //     vertex.color = mv_renderer_conf_ptr()->color.axis_z;
+
+    //     vertex.position = make_vec3(0, 0, 0);
+    //     vector_push_back(vertices, vertex);
+
+    //     vertex.position = make_vec3(0, 0, e);
+    //     vector_push_back(vertices, vertex);
+    // }
+
+    // ////////////////////////////////////////
+
+    // struct aabb aabb = make_aabb(make_vec3(-e, 0, -e), make_vec3(e, 0, e));
+
+    return RC_SUCCESS;
+
+error:
+    return RC_FAILURE;
+}
+
 static result_e _create_resources()
 {
+    // create gizmos
+    check_result(_create_axes_gizmo(), "could not create axes gizmo");
+    check_result(_create_grid_gizmo(100), "could not create grid gizmo");
+
     return RC_SUCCESS;
 
 error:
