@@ -46,24 +46,29 @@ static void _draw_settings_view()
 
 void ui_draw_renderer_view()
 {
+    ImGuiTreeNodeFlags header_flags = ImGuiTreeNodeFlags_DefaultOpen;
+
     igNewLine();
     _draw_flags_view();
 
-    // igNewLine();
-    // igSeparatorText("GPU Renderer");
-    // igNewLine();
+    // if (igCollapsingHeader_TreeNodeFlags("GPU Renderer", header_flags))
+    // {
+    //     igNewLine();
+    //     _draw_gpu_renderer_view();
+    //     igNewLine();
+    // }
 
-    // _draw_gpu_renderer_view();
+    // if (igCollapsingHeader_TreeNodeFlags("CPU Renderer", header_flags))
+    // {
+    //     igNewLine();
+    //     _draw_cpu_renderer_view();
+    //     igNewLine();
+    // }
 
-    // igNewLine();
-    // igSeparatorText("CPU Renderer");
-    // igNewLine();
-
-    // _draw_cpu_renderer_view();
-
-    // igNewLine();
-    // igSeparatorText("Settings");
-    // igNewLine();
-
-    // _draw_settings_view();
+    // if (igCollapsingHeader_TreeNodeFlags("Settings", header_flags))
+    // {
+    //     igNewLine();
+    //      _draw_settings_view();
+    //     igNewLine();
+    // }
 }

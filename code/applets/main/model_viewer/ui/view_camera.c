@@ -139,24 +139,30 @@ void ui_draw_camera_view()
     struct camera *camera = model_viewer_get_camera();
     csr_assert(camera);
 
+    ImGuiTreeNodeFlags header_flags = ImGuiTreeNodeFlags_DefaultOpen;
+
     igNewLine();
     _draw_info_view(camera);
-
-    igNewLine();
-    igSeparatorText("Controller");
     igNewLine();
 
-    _draw_controller_view(camera);
+    if (igCollapsingHeader_TreeNodeFlags("Controller", header_flags))
+    {
+        igNewLine();
+        _draw_controller_view(camera);
+        igNewLine();
+    }
 
-    igNewLine();
-    igSeparatorText("Transform");
-    igNewLine();
+    if (igCollapsingHeader_TreeNodeFlags("Transform", header_flags))
+    {
+        igNewLine();
+        _draw_transform_view(camera);
+        igNewLine();
+    }
 
-    _draw_transform_view(camera);
-
-    igNewLine();
-    igSeparatorText("Projection");
-    igNewLine();
-
-    _draw_projection_view(camera);
+    if (igCollapsingHeader_TreeNodeFlags("Projection", header_flags))
+    {
+        igNewLine();
+        _draw_projection_view(camera);
+        igNewLine();
+    }
 }
