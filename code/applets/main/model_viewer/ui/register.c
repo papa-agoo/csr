@@ -14,7 +14,7 @@ static void _draw_settings_view_cb(struct ui_view *view, struct ui_style *style)
     {
         if (igBeginTabItem("Model", NULL, 0))
         {
-            // ui_draw_model_view();
+            ui_draw_model_view();
 
             igEndTabItem();
         }

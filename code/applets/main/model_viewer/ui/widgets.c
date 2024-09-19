@@ -105,6 +105,6 @@ void ui_widget_transform(struct transform *transform, bool* show_matrix, f64 dt)
         struct mat44 matrix = transform_get_matrix(transform);
 
         igNewLine();
-        ui_widget_mat4x4("Result", &matrix);
+        ui_widget_mat4x4_debug(matrix);
     }
 }

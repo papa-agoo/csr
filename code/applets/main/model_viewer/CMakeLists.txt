@@ -16,6 +16,7 @@ add_library(${MY_TARGET}
         ui/view_camera.c
         ui/view_renderer.c
 
+        resources/model.c
         resources/camera.c
 )
 
