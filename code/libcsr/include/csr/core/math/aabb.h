@@ -16,7 +16,23 @@ struct aabb
 #define make_aabb(...) \
     make_compound_literal(struct aabb, __VA_ARGS__)
 
+#define make_aabb_zero() \
+    make_aabb(make_vec3_zero(), make_vec3_zero());
+
+#define make_aabb_unit_cube() \
+    make_aabb(make_vec3(-1, -1, -1), make_vec3_one());
+
 ////////////////////////////////////////////////////////////////////////////////
+
+CSR_INLINE bool aabb_is_valid(const struct aabb *aabb)
+{
+    check_ptr(aabb);
+
+    clog_warn("aabb_is_valid() not impl. yet");
+
+error:
+    return false;
+}
 
 CSR_INLINE struct vec3 aabb_get_center(const struct aabb *aabb)
 {
