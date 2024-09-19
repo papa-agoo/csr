@@ -8,6 +8,15 @@ set(MY_TARGET applet_${MY_NAME})
 add_library(${MY_TARGET}
     SHARED
         main.c
+        model_viewer.c
+
+        ui/widgets.c
+        ui/register.c
+        ui/view_model.c
+        ui/view_camera.c
+        ui/view_renderer.c
+
+        resources/camera.c
 )
 
 target_include_directories(${MY_TARGET}
