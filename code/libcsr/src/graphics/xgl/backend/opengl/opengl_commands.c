@@ -325,7 +325,7 @@ error:
     return;
 }
 
-void xgl_draw_indexed_impl(u32 count)
+void xgl_draw_indexed_impl(u32 first, u32 count)
 {
     struct gl_state *state = gl_state_ptr();
 
@@ -334,7 +334,7 @@ void xgl_draw_indexed_impl(u32 count)
     struct gl_pipeline *pipeline = state->pso;
     check_ptr(pipeline);
 
-    GL_CALL( glDrawElements(pipeline->topology, count, GL_UNSIGNED_INT, NULL) );
+    GL_CALL( glDrawElements(pipeline->topology, count, GL_UNSIGNED_INT, (void*)(first * sizeof(GLuint))) );
 
 error:
     return;

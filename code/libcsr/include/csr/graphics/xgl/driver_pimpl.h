@@ -92,4 +92,4 @@ void xgl_bind_sampler_impl(guid sampler, u32 texture_unit);
 
 // draw calls
 void xgl_draw_impl(u32 first, u32 count);
-void xgl_draw_indexed_impl(u32 count);
+void xgl_draw_indexed_impl(u32 first, u32 count);

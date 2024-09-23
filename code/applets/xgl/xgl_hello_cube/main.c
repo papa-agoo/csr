@@ -130,7 +130,7 @@ static void _plugin_tick()
         xgl_bind_index_buffer(g_cube.geometry.index_buffer.indices);
         xgl_bind_vertex_buffers(0, vb_count, vertex_buffers, vb_offsets, vb_strides);
 
-        xgl_draw_indexed(g_cube.geometry.index_buffer.index_count);
+        xgl_draw_indexed(0, g_cube.geometry.index_buffer.index_count);
 
         screen_end();
     }

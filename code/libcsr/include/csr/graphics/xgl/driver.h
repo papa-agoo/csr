@@ -97,4 +97,4 @@ void xgl_bind_vertex_buffers(u32 start_at, u32 count, xgl_buffer* buffers, u32* 
 
 // draw commands
 void xgl_draw(u32 first, u32 count);
-void xgl_draw_indexed(u32 count);
+void xgl_draw_indexed(u32 first, u32 count);

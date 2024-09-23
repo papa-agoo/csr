@@ -210,14 +210,14 @@ error:
     return;
 }
 
-void xgl_draw_indexed(u32 count)
+void xgl_draw_indexed(u32 first, u32 count)
 {
     if (count == 0) return;
 
     _apply_index_buffer_binding();
     _apply_vertex_buffer_bindings();
 
-    xgl_draw_indexed_impl(count);
+    xgl_draw_indexed_impl(first, count);
 
 error:
     return;
