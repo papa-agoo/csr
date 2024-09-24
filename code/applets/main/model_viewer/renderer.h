@@ -2,7 +2,8 @@
 
 #pragma once
 
-#include "scene.h"
+#include "renderer/mesh.h"
+#include "renderer/material.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -30,7 +31,7 @@ static void renderer_conf_defaults(struct renderer_conf *conf)
 {
     check_ptr(conf);
 
-    conf->color.background = make_vec3(0.20f, 0.20f, 0.20f);
+    conf->color.background = make_vec3(0.20, 0.20, 0.20);
 
     conf->color.aabb = make_vec3(0.75, 0.75, 0.75);
     conf->color.grid = make_vec3(0.35, 0.35, 0.35);
@@ -51,39 +52,41 @@ error:
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-struct renderer
-{
-    // resources
-    struct
-    {
-        struct {
-            struct {
-                struct mat44 view;
-                struct mat44 projection;
-                struct mat44 view_projection;
-            } frame;
-        } uniform_buffer;
+struct renderer;
 
-        struct {
-            xgl_sampler foo;
-        } sampler;
+// meshes
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        struct {
-            xgl_shader vs_solid;
-            xgl_shader vs_wireframe;
+// void renderer_mesh_create();
+// void renderer_mesh_destroy();
+// ...
 
-            xgl_shader fs_pass_through;
-        } shader;
 
-        struct {
-            xgl_pipeline debug_uvs;
-            xgl_pipeline debug_normals;
+// materials
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
-            xgl_pipeline points;
-            xgl_pipeline wireframe;
-            xgl_pipeline solid;
-            xgl_pipeline textured;
-            xgl_pipeline full;
-        } pso;
-    } resources;
-};
+// void renderer_material_create();
+// void renderer_material_destroy();
+
+// void renderer_effect_create();
+// void renderer_effect_destroy();
+
+// void renderer_shader_create();
+// void renderer_shader_destroy();
+
+// void renderer_texture_create();
+// void renderer_texture_destroy();
+
+// ...
+
+
+// debug draw
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// void renderer_debug_draw_point(struct vec3 p, struct vec3 color, f32 size, bool depth_tested);
+// void renderer_debug_draw_line(struct vec3 p1, struct vec3 p2, struct vec3 color, f32 width, bool depth_tested);
+
+// void renderer_debug_draw_quad(struct vec3 min, struct vec3 max, const struct mat44 *transform, struct vec3 color, bool depth_tested);
+
+// void renderer_debug_draw_aabb(const struct aabb *aabb, const struct mat44 *transform, bool depth_tested);
+// void renderer_debug_draw_axes(const struct mat44 *transform, bool depth_tested);

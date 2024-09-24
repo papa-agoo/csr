@@ -2,12 +2,11 @@
 
 #pragma once
 
-#include "scene/camera.h"
-#include "scene/camera_ctl.h"
-
-#include "scene/model.h"
-#include "scene/model_ctl.h"
+#include <csr/core/math/transform.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-struct scene;
+struct light
+{
+    struct transform transform;
+};

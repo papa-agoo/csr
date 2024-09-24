@@ -16,8 +16,12 @@ add_library(${MY_TARGET}
         ui/view_camera.c
         ui/view_renderer.c
 
+        scene.c
         scene/model.c
         scene/camera.c
+
+        renderer.c
+        renderer/rgpu.c
 )
 
 target_include_directories(${MY_TARGET}

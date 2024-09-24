@@ -1,20 +1,20 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#include "model.h"
+#include "model_priv.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-struct model
-{
-    struct string name;
+// struct model
+// {
+//     struct string name;
 
-    struct aabb aabb;
+//     struct aabb aabb;
 
-    // ...
+//     // ...
 
-    struct transform transform;
-    struct transform transform_parent;
-};
+//     struct transform transform;
+//     struct transform transform_parent;
+// };
 
 struct model* model_create(struct model_create_info *create_info)
 {
@@ -28,10 +28,12 @@ struct model* model_create(struct model_create_info *create_info)
     check_mem(model);
 
     model->name = string_is_valid(create_info->name) ? create_info->name : make_string("<no name>");
-    model->aabb = make_aabb_unit_cube();
 
-    transform_identity(&model->transform);
-    transform_identity(&model->transform_parent);
+    model->node.aabb = make_aabb_unit_cube();
+    model->node.mesh = NULL; // FIXME
+
+    transform_identity(&model->node.transform);
+    // transform_identity(&model->node.parent->transform);
 
     return model;
 
@@ -53,6 +55,8 @@ struct string model_get_name(struct model *model)
 {
     check_ptr(model);
 
+    return model->name;
+
 error:
     return make_string("<invalid model>");
 }
@@ -61,7 +65,7 @@ struct aabb model_get_aabb(struct model* model)
 {
     check_ptr(model);
 
-    return model->aabb;
+    return model->node.aabb;
 
 error:
     return make_aabb_zero();
@@ -71,7 +75,7 @@ struct transform* model_get_transform(struct model *model)
 {
     check_ptr(model);
 
-    return &model->transform;
+    return &model->node.transform;
 
 error:
     return NULL;
@@ -92,7 +96,8 @@ struct transform* model_get_parent_transform(struct model *model)
 {
     check_ptr(model);
 
-    return &model->transform_parent;
+    clog_warn("model_get_parent_transform() not impl. yet");
+    // return &model->node.parent->transform;
 
 error:
     return NULL;

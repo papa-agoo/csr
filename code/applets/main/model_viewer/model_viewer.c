@@ -2,8 +2,10 @@
 
 #include "model_viewer.h"
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
+#include "scene_priv.h"
+#include "renderer_priv.h"
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
 
 struct model_viewer
 {
@@ -14,16 +16,9 @@ struct model_viewer
         struct screen *rcpu;
     } screens;
 
-    struct {
-        struct model *model;
-        struct model_ctl *model_ctl;
-
-        struct camera *camera;
-        struct camera_ctl *camera_ctl;
-    } scene;
-
-    struct scene resources;
+    struct scene scene;
     struct renderer renderer;
+
     struct mv_conf conf;
 };
 
@@ -33,76 +28,29 @@ static struct model_viewer g_mv = {0};
 #define mv_conf_ptr() (&mv_ptr()->conf)
 
 #define mv_scene_ptr() (&mv_ptr()->scene)
-#define mv_renderer_ptr() (&mv_ptr()->renderer)
-#define mv_resources_ptr() (&mv_ptr()->resources)
+#define mv_scene_cache_ptr() (&mv_scene_ptr()->cache)
 
+#define mv_renderer_ptr() (&mv_ptr()->renderer)
+#define mv_renderer_cache_ptr() (&mv_renderer_ptr()->cache)
+
+
+static result_e _renderer_create();
+static void _renderer_destroy();
+static void _renderer_tick();
+
+static result_e _scene_create();
+static void _scene_destroy();
+static void _scene_tick();
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // public model viewer api
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-static result_e _create_scene();
-static result_e _create_renderer();
-static result_e _create_resources();
-
-static result_e _create_screens()
-{
-    struct vec4 clear_color = make_vec4_3_1(mv_conf_ptr()->renderer.color.background, 1.0f);
-
-    // rgpu screen
-    {
-        struct vec2 size = make_vec2(1280, 720);
-
-        struct screen_create_info create_info = {0};
-        create_info.name = "GPU Renderer";
-
-        create_info.surface.viewport.width = size.w;
-        create_info.surface.viewport.height = size.h;
-        create_info.surface.clear_values.color = clear_color;
-
-        struct screen* screen = aio_add_screen("rgpu", &create_info);
-        check(screen, "could not create rgpu screen");
-
-        mv_ptr()->screens.rgpu = screen;
-    }
-
-    // rcpu screen
-    {
-        struct vec2 size = make_vec2(640, 360);
-
-        struct screen_create_info create_info = {0};
-        create_info.name = "CPU Renderer";
-
-        create_info.surface.type = SCREEN_SURFACE_TYPE_CPU;
-        create_info.surface.viewport.width = size.w;
-        create_info.surface.viewport.height = size.h;
-        create_info.surface.clear_values.color = clear_color;
-
-        struct screen *screen = aio_add_screen("rcpu", &create_info);
-        check(screen, "could not create rcpu screen");
-
-        mv_ptr()->screens.rcpu = screen;
-    }
-
-    return RC_SUCCESS;
-
-error:
-    return RC_FAILURE;
-}
-
 result_e model_viewer_init()
 {
     csr_assert(!mv_ptr()->is_initialized);
 
-    ////////////////////////////////////////
-
-    renderer_conf_defaults(&mv_conf_ptr()->renderer);
-
-    check_result(_create_screens(), "could not create screens");
-    check_result(_create_scene(), "could not create scene");
-    // check_result(_create_renderer(), "could not create renderer");
-    // check_result(_create_resources(), "could not create resources");
-
-    ////////////////////////////////////////
+    check_result(_renderer_create(), "could not create renderer");
+    check_result(_scene_create(), "could not create scene");
 
     mv_ptr()->is_initialized = true;
 
@@ -115,45 +63,15 @@ error:
 void model_viewer_quit()
 {
     csr_assert(mv_ptr()->is_initialized);
+
+    _scene_destroy();
+    _renderer_destroy();
 }
 
 void model_viewer_tick()
 {
-    // update model
-    {
-        // ...
-    }
-
-    // update camera
-    {
-        struct camera *camera = mv_scene_ptr()->camera;
-        struct camera_ctl *camera_ctl = mv_scene_ptr()->camera_ctl;
-
-        if (camera_ctl->update_cb) {
-            camera_ctl->update_cb(camera, camera_ctl);
-        }
-    }
-
-    // prepare render data
-    {
-        // ...
-    }
-
-    ////////////////////////////////////////
-
-    if (screen_begin(mv_ptr()->screens.rgpu, SCREEN_SURFACE_TYPE_GPU))
-    {
-        // rgpu render ...
-
-        screen_end();
-    }
-
-    if (screen_begin(mv_ptr()->screens.rcpu, SCREEN_SURFACE_TYPE_CPU))
-    {
-        // rcpu render ...
-
-        screen_end();
-    }
+    _scene_tick();
+    _renderer_tick();
 }
 
 struct model* model_viewer_get_model()
@@ -176,18 +94,20 @@ error:
 
 void model_viewer_set_camera_ctl_type(enum camera_ctl_type type)
 {
+    struct scene_cache *cache = mv_scene_cache_ptr();
+
     switch (type)
     {
         case CAMERA_CTL_ORBITAL:
-            mv_scene_ptr()->camera_ctl = &mv_resources_ptr()->camera.controller.orbital;
+            mv_scene_ptr()->camera_ctl = &cache->camera.controller.orbital;
             break;
 
         case CAMERA_CTL_FIRST_PERSON:
-            mv_scene_ptr()->camera_ctl = &mv_resources_ptr()->camera.controller.first_person;
+            mv_scene_ptr()->camera_ctl = &cache->camera.controller.first_person;
             break;
 
         default:
-            mv_scene_ptr()->camera_ctl = &mv_resources_ptr()->camera.controller.none;
+            mv_scene_ptr()->camera_ctl = &cache->camera.controller.none;
     }
 
 error:
@@ -203,186 +123,81 @@ struct mv_conf* model_viewer_get_conf()
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // scene
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-static void _camera_ctl_orbital_update_cb(struct camera *camera, struct camera_ctl *ctl)
+static result_e _scene_create()
 {
-    check_ptr(camera);
-    check_ptr(ctl);
+    struct scene *scene = mv_scene_ptr();
 
-    check_expr(ctl->type == CAMERA_CTL_ORBITAL);
+    // init scene
+    check_result(scene_init(scene), "could not init scene");
 
-    struct camera_ctl_orbital *data = ctl->data;
-    check_ptr(data);
-
-    struct transform *transform = camera_get_transform(camera);
-    check_ptr(transform);
-
-    struct orbit *orbit = &data->orbit_src;
-
-    data->orbit_dst.azimuth = data->orbit_dst.azimuth + data->animate;
-
-    if (data->interpolate)
+    // set root node
+    struct mesh_node *node = &scene->root_node;
     {
-        f32 scale = 6.0; // FIXME move to config
-        f32 value = scale * aio_time_elapsed_delta();
-
-        struct orbit *src = &data->orbit_src;
-        struct orbit *dst = &data->orbit_dst;
-
-        src->azimuth = lerp(value, src->azimuth, dst->azimuth);
-        src->polar = lerp(value, src->polar, dst->polar);
-        src->radius = lerp(value, src->radius, dst->radius);
-    }
-    else
-    {
-        data->orbit_src = data->orbit_dst;
+        node->aabb = make_aabb_unit_cube();
+        transform_identity(&node->transform);
     }
 
-    transform_lookat_from(transform, orbit_get_coords(orbit), orbit->origin);
+    // set model + controller
+    mv_scene_ptr()->model = NULL;
+    mv_scene_ptr()->model_ctl = NULL;
 
-error:
-    return;
-}
-
-static void _camera_ctl_first_person_update_cb(struct camera *camera, struct camera_ctl *ctl)
-{
-    // ...
-}
-
-static result_e _create_scene()
-{
-    // create dummy model
-    {
-        struct model_create_info create_info = {0};
-        create_info.name = make_string("Dummy");
-
-        struct model *model = model_create(&create_info);
-        check_ptr(model);
-
-        mv_resources_ptr()->model.dummy = model;
-    }
-
-    // create main camera
-    {
-        struct camera_create_info create_info = {0};
-        create_info.name = make_string("main");
-        create_info.mode = CAMERA_PROJECTION_PERSPECTIVE;
-
-        struct camera *camera = camera_create(&create_info);
-        check(camera, "could not create main camera");
-
-        mv_resources_ptr()->camera.main = camera;
-    }
-
-    // create dummy controller
-    {
-        struct camera_ctl ctl = {0};
-        ctl.type = CAMERA_CTL_NONE;
-
-        mv_resources_ptr()->camera.controller.none = ctl;
-    }
-
-    // create orbital controller
-    {
-        f32 azimuth = 75.0;
-        f32 polar = 15.0;
-        f32 radius = 5.0;
-
-        static struct camera_ctl_orbital data = {0};
-        data.orbit_dst.azimuth = azimuth;
-        data.orbit_dst.polar = polar;
-        data.orbit_dst.radius = radius;
-        data.orbit_src = data.orbit_dst;
-        data.interpolate = true;
-
-        struct camera_ctl ctl = {0};
-        ctl.type = CAMERA_CTL_ORBITAL;
-        ctl.update_cb = _camera_ctl_orbital_update_cb;
-        ctl.data = &data;
-
-        mv_resources_ptr()->camera.controller.orbital = ctl;
-    }
-
-    // create first person controller
-    {
-        struct camera_ctl ctl = {0};
-        ctl.type = CAMERA_CTL_FIRST_PERSON;
-        ctl.update_cb = _camera_ctl_first_person_update_cb;
-
-        // ...
-
-        mv_resources_ptr()->camera.controller.first_person = ctl;
-    }
-
-    // set default camera + controller
-    mv_scene_ptr()->model = mv_resources_ptr()->model.dummy;
-    mv_scene_ptr()->camera = mv_resources_ptr()->camera.main;
-    mv_scene_ptr()->camera_ctl = &mv_resources_ptr()->camera.controller.orbital;
+    // set camera + controller
+    mv_scene_ptr()->camera = scene->cache.camera.main;
+    mv_scene_ptr()->camera_ctl = &scene->cache.camera.controller.orbital;
 
     return RC_SUCCESS;
 
 error:
     return RC_FAILURE;
+}
+
+static void _scene_destroy()
+{
+    struct scene *scene = mv_scene_ptr();
+
+    // ...
+
+    scene_quit(scene);
+}
+
+static void _scene_tick()
+{
+    // update camera
+    {
+        struct camera *camera = mv_scene_ptr()->camera;
+        struct camera_ctl *camera_ctl = mv_scene_ptr()->camera_ctl;
+
+        if (camera_ctl->update_cb) {
+            camera_ctl->update_cb(camera, camera_ctl);
+        }
+    }
+
+    // update model
+    {
+        // update model transform (model_ctl)
+        // update mesh_node hierarchy (compute mesh matrices)
+    }
 }
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // renderer
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-static result_e _create_renderer()
+static result_e _create_rgpu_screen(u32 width, u32 height, struct vec3 clear_color)
 {
-    return RC_SUCCESS;
+    check_expr(width > 0 && height > 0);
 
-error:
-    return RC_FAILURE;
-}
+    struct screen_create_info create_info = {0};
+    create_info.name = "GPU Renderer";
 
+    create_info.surface.viewport.width = width;
+    create_info.surface.viewport.height = height;
+    create_info.surface.clear_values.color = make_vec4_3_1(clear_color, 1.0);
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-// resources
-////////////////////////////////////////////////////////////////////////////////////////////////////
-static result_e _create_axes_gizmo()
-{
-    // struct {
-    //     struct vec3 position;
-    //     struct vec3 color;
-    // } vertex;
+    struct screen* screen = aio_add_screen("rgpu", &create_info);
+    check(screen, "could not create rgpu screen");
 
-    // u32 vertex_format = VERTEX_FORMAT_POSITION | VERTEX_FORMAT_COLOR;
-
-    // ////////////////////////////////////////
-
-    // // 3 axes, 2 vertices for each axis
-    // struct vector *vertices = vector_create(3 * 2, sizeof(vertex));
-    // check_mem(vertices);
-
-    // // x axis
-    // vertex.color = mv_renderer_conf_ptr()->color.axis_x;
-
-    // vertex.position = make_vec3(0, 0, 0);
-    // vector_push_back(vertices, vertex);
-
-    // vertex.position = make_vec3_x_axis();
-    // vector_push_back(vertices, vertex);
-
-    // // y axis
-    // vertex.color = mv_renderer_conf_ptr()->color.axis_y;
-
-    // vertex.position = make_vec3(0, 0, 0);
-    // vector_push_back(vertices, vertex);
-
-    // vertex.position = make_vec3_y_axis();
-    // vector_push_back(vertices, vertex);
-
-    // // z axis
-    // vertex.color = mv_renderer_conf_ptr()->color.axis_z;
-
-    // vertex.position = make_vec3(0, 0, 0);
-    // vector_push_back(vertices, vertex);
-
-    // vertex.position = make_vec3_z_axis();
-    // vector_push_back(vertices, vertex);
-
-    // ////////////////////////////////////////
+    mv_ptr()->screens.rgpu = screen;
 
     return RC_SUCCESS;
 
@@ -390,80 +205,22 @@ error:
     return RC_FAILURE;
 }
 
-static result_e _create_grid_gizmo(f32 size_qm)
+static result_e _create_rcpu_screen(u32 width, u32 height, struct vec3 clear_color)
 {
-    check_expr(size_qm >= 1);
+    check_expr(width > 0 && height > 0);
 
-    // f32 e = size_qm / 2.0;
-    // f32 step_size = e / e;
+    struct screen_create_info create_info = {0};
+    create_info.name = "CPU Renderer";
 
-    // ////////////////////////////////////////
+    create_info.surface.type = SCREEN_SURFACE_TYPE_CPU;
+    create_info.surface.viewport.width = width;
+    create_info.surface.viewport.height = height;
+    create_info.surface.clear_values.color = make_vec4_3_1(clear_color, 1.0);
 
-    // struct {
-    //     struct vec3 position;
-    //     struct vec3 color;
-    // } vertex;
+    struct screen *screen = aio_add_screen("rcpu", &create_info);
+    check(screen, "could not create rcpu screen");
 
-    // u32 num_lines = (2 * (size_qm + 1)) + 2;
-
-    // struct vector *vertices = vector_create(num_lines * 2, sizeof(vertex));
-    // check_mem(vertices);
-
-    // ////////////////////////////////////////
-
-    // // generate grid lines
-    // for (f32 i = -e; i <= e; i += step_size)
-    // {
-    //     vertex.color = mv_renderer_conf_ptr()->color.grid;
-
-    //     // along x axis
-    //     {
-    //         // p1
-    //         vertex.position = make_vec3(-e, 0, i);
-    //         vector_push_back(vertices, vertex);
-
-    //         // p2
-    //         vertex.position = (i == 0) ? make_vec3(0, 0, 0) : make_vec3(e, 0, i);
-    //         vector_push_back(vertices, vertex);
-    //     }
-
-    //     // along z axis
-    //     {
-    //         // p1
-    //         vertex.position = make_vec3(i, 0, -e);
-    //         vector_push_back(vertices, vertex);
-
-    //         // p2
-    //         vertex.position = (i == 0) ? make_vec3(0, 0, 0) : make_vec3(i, 0, e);
-    //         vector_push_back(vertices, vertex);
-    //     }
-    // }
-
-    // // colored x axis from origin to e
-    // {
-    //     vertex.color = mv_renderer_conf_ptr()->color.axis_x;
-
-    //     vertex.position = make_vec3(0, 0, 0);
-    //     vector_push_back(vertices, vertex);
-
-    //     vertex.position = make_vec3(e, 0, 0);
-    //     vector_push_back(vertices, vertex);
-    // }
-
-    // // colored z axis from origin to e
-    // {
-    //     vertex.color = mv_renderer_conf_ptr()->color.axis_z;
-
-    //     vertex.position = make_vec3(0, 0, 0);
-    //     vector_push_back(vertices, vertex);
-
-    //     vertex.position = make_vec3(0, 0, e);
-    //     vector_push_back(vertices, vertex);
-    // }
-
-    // ////////////////////////////////////////
-
-    // struct aabb aabb = make_aabb(make_vec3(-e, 0, -e), make_vec3(e, 0, e));
+    mv_ptr()->screens.rcpu = screen;
 
     return RC_SUCCESS;
 
@@ -471,14 +228,131 @@ error:
     return RC_FAILURE;
 }
 
-static result_e _create_resources()
+static result_e _renderer_create()
 {
-    // create gizmos
-    check_result(_create_axes_gizmo(), "could not create axes gizmo");
-    check_result(_create_grid_gizmo(100), "could not create grid gizmo");
+    struct renderer *renderer = mv_renderer_ptr();
+
+    // init config
+    struct renderer_conf *conf = mv_conf_ptr()->renderer = &renderer->conf;
+    renderer_conf_defaults(conf);
+
+    // create screens
+    check_result(_create_rgpu_screen(1280, 720, conf->color.background), "could not create rgpu screen");
+    check_result(_create_rcpu_screen(640, 360, conf->color.background), "could not create rcpu screen");
+
+    // init renderer
+    check_result(renderer_init(renderer), "could not init renderer");
 
     return RC_SUCCESS;
 
 error:
     return RC_FAILURE;
+}
+
+static void _renderer_destroy()
+{
+    struct renderer *renderer = mv_renderer_ptr();
+
+    // ...
+
+    renderer_quit(renderer);
+}
+
+static void _renderer_rgpu_tick()
+{
+    // xgl_bind_descriptor_set(pipeline_layout, XGL_DESCRIPTOR_SET_TYPE_PER_FRAME, frame_data);
+    // xgl_bind_descriptor_set(pipeline_layout, XGL_DESCRIPTOR_SET_TYPE_PER_PASS, pass_data);
+
+    // draw environment
+    {
+        // ...
+    }
+
+    // draw meshes
+    struct model *model = model_viewer_get_model();
+
+    if (model)
+    {
+        struct vector *meshes = model->resources.mesh.meshes;
+
+        for (u32 i = 0; i < vector_size(meshes); i++)
+        {
+            struct mesh *mesh = vector_get(meshes, i);
+
+            // copy push data (model matrix, etc.)
+            {
+                struct shader_data_push *cpu = &mesh->push_data.cpu;
+                struct shader_data_push *gpu = xgl_map_buffer(mesh->push_data.gpu);
+
+                memcpy(gpu, cpu, sizeof(struct shader_data_push));
+                xgl_unmap_buffer(mesh->push_data.gpu);
+            }
+
+            // draw primitives
+            for (u32 i = 0; i < vector_size(mesh->primitives); i++)
+            {
+                struct mesh_primitive *primitive = vector_get(mesh->primitives, i);
+
+                rgpu_set_material(primitive->material);
+                rgpu_draw_mesh_primitive(primitive);
+            }
+        }
+    }
+
+    // draw gizmos
+    {
+        // grid
+        struct mesh_gizmo *grid = &mv_renderer_cache_ptr()->gizmo.grid;
+        {
+            // rgpu_set_material(grid->primitive.material);
+            // rgpu_draw_mesh_primitive(&grid->primitive);
+        }
+
+        // axes
+        struct mesh_gizmo *axes = &mv_renderer_cache_ptr()->gizmo.axes;
+        {
+            // struct xgl_viewport axes_vp = {0};
+            // xgl_set_viewports(1, &axes_vp);
+
+            // rgpu_set_material(axes->primitive.material);
+            // rgpu_draw_mesh_primitive(&axes->primitive);
+        }
+    }
+}
+
+static void _renderer_rcpu_tick()
+{
+    // ...
+}
+
+static void _renderer_tick()
+{
+    // update shader resources
+    {
+        struct shader_data_frame *cpu = NULL;
+        struct shader_data_frame *gpu = NULL;
+
+        // ...
+    }
+
+    // build render structures (suitable for gpu/cpu renderers)
+    {
+        // ...
+    }
+
+    // gpu renderer
+    if (screen_begin(mv_ptr()->screens.rgpu, SCREEN_SURFACE_TYPE_GPU))
+    {
+        _renderer_rgpu_tick();
+
+        screen_end();
+    }
+
+    // cpu renderer
+    if (screen_begin(mv_ptr()->screens.rcpu, SCREEN_SURFACE_TYPE_CPU))
+    {
+        _renderer_rcpu_tick();
+
+        screen_end();
+    }
 }

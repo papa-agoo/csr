@@ -6,6 +6,15 @@
 
 void ui_widget_transform(struct transform *transform, bool* show_matrix, f64 dt);
 
+static void _os_open_file_dialog()
+{
+    // zenity --file-selection --filename=/opt/csr/resources/xxx/
+    //      images: --file-filter="Image Files | *.png *.jpg *.jpeg *.xxx"
+    //      models: --file-filter="3D Models (*.obj, *.glTF) | *.obj *.gltf *.glb"
+
+    // popen(...)
+}
+
 static void _draw_load_import_view()
 {
     // - load / import
@@ -20,6 +29,11 @@ static void _draw_load_import_view()
     //          - bool: fit into frustum
     //          - vec3: placement / pivot
 
+    // tools
+    //      - zenity file dialog
+    //      - cgltf library
+    //      - tinyobjloader-c library
+
     igText("...");
 }
 
@@ -29,7 +43,8 @@ static void _draw_detail_view(struct model *model)
     // - meshes
     // - materials
 
-    igText("...");
+    struct string name = model_get_name(model);
+    igText("Model : "string_fmt, string_fmt_arg(name));
 }
 
 static void _draw_transform_view(struct model* model)
@@ -47,11 +62,13 @@ static void _draw_transform_view(struct model* model)
 
     ////////////////////////////////////////
 
-    struct transform *transform = model_get_parent_transform(model);
+    struct transform *transform = model_get_transform(model);
 
-    if (transform_type == TRANSFORM_TYPE_LOCAL) {
-        transform = model_get_transform(model);
-    }
+    // struct transform *transform = model_get_parent_transform(model);
+
+    // if (transform_type == TRANSFORM_TYPE_LOCAL) {
+    //     transform = model_get_transform(model);
+    // }
 
     ////////////////////////////////////////
 
