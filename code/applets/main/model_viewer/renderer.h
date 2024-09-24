@@ -2,11 +2,11 @@
 
 #pragma once
 
-#include "resources.h"
+#include "scene.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-struct mv_renderer_conf
+struct renderer_conf
 {
     struct {
         struct vec3 background;
@@ -26,7 +26,7 @@ struct mv_renderer_conf
     bool enable_rcpu;
 };
 
-static void mv_renderer_conf_defaults(struct mv_renderer_conf *conf)
+static void renderer_conf_defaults(struct renderer_conf *conf)
 {
     check_ptr(conf);
 
@@ -51,7 +51,7 @@ error:
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-struct mv_renderer
+struct renderer
 {
     // resources
     struct

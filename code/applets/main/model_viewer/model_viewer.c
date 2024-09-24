@@ -22,8 +22,8 @@ struct model_viewer
         struct camera_ctl *camera_ctl;
     } scene;
 
-    struct mv_resources resources;
-    struct mv_renderer renderer;
+    struct scene resources;
+    struct renderer renderer;
     struct mv_conf conf;
 };
 
@@ -95,7 +95,7 @@ result_e model_viewer_init()
 
     ////////////////////////////////////////
 
-    mv_renderer_conf_defaults(&mv_conf_ptr()->renderer);
+    renderer_conf_defaults(&mv_conf_ptr()->renderer);
 
     check_result(_create_screens(), "could not create screens");
     check_result(_create_scene(), "could not create scene");

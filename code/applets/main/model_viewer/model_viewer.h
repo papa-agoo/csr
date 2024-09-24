@@ -4,14 +4,14 @@
 
 #include <csr/applet.h>
 
-#include "resources.h"
+#include "scene.h"
 #include "renderer.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 struct mv_conf
 {
-    struct mv_renderer_conf renderer;
+    struct renderer_conf renderer;
 };
 
 struct model_viewer;

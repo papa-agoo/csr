@@ -2,15 +2,15 @@
 
 #pragma once
 
-#include "resources/camera.h"
-#include "resources/camera_ctl.h"
+#include "scene/camera.h"
+#include "scene/camera_ctl.h"
 
-#include "resources/model.h"
-#include "resources/model_ctl.h"
+#include "scene/model.h"
+#include "scene/model_ctl.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-struct mv_resources
+struct scene
 {
     // cameras
     struct {

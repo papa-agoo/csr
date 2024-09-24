@@ -6,7 +6,7 @@
 
 static void _draw_flags_view()
 {
-    struct mv_renderer_conf *conf = &model_viewer_get_conf()->renderer;
+    struct renderer_conf *conf = &model_viewer_get_conf()->renderer;
 
     igCheckbox("Draw Grid", &conf->draw_grid);
     igCheckbox("Draw AABB", &conf->draw_aabb);
