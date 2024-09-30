@@ -80,9 +80,26 @@ error:
     return;
 }
 
-void xgl_bind_descriptor_set(xgl_pipeline_layout p_pipeline_layout, u32 set_index, xgl_descriptor_set p_set)
+// binding relative to descriptor set position (set_idx + n, ...)
+static u32 _calc_relative_ds_binding_idx(u32 set_index, u32 slot_count, u32 binding)
 {
-    check_expr(set_index >= 0 && set_index <= 3);
+    // set_index must be one of the xgl_descriptor_set_type elements
+    check_expr(set_index < XGL_DESCRIPTOR_SET_TYPE_MAX);
+
+    // at least one slot required
+    check_expr(slot_count > 0);
+
+    return (set_index * slot_count) + binding;
+
+error:
+    return 0;
+}
+
+void xgl_bind_descriptor_set(enum xgl_descriptor_set_type type, xgl_pipeline_layout p_pipeline_layout, xgl_descriptor_set p_set)
+{
+    check_expr(type < XGL_DESCRIPTOR_SET_TYPE_MAX);
+
+    u32 set_index = type;
 
     ////////////////////////////////////////
 
@@ -117,7 +134,9 @@ void xgl_bind_descriptor_set(xgl_pipeline_layout p_pipeline_layout, u32 set_inde
             struct xgl_buffer *buffer = object_pool_get(storage->buffers, descriptor->buffer.handle);
             check_ptr(buffer);
 
-            xgl_bind_uniform_buffer_impl(buffer->gpu_id, descriptor->binding);
+            u32 relative_binding = _calc_relative_ds_binding_idx(set_index, XGL_DESCRIPTOR_SET_UB_COUNT, descriptor->binding);
+
+            xgl_bind_uniform_buffer_impl(buffer->gpu_id, relative_binding);
         }
     }
 
@@ -128,17 +147,19 @@ void xgl_bind_descriptor_set(xgl_pipeline_layout p_pipeline_layout, u32 set_inde
             struct xgl_texture_descriptor *descriptor = vector_get(set->texture_descriptors, i);
             check_ptr(descriptor);
 
+            u32 relative_binding = _calc_relative_ds_binding_idx(set_index, XGL_DESCRIPTOR_SET_TU_COUNT, descriptor->binding);
+
             // texture
             struct xgl_texture *texture = object_pool_get(storage->textures, descriptor->texture.handle);
             check_ptr(texture);
 
-            xgl_bind_texture_impl(texture->gpu_id, descriptor->binding);
+            xgl_bind_texture_impl(texture->gpu_id, relative_binding);
 
             // sampler
             struct xgl_sampler *sampler = object_pool_get(storage->samplers, descriptor->sampler.handle);
             check_ptr(sampler);
 
-            xgl_bind_sampler_impl(sampler->gpu_id, descriptor->binding);
+            xgl_bind_sampler_impl(sampler->gpu_id, relative_binding);
         }
     }
 

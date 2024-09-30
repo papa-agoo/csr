@@ -473,7 +473,7 @@ struct xgl_color_blend_state
     enum xgl_blend_factor dst_alpha_blend_factor;
 };
 
-// input layout state
+// layout (location = XGL_VERTEX_ATTRIB_XXX) in TYPE a_xxx
 enum xgl_vertex_attrib
 {
     XGL_VERTEX_ATTRIB_POSITION      = 0,
@@ -501,13 +501,18 @@ struct xgl_input_layout
     struct xgl_vertex_attrib_input *attrib_inputs;
 };
 
-// descriptor sets
+// max 8 uniform buffer slots for each ds type
+#define XGL_DESCRIPTOR_SET_UB_COUNT 8
+
+// max 4 texture unit slots for each ds type
+#define XGL_DESCRIPTOR_SET_TU_COUNT 4
+
 enum xgl_descriptor_set_type
 {
-    XGL_DESCRIPTOR_SET_TYPE_PER_FRAME    = 0,
-    XGL_DESCRIPTOR_SET_TYPE_PER_PASS     = 1,
-    XGL_DESCRIPTOR_SET_TYPE_PER_MATERIAL = 2,
-    XGL_DESCRIPTOR_SET_TYPE_PER_OBJECT   = 3,
+    XGL_DESCRIPTOR_SET_TYPE_FRAME    = 0,
+    XGL_DESCRIPTOR_SET_TYPE_PASS     = 1,
+    XGL_DESCRIPTOR_SET_TYPE_MATERIAL = 2,
+    XGL_DESCRIPTOR_SET_TYPE_OBJECT   = 3,
 
     XGL_DESCRIPTOR_SET_TYPE_MAX
 };

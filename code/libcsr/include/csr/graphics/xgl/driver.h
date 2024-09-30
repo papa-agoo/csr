@@ -89,7 +89,7 @@ void xgl_set_scissor_rects(u32 count, struct xgl_rect* scissors);
 
 // bind commands
 void xgl_bind_pipeline(enum xgl_pipeline_type type, xgl_pipeline pipeline);
-void xgl_bind_descriptor_set(xgl_pipeline_layout pipeline_layout, u32 set_index, xgl_descriptor_set set);
+void xgl_bind_descriptor_set(enum xgl_descriptor_set_type type, xgl_pipeline_layout pipeline_layout, xgl_descriptor_set set);
 
 void xgl_bind_index_buffer(xgl_buffer buffer);
 void xgl_bind_vertex_buffers(u32 start_at, u32 count, xgl_buffer* buffers, u32* offsets, u32* strides);
