@@ -266,6 +266,16 @@ error:
     return SCREEN_SURFACE_TYPE_UNKNOWN;
 }
 
+struct xgl_viewport screen_surface_get_viewport(struct screen_surface *surface)
+{
+    check_ptr(surface);
+
+    return surface->viewport;
+
+error:
+    return (struct xgl_viewport) {0};
+}
+
 xgl_texture screen_surface_get_texture(struct screen_surface *surface)
 {
     check_ptr(surface);

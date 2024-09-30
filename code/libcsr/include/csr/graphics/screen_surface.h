@@ -53,5 +53,6 @@ void screen_surface_set_size(struct screen_surface *surface, struct vec2 size);
 
 enum screen_surface_type screen_surface_get_type(struct screen_surface *surface);
 
+struct xgl_viewport screen_surface_get_viewport(struct screen_surface *surface);
 xgl_texture screen_surface_get_texture(struct screen_surface *surface);
 struct pixelbuffer* screen_surface_get_pixelbuffer(struct screen_surface *surface);

@@ -72,6 +72,7 @@ const char* screen_get_name(struct screen* screen);
 const char* screen_get_surface_type_cstr(struct screen* screen);
 enum screen_surface_type screen_get_surface_type(struct screen* screen);
 
+struct xgl_viewport screen_get_viewport(struct screen* screen);
 xgl_texture screen_get_texture(struct screen* screen);
 struct pixelbuffer* screen_get_pixelbuffer(struct screen* screen);
 

@@ -172,12 +172,21 @@ error:
 enum screen_surface_type screen_get_surface_type(struct screen* screen)
 {
     check_ptr(screen);
-    check_ptr(screen->surface);
 
     return screen_surface_get_type(screen->surface);
 
 error:
     return SCREEN_SURFACE_TYPE_UNKNOWN;
+}
+
+struct xgl_viewport screen_get_viewport(struct screen* screen)
+{
+    check_ptr(screen);
+
+    return screen_surface_get_viewport(screen->surface);
+
+error:
+    return (struct xgl_viewport) {0};
 }
 
 xgl_texture screen_get_texture(struct screen* screen)
