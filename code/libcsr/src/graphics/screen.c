@@ -179,6 +179,18 @@ error:
     return SCREEN_SURFACE_TYPE_UNKNOWN;
 }
 
+f32 screen_get_aspect_ratio(struct screen* screen)
+{
+    check_ptr(screen);
+
+    struct vec2 size = screen_get_size(screen);
+
+    return size.w / size.h;
+
+error:
+    return 1.0;
+}
+
 struct xgl_viewport screen_get_viewport(struct screen* screen)
 {
     check_ptr(screen);
