@@ -126,7 +126,7 @@ error:
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// callbacks
+// hid
 ////////////////////////////////////////////////////////////////////////////////
 struct hid_callbacks* aio_get_hid_callbacks()
 {
@@ -136,6 +136,16 @@ struct hid_callbacks* aio_get_hid_callbacks()
 
 error:
     return NULL;
+}
+
+bool aio_hid_kbd_key_down(enum keyboard_key key)
+{
+    return kio_hid_kbd_key_down(key);
+}
+
+bool aio_hid_mouse_button_down(enum mouse_button button)
+{
+    return kio_hid_mouse_button_down(button);
 }
 
 
@@ -248,7 +258,7 @@ static void _normalize_screen_create_info_values(struct screen_create_info *ci)
 
     ////////////////////////////////////////
 
-    // try to select to proper resize policy
+    // try to select the proper resize policy
     if (ci->resize_policy == SCREEN_RESIZE_POLICY_UNKNOWN)
     {
         // initially explicit resizing only

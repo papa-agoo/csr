@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <csr/core/file_io.h>
+
 #include <csr/core/clock.h>
 #include <csr/core/config.h>
 
@@ -50,9 +52,12 @@ struct config* aio_get_config();
 
 
 ////////////////////////////////////////////////////////////////////////////////
-// callbacks
+// hid
 ////////////////////////////////////////////////////////////////////////////////
 struct hid_callbacks* aio_get_hid_callbacks();
+
+bool aio_hid_kbd_key_down(enum keyboard_key key);
+bool aio_hid_mouse_button_down(enum mouse_button button);
 
 
 ////////////////////////////////////////////////////////////////////////////////
