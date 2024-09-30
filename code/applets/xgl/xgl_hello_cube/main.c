@@ -85,6 +85,7 @@ static result_e _plugin_startup()
 
     create_info.surface.type = SCREEN_SURFACE_TYPE_GPU;
     create_info.surface.clear_values.color = make_vec4(0.22, 0.22, 0.22, 1.0);
+    create_info.surface.clear_values.depth = 1.0;
 
     struct screen *screen = aio_add_screen("main", &create_info);
     check_ptr(screen);
@@ -125,7 +126,7 @@ static void _plugin_tick()
         u32 vb_count = COUNT_OF(vertex_buffers);
 
         xgl_bind_pipeline(XGL_PIPELINE_TYPE_GRAPHICS, g_cube.material.effect.pipeline);
-        xgl_bind_descriptor_set(g_cube.material.effect.pipeline_layout, 0, g_cube.descriptor_set);
+        xgl_bind_descriptor_set(XGL_DESCRIPTOR_SET_TYPE_FRAME, g_cube.material.effect.pipeline_layout, g_cube.descriptor_set);
 
         xgl_bind_index_buffer(g_cube.geometry.index_buffer.indices);
         xgl_bind_vertex_buffers(0, vb_count, vertex_buffers, vb_offsets, vb_strides);

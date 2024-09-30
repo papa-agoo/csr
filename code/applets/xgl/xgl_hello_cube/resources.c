@@ -187,7 +187,6 @@ static result_e _create_pso()
 
     struct xgl_depth_stencil_state ds = {0};
     ds.depth.enable_test = true;
-    ds.depth.compare_op = XGL_COMPARE_OP_GREATER; // FIXME wtf
 
     ////////////////////////////////////////
 
