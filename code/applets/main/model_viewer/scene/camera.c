@@ -216,20 +216,26 @@ error:
     return mat44_identity();
 }
 
-struct mat44 camera_get_projection_matrix(struct camera *camera, f32 aspect)
+struct mat44 camera_get_persp_projection_matrix(struct camera *camera, f32 aspect)
 {
     check_ptr(camera);
     check_expr(aspect > 0);
 
-    if (camera->mode == CAMERA_PROJECTION_ORTHOGRAPHIC)
-    {
-        f32 a = aspect;
-        f32 s = camera->ortho_size;
-
-        return mat44_ortho(-s * a, s * a, -s, s, camera->near, camera->far);
-    }
-
     return mat44_fovy(camera->fov, aspect, camera->near, camera->far);
+
+error:
+    return mat44_identity();
+}
+
+struct mat44 camera_get_ortho_projection_matrix(struct camera *camera, f32 aspect)
+{
+    check_ptr(camera);
+    check_expr(aspect > 0);
+
+    f32 a = aspect;
+    f32 s = camera->ortho_size;
+
+    return mat44_ortho(-s * a, s * a, -s, s, camera->near, camera->far);
 
 error:
     return mat44_identity();

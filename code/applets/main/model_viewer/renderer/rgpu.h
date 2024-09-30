@@ -2,12 +2,21 @@
 
 #pragma once
 
-#include "mesh.h"
-#include "material.h"
+#include "renderer_priv.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void rgpu_set_material(struct material *material);
+struct rgpu;
+
+struct rgpu* rgpu_create();
+void rgpu_destroy();
+
+void rgpu_tick(struct renderer *renderer, struct xgl_viewport vp);
+// void rgpu_tick(struct renderer *renderer, struct xgl_viewport vp, ...);
+
 void rgpu_draw_mesh_primitive(struct mesh_primitive *primitive);
 
-// struct material* rgpu_find_suitable_material(u32 vertex_format);
+void rgpu_pass_meshes(struct renderer *renderer, struct vector *meshes);
+void rgpu_pass_environment(struct renderer *renderer);
+void rgpu_pass_gizmos(struct renderer *renderer);
+void rgpu_pass_debug_draw(struct renderer *renderer);

@@ -149,12 +149,16 @@ void transform_lookat_from(struct transform *transform, struct vec3 position, st
     check_ptr(transform);
     check_expr(!vec3_equal(position, target));
 
-    // transform->matrix = mat44_invert(mat44_lookat_inv(position, target, make_vec3_up()));
-    // transform->matrix = mat44_lookat(position, target, make_vec3_up());
+    // >>> FIXME
+    {
+        transform->matrix = mat44_invert(mat44_lookat_inv(position, target, make_vec3_up()));
+        // transform->matrix = mat44_lookat(position, target, make_vec3_up());
 
-    // mat44_decompose(transform->matrix, &transform->position, &transform->rotation_euler, &transform->scale);
+        mat44_decompose(transform->matrix, &transform->position, &transform->rotation_euler, &transform->scale);
 
-    // transform->position = mat44_mult_vec3(transform->matrix, transform->position);
+        // transform->position = mat44_mult_vec3(transform->matrix, transform->position);
+    }
+    // <<< FIXME
 
     transform->is_dirty = false;
 

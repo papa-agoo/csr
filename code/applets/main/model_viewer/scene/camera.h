@@ -50,4 +50,5 @@ struct transform* camera_get_transform(struct camera *camera);
 void camera_set_transform(struct camera *camera, struct transform *transform);
 
 struct mat44 camera_get_view_matrix(struct camera *camera);
-struct mat44 camera_get_projection_matrix(struct camera *camera, f32 aspect);
+struct mat44 camera_get_persp_projection_matrix(struct camera *camera, f32 aspect);
+struct mat44 camera_get_ortho_projection_matrix(struct camera *camera, f32 aspect);

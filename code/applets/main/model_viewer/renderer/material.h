@@ -6,14 +6,6 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-struct material_params
-{
-    bool is_dirty;
-
-    struct shader_data_material cpu;
-    xgl_buffer gpu;
-};
-
 struct material
 {
     struct string name;
@@ -23,8 +15,13 @@ struct material
         xgl_pipeline_layout pipeline_layout;
     } effect;
 
-    struct material_bindings {
-        struct material_params params;
-        // ...
-    } bindings;
+    struct material_shader_data
+    {
+        struct{
+            struct shader_data_material cpu;
+            xgl_buffer gpu;
+        } buffer;
+
+        xgl_descriptor_set ds;
+    } shader_data;
 };

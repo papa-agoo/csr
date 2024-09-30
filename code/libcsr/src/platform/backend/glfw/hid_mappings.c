@@ -15,7 +15,7 @@
 
 #define NUM_MOUSE_BUTTONS 16
 
-static enum mouse_button mouse_btns_csr[NUM_MOUSE_BUTTONS] = {
+static enum mouse_button mouse_btns_glfw[NUM_MOUSE_BUTTONS] = {
     map_value(MOUSE_BUTTON_1, GLFW_MOUSE_BUTTON_1),
     map_value(MOUSE_BUTTON_2, GLFW_MOUSE_BUTTON_2),
     map_value(MOUSE_BUTTON_3, GLFW_MOUSE_BUTTON_3),
@@ -30,7 +30,7 @@ static enum mouse_button mouse_btns_csr[NUM_MOUSE_BUTTONS] = {
     map_value(MOUSE_BUTTON_MIDDLE, GLFW_MOUSE_BUTTON_MIDDLE),
 };
 
-static s32 mouse_btns_glfw[NUM_MOUSE_BUTTONS] = {
+static s32 mouse_btns_csr[NUM_MOUSE_BUTTONS] = {
     map_value(GLFW_MOUSE_BUTTON_1, MOUSE_BUTTON_1),
     map_value(GLFW_MOUSE_BUTTON_2, MOUSE_BUTTON_2),
     map_value(GLFW_MOUSE_BUTTON_3, MOUSE_BUTTON_3),
@@ -47,7 +47,7 @@ static s32 mouse_btns_glfw[NUM_MOUSE_BUTTONS] = {
 
 enum mouse_button get_csr_mouse_button(s32 glfw_button)
 {
-    return mouse_btns_glfw[glfw_button];
+    return mouse_btns_csr[glfw_button];
 }
 
 s32 get_glfw_mouse_button(enum mouse_button csr_button)

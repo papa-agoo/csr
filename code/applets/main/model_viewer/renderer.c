@@ -1,20 +1,65 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+#include <csr/applet/aio.h>
+
 #include "renderer_priv.h"
+#include "renderer/rgpu_priv.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+static result_e _create_shader_data(struct renderer *renderer);
 static result_e _create_gizmos(struct renderer *renderer);
-
-// static result_e _create_samplers(struct renderer_cache *cache);
-// static result_e _create_textures(struct renderer_cache *cache);
-// static result_e _create_shaders(struct renderer_cache *cache);
-// static result_e _create_pipelines(struct renderer_cache *cache);
 
 result_e renderer_init(struct renderer *renderer)
 {
     check_ptr(renderer);
 
+    // init config
+    struct renderer_conf *conf = &renderer->conf;
+    renderer_conf_defaults(conf);
+
+    ////////////////////////////////////////
+
+    struct vec4 screen_clear_color = make_vec4_3_1(conf->color.background, 1.0);
+
+    // create rgpu
+    {
+        struct screen_create_info create_info = {0};
+        create_info.name = "GPU Renderer";
+
+        create_info.surface.viewport.width = 1280;
+        create_info.surface.viewport.height = 720;
+        create_info.surface.clear_values.color = screen_clear_color;
+        create_info.surface.clear_values.depth = 1.0;
+
+        renderer->screen.rgpu = aio_add_screen("rgpu", &create_info);
+        check_ptr(renderer->screen.rgpu);
+
+        renderer->rgpu = rgpu_create();
+        check_ptr(renderer->rgpu);
+    }
+
+    // create rcpu
+    {
+        struct screen_create_info create_info = {0};
+        create_info.name = "CPU Renderer";
+
+        create_info.surface.type = SCREEN_SURFACE_TYPE_CPU;
+        create_info.surface.viewport.width = 640;
+        create_info.surface.viewport.height = 360;
+        create_info.surface.clear_values.color = screen_clear_color;
+        create_info.surface.clear_values.depth = 1.0;
+
+        renderer->screen.rcpu = aio_add_screen("rcpu", &create_info);
+        check_ptr(renderer->screen.rcpu);
+
+        renderer->rcpu = rcpu_create();
+        // check_ptr(renderer->rcpu);
+    }
+
+    ////////////////////////////////////////
+
+    check_result(_create_shader_data(renderer), "could not create shader data");
     check_result(_create_gizmos(renderer), "could not create gizmos");
 
     return RC_SUCCESS;
@@ -27,12 +72,108 @@ void renderer_quit(struct renderer *renderer)
 {
     check_ptr(renderer);
 
-    struct renderer_cache *cache = &renderer->cache;
-
-    // _destroy_gizmos(cache);
+    // rcpu_destroy();
+    rgpu_destroy();
 
 error:
     return;
+}
+
+void renderer_tick(struct renderer *renderer)
+{
+    check_ptr(renderer);
+
+    // build render structures (suitable for gpu/cpu renderers)
+    {
+        // ...
+    }
+
+    // gpu renderer
+    if (screen_begin(renderer->screen.rgpu, SCREEN_SURFACE_TYPE_GPU))
+    {
+        rgpu_tick(renderer, screen_get_viewport(renderer->screen.rgpu));
+
+        screen_end();
+    }
+
+    // cpu renderer
+    if (screen_begin(renderer->screen.rcpu, SCREEN_SURFACE_TYPE_CPU))
+    {
+        // rcpu_tick(renderer);
+
+        screen_end();
+    }
+
+error:
+    return;
+}
+
+static result_e _create_shader_data(struct renderer *renderer)
+{
+    check_ptr(renderer);
+
+    struct rgpu_cache *cache = &renderer->rgpu->cache;
+    struct renderer_shader_data *shader_data = &renderer->shader_data;
+
+    // frame
+    {
+        // create buffer
+        struct xgl_buffer_create_info info = {0};
+        info.usage_flags = XGL_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+        info.byte_length = sizeof(struct shader_data_frame);
+        info.data = &shader_data->frame.buffer.cpu;
+
+        check_result(xgl_create_buffer(&info, &shader_data->frame.buffer.gpu));
+
+        // create descriptor set
+        check_result(xgl_create_descriptor_set(cache->ds_layout.frame, &shader_data->frame.ds));
+
+        // update descriptor set
+        struct xgl_buffer_descriptor descriptor = {0};
+        descriptor.binding = 0;
+        descriptor.buffer = shader_data->frame.buffer.gpu;
+
+        struct xgl_descriptor_set_update_info update_info = {0};
+        update_info.buffer_descriptors = &descriptor;
+        update_info.buffer_descriptor_count = 1;
+
+        check_result(xgl_update_descriptor_set(shader_data->frame.ds, &update_info));
+    }
+
+    // pass main
+    {
+        // create buffer
+        struct xgl_buffer_create_info info = {0};
+        info.usage_flags = XGL_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+        info.byte_length = sizeof(struct shader_data_pass);
+        info.data = &shader_data->pass_main.buffer.cpu;
+
+        check_result(xgl_create_buffer(&info, &shader_data->pass_main.buffer.gpu));
+
+        // create descriptor set
+        check_result(xgl_create_descriptor_set(cache->ds_layout.pass, &shader_data->pass_main.ds));
+
+        // update descriptor set
+        struct xgl_buffer_descriptor descriptor = {0};
+        descriptor.binding = 0;
+        descriptor.buffer = shader_data->pass_main.buffer.gpu;
+
+        struct xgl_descriptor_set_update_info update_info = {0};
+        update_info.buffer_descriptors = &descriptor;
+        update_info.buffer_descriptor_count = 1;
+
+        check_result(xgl_update_descriptor_set(shader_data->pass_main.ds, &update_info));
+    }
+
+    // pass environment
+    {
+        // ...
+    }
+
+    return RC_SUCCESS;
+
+error:
+    return RC_FAILURE;
 }
 
 
@@ -45,14 +186,11 @@ static result_e _create_axes_gizmo(struct renderer *renderer)
 
     ////////////////////////////////////////
 
-    struct {
-        struct vec3 position;
-        struct vec3 color;
-    } vertex;
+    struct vertex_1p1c vertex;
 
     u32 num_lines = 3;
 
-    struct vector *vertices = vector_create(num_lines * 2, sizeof(vertex));
+    struct vector *vertices = vector_create(num_lines * 2, sizeof(struct vertex_1p1c));
     check_mem(vertices);
 
     ////////////////////////////////////////
@@ -86,7 +224,7 @@ static result_e _create_axes_gizmo(struct renderer *renderer)
 
     ////////////////////////////////////////
 
-    struct mesh_gizmo *gizmo = &renderer->cache.gizmo.axes;
+    struct mesh_gizmo *gizmo = &renderer->gizmo.axes;
     gizmo->name = make_string("gizmo.axes");
 
     gizmo->buffer.vertex_format = VERTEX_FORMAT_POSITION_BIT | VERTEX_FORMAT_COLOR_BIT;
@@ -104,8 +242,7 @@ static result_e _create_axes_gizmo(struct renderer *renderer)
         info.data = vector_data(vertices);
         info.usage_flags = XGL_BUFFER_USAGE_VERTEX_BUFFER_BIT;
 
-        result_e result = xgl_create_buffer(&info, gpu_vertices);
-        check_result(result, "could not create gpu vertices");
+        check_result(xgl_create_buffer(&info, gpu_vertices), "could not create gpu vertices");
     }
 
     ////////////////////////////////////////
@@ -123,14 +260,11 @@ static result_e _create_grid_gizmo(struct renderer *renderer, f32 size_qm)
 
     ////////////////////////////////////////
 
-    struct {
-        struct vec3 position;
-        struct vec3 color;
-    } vertex;
+    struct vertex_1p1c vertex;
 
     u32 num_lines = (2 * (size_qm + 1)) + 2;
 
-    struct vector *vertices = vector_create(num_lines * 2, sizeof(vertex));
+    struct vector *vertices = vector_create(num_lines * 2, sizeof(struct vertex_1p1c));
     check_mem(vertices);
 
     ////////////////////////////////////////
@@ -192,7 +326,7 @@ static result_e _create_grid_gizmo(struct renderer *renderer, f32 size_qm)
 
     // struct aabb aabb = make_aabb(make_vec3(-e, 0, -e), make_vec3(e, 0, e));
 
-    struct mesh_gizmo *gizmo = &renderer->cache.gizmo.grid;
+    struct mesh_gizmo *gizmo = &renderer->gizmo.grid;
     gizmo->name = make_string("gizmo.grid");
 
     gizmo->buffer.vertex_format = VERTEX_FORMAT_POSITION_BIT | VERTEX_FORMAT_COLOR_BIT;

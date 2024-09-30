@@ -32,17 +32,17 @@ static void _draw_camera_ctl_orbital(struct camera_ctl_orbital *data)
 
     igNewLine();
 
-    igDragFloat3("Origin##camera_ctl_orbital", (f32*)&orbit->origin, update_speed, -100.0f, 100.0f, "%.2f", 1.0f);
+    igDragFloat3("Origin##camera_ctl_orbital", (f32*)&orbit->origin, update_speed, -100.0f, 100.0f, "%.2f", 0);
 
     igNewLine();
 
-    igDragFloat("Azimuth##camera_ctl_orbital", &orbit->azimuth, update_speed, -360.0, 360.0, "%.3f", 1.0f);
-    igDragFloat("Polar##camera_ctl_orbital", &orbit->polar, update_speed, -89.9, 89.9, "%.3f", 1.0f);
-    igDragFloat("Radius##camera_ctl_orbital", &orbit->radius, update_speed, 0.5, 100.0, "%.3f", 1.0f);
+    igDragFloat("Azimuth##camera_ctl_orbital", &orbit->azimuth, update_speed, -360.0, 360.0, "%.3f", 0);
+    igDragFloat("Polar##camera_ctl_orbital", &orbit->polar, update_speed, -89.9, 89.9, "%.3f", 0);
+    igDragFloat("Radius##camera_ctl_orbital", &orbit->radius, update_speed, 0.5, 100.0, "%.3f", 0);
 
     igNewLine();
 
-    igDragFloat("Animate##camera_ctl_orbital", &data->animate, update_speed, -50.0f, 50.0f, "%.3f", 1.0f);
+    igDragFloat("Animate##camera_ctl_orbital", &data->animate, update_speed, -50.0f, 50.0f, "%.3f", 0);
 
     igNewLine();
 

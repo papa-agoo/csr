@@ -43,7 +43,7 @@
 
 // struct mesh (spatial grouping of mesh_primitives)
 //      - mesh_primitive[]
-//      - push_data (precomputed model matrix, ...)
+//      - shader_data (precomputed model matrix, ...)
 //      - ...
 
 

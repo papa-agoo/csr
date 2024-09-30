@@ -45,6 +45,9 @@ static void _draw_detail_view(struct model *model)
 
     struct string name = model_get_name(model);
     igText("Model : "string_fmt, string_fmt_arg(name));
+
+    // - [ ] draw aabb
+    // - [ ] draw parent aabb
 }
 
 static void _draw_transform_view(struct model* model)
