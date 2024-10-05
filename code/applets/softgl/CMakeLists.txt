@@ -1,0 +1,1 @@
+add_subdirectory(softgl_hello_triangle)
