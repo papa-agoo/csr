@@ -23,11 +23,21 @@ target_sources(${MY_TARGET}
     PRIVATE
         screen.c
         screen_surface.c
+
         pixelbuffer.c
 
         xgl/xgl_driver.c
         xgl/xgl_device.c
         xgl/xgl_commands.c
+
+        softgl/softgl_driver.c
+        softgl/softgl_device.c
+        softgl/softgl_commands.c
+        softgl/gp_vertices.c
+        softgl/gp_vertices_ia.c
+        softgl/gp_primitives.c
+        softgl/gp_primitives_clipper.c
+        softgl/gp_primitives_rasterizer.c
 )
 
 add_subdirectory(xgl/backend)
