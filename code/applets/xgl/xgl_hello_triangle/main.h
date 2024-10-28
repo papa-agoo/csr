@@ -6,7 +6,7 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-static char *g_vs_no_ia_src = ""
+static string_cstr g_vs_no_ia_src = ""
 "#version 330 core\n"
 "\n"
 "out vec4 ourColor;\n"
@@ -29,7 +29,7 @@ static char *g_vs_no_ia_src = ""
     "ourColor = vec4(colors[gl_VertexID], 1);\n"
 "}\n";
 
-static char* g_fs_no_ia_src = ""
+static string_cstr g_fs_no_ia_src = ""
 "#version 330 core\n"
 "out vec4 FragColor;\n"
 "\n"

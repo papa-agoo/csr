@@ -25,7 +25,7 @@ result_e renderer_init(struct renderer *renderer)
     // create rgpu
     {
         struct screen_create_info create_info = {0};
-        create_info.name = "GPU Renderer";
+        create_info.name = make_string("GPU Renderer");
 
         create_info.surface.viewport.width = 1280;
         create_info.surface.viewport.height = 720;
@@ -42,7 +42,7 @@ result_e renderer_init(struct renderer *renderer)
     // create rcpu
     {
         struct screen_create_info create_info = {0};
-        create_info.name = "CPU Renderer";
+        create_info.name = make_string("CPU Renderer");
 
         create_info.surface.type = SCREEN_SURFACE_TYPE_CPU;
         create_info.surface.viewport.width = 640;

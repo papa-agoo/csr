@@ -351,15 +351,15 @@ result_e xgl_create_sampler(struct xgl_sampler_desc* desc, xgl_sampler* p_sample
     check_ptr(desc);
     check_ptr(p_sampler);
 
-    if (!desc->name) {
-        desc->name = "unnamed sampler";
+    if (!string_is_valid(desc->name)) {
+        desc->name = make_string("<unnamed sampler>");
     }
 
     ////////////////////////////////////////
 
     struct xgl_sampler sampler = {0};
 
-    sampler.name = strdup(desc->name);
+    sampler.name = desc->name;
 
     sampler.min_filter = desc->min_filter;
     sampler.mag_filter = desc->mag_filter;
@@ -581,13 +581,10 @@ result_e xgl_create_shader(struct xgl_shader_create_info* info, xgl_shader* p_sh
     check_ptr(p_shader);
 
     check_ptr(info->vertex_shader_stage);
-    check_ptr(info->vertex_shader_stage->src_ptr);
-
     check_ptr(info->fragment_shader_stage);
-    check_ptr(info->fragment_shader_stage->src_ptr);
 
-    if (!info->name) {
-        info->name = "unnamed shader";
+    if (!string_is_valid(info->name)) {
+        info->name = make_string("<unnamed shader>");
     }
 
     ////////////////////////////////////////
@@ -596,6 +593,7 @@ result_e xgl_create_shader(struct xgl_shader_create_info* info, xgl_shader* p_sh
     struct xgl_shader_stage_desc *fs = info->fragment_shader_stage;
 
     struct xgl_shader shader = {0};
+    shader.name = info->name;
 
     shader.gpu_id = xgl_create_shader_impl(vs->src_ptr, fs->src_ptr);
     check_guid(shader.gpu_id);
@@ -757,8 +755,8 @@ result_e xgl_create_pipeline(struct xgl_pipeline_create_info* info, xgl_pipeline
     check_expr(info->type != XGL_PIPELINE_TYPE_UNKNOWN);
     check_expr(info->ia_state->topology != XGL_TOPOLOGY_UNKNOWN);
 
-    if (!info->name) {
-        info->name = "unnamed pipeline";
+    if (!string_is_valid(info->name)) {
+        info->name = make_string("<unnamed pipeline>");
     }
 
     ////////////////////////////////////////
@@ -766,7 +764,7 @@ result_e xgl_create_pipeline(struct xgl_pipeline_create_info* info, xgl_pipeline
     result_e result = RC_FAILURE;
 
     struct xgl_pipeline pipeline = {0};
-    pipeline.name = strdup(info->name);
+    pipeline.name = info->name;
     pipeline.type = info->type;
 
     pipeline.gpu_id = xgl_create_pipeline_impl(pipeline.name, pipeline.type);
@@ -865,7 +863,7 @@ error:
     return;
 }
 
-static u32 _hash_descriptor_set_layout(const char *name, struct xgl_descriptor_binding *bindings, u32 count)
+static u32 _hash_descriptor_set_layout(struct string name, struct xgl_descriptor_binding *bindings, u32 count)
 {
     // FIXME ugly
     const u32 max_bindings = 16;
@@ -884,14 +882,13 @@ static u32 _hash_descriptor_set_layout(const char *name, struct xgl_descriptor_b
 
         snprintf(str_buf + str_buf_len, max_binding_str_len + 1,
             "%.3d_%.3d_%.3d;", count, binding->binding, binding->type);
-        
+
         str_buf_len = str_buf_len + max_binding_str_len;
     }
 
     u32 hash = hash_fnv1a_32(str_buf, str_buf_len);
 
-    clog_trace("[ %.12u ] (%d bindings, %d/%d bytes) << %s ( %s )",
-        hash, count, str_buf_len, str_buf_max, str_buf, name);
+    clog_trace("[ %.12u ] (%d bindings, %d/%d bytes) << %s ( %S )", hash, count, str_buf_len, str_buf_max, str_buf, &name);
 
     return hash;
 
@@ -907,8 +904,8 @@ result_e xgl_create_descriptor_set_layout(struct xgl_descriptor_set_layout_creat
     check_ptr(info->bindings);
     check_expr(info->binding_count > 0);
 
-    if (!info->name) {
-        info->name = "unnamed ds layout";
+    if (!string_is_valid(info->name)) {
+        info->name = make_string("<unnamed ds layout>");
     }
 
     ////////////////////////////////////////

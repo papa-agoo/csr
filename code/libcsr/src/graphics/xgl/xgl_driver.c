@@ -53,34 +53,34 @@ static result_e _init_driver_storage(struct xgl_storage *storage)
 {
     check_ptr(storage);
 
-    storage->swapchains = object_pool_create("XGL Swapchains", sizeof(struct xgl_swapchain));
+    storage->swapchains = object_pool_create(make_string("XGL Swapchains"), sizeof(struct xgl_swapchain));
     check_ptr(storage->swapchains);
 
-    storage->framebuffers = object_pool_create("XGL Framebuffers", sizeof(struct xgl_framebuffer));
+    storage->framebuffers = object_pool_create(make_string("XGL Framebuffers"), sizeof(struct xgl_framebuffer));
     check_ptr(storage->framebuffers);
 
-    storage->samplers = object_pool_create("XGL Samplers", sizeof(struct xgl_sampler));
+    storage->samplers = object_pool_create(make_string("XGL Samplers"), sizeof(struct xgl_sampler));
     check_ptr(storage->samplers);
 
-    storage->textures = object_pool_create("XGL Textures", sizeof(struct xgl_texture));
+    storage->textures = object_pool_create(make_string("XGL Textures"), sizeof(struct xgl_texture));
     check_ptr(storage->textures);
 
-    storage->buffers = object_pool_create("XGL Buffers", sizeof(struct xgl_buffer));
+    storage->buffers = object_pool_create(make_string("XGL Buffers"), sizeof(struct xgl_buffer));
     check_ptr(storage->buffers);
 
-    storage->pipelines = object_pool_create("XGL Pipelines", sizeof(struct xgl_pipeline));
+    storage->pipelines = object_pool_create(make_string("XGL Pipelines"), sizeof(struct xgl_pipeline));
     check_ptr(storage->pipelines);
 
-    storage->pipeline_layouts = object_pool_create("XGL Pipeline Layouts", sizeof(struct xgl_pipeline_layout));
+    storage->pipeline_layouts = object_pool_create(make_string("XGL Pipeline Layouts"), sizeof(struct xgl_pipeline_layout));
     check_ptr(storage->pipeline_layouts);
 
-    storage->shaders = object_pool_create("XGL Shaders", sizeof(struct xgl_shader));
+    storage->shaders = object_pool_create(make_string("XGL Shaders"), sizeof(struct xgl_shader));
     check_ptr(storage->shaders);
 
-    storage->descriptor_set_layouts = object_pool_create("XGL Descriptor Set Layouts", sizeof(struct xgl_descriptor_set_layout));
+    storage->descriptor_set_layouts = object_pool_create(make_string("XGL Descriptor Set Layouts"), sizeof(struct xgl_descriptor_set_layout));
     check_ptr(storage->descriptor_set_layouts);
 
-    storage->descriptor_sets = object_pool_create("XGL Descriptor Sets", sizeof(struct xgl_descriptor_set));
+    storage->descriptor_sets = object_pool_create(make_string("XGL Descriptor Sets"), sizeof(struct xgl_descriptor_set));
     check_ptr(storage->descriptor_sets);
 
     return RC_SUCCESS;

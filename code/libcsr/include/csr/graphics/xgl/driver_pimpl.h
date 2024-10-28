@@ -48,12 +48,12 @@ void* xgl_get_texture_handle_impl(guid p_texture);
 
 
 // shaders
-guid xgl_create_shader_impl(void* vs_ptr, void* fs_ptr);
+guid xgl_create_shader_impl(string_cstr* vs_ptr, string_cstr* fs_ptr);
 void xgl_destroy_shader_impl(guid p_shader);
 
 
 // pipelines
-guid xgl_create_pipeline_impl(const char *name, enum xgl_pipeline_type type);
+guid xgl_create_pipeline_impl(struct string name, enum xgl_pipeline_type type);
 void xgl_destroy_pipeline_impl(guid p_pipeline);
 
 result_e xgl_set_pipeline_shader_state_impl(guid p_pipeline, guid p_shader);

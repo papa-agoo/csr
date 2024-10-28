@@ -37,7 +37,6 @@ static f32 _calc_scale_factor(enum screen_scale_policy scale_policy, struct vec2
 struct screen* screen_create(struct screen_create_info *ci)
 {
     check_ptr(ci);
-    check_ptr(ci->name);
 
     check_expr(ci->scale_factor >= SCREEN_SCALE_MIN);
 
@@ -60,7 +59,7 @@ struct screen* screen_create(struct screen_create_info *ci)
     struct screen *screen = calloc(1, sizeof(struct screen));
     check_mem(screen);
 
-    screen->name = strdup(ci->name);
+    screen->name = string_is_valid(ci->name) ? ci->name : make_string("<no name>");
     screen->scale_factor = ci->scale_factor;
     screen->scale_policy = ci->scale_policy;
     screen->keep_aspect_ratio = ci->keep_aspect_ratio;
@@ -96,7 +95,7 @@ void screen_destroy(struct screen* screen)
     free(screen);
 
 error:
-    return;   
+    return;
 }
 
 bool screen_begin(struct screen* screen, enum screen_surface_type surface_type)
@@ -142,20 +141,20 @@ void screen_end()
     active_screen_ptr() = NULL;
 
 error:
-    return;   
+    return;
 }
 
-const char* screen_get_name(struct screen* screen)
+struct string screen_get_name(struct screen* screen)
 {
     check_ptr(screen);
 
     return screen->name;
 
 error:
-    return NULL;
+    return make_string("<no name>");
 }
 
-const char* screen_get_surface_type_cstr(struct screen* screen)
+string_cstr screen_get_surface_type_cstr(struct screen* screen)
 {
     check_ptr(screen);
 
@@ -322,7 +321,7 @@ struct vec2 screen_get_size(struct screen *screen)
     return screen_surface_get_size(screen->surface);
 
 error:
-    make_vec2_zero();
+    return make_vec2_zero();
 }
 
 void screen_set_size(struct screen *screen, struct vec2 size)

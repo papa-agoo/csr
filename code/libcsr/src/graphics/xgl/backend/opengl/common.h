@@ -138,7 +138,7 @@ struct gl_rasterizer_state
 
 struct gl_pipeline
 {
-    const char *name;
+    struct string name;
 
     GLenum topology;
     GLuint vertex_arrays;

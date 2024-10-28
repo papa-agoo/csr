@@ -25,6 +25,8 @@ static u32 _adjust_vertex_count(enum softgl_topology topology, u32 vertex_count)
         case SOFTGL_TOPOLOGY_TRIANGLE_FAN:
             return (vertex_count < 3) ? 0: vertex_count;
     }
+
+    return vertex_count;
 }
 
 // static u32 _calc_primitive_count(enum softgl_topology topology, u32 vertex_count)
@@ -107,24 +109,23 @@ static u32 _calc_vertices_per_seek(enum softgl_topology topology, u32 cache_size
             return max_prims_per_seek + 2;
         break;
     }
+
+    return max_verts_per_seek;
 }
 
 static void _stream_setup(struct vertex_stream* vs, enum softgl_topology topology, u32 first, u32 vertex_count)
 {
-    // IA vertex count for the draw call
+    // ia vertex count for the draw call
     u32 ia_vertex_count = _adjust_vertex_count(topology, vertex_count);
 
     if (ia_vertex_count == 0) return;
 
-    ////////////////////////////////////////
-
-    // IA max vertex count for one batch
+    // ia max vertex count for one batch
     u32 ia_verts_per_seek = _calc_vertices_per_seek(topology, VERTEX_CACHE_SIZE);
 
     if (ia_verts_per_seek == 0) return;
 
-    ////////////////////////////////////////
-
+    // set stream offsets
     vs->head = first;
     vs->tail = first + ia_vertex_count;
 

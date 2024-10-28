@@ -182,7 +182,7 @@ static result_e _create_descriptor_set_layouts(struct rgpu_cache *cache)
         bindings[0].binding = 0;
 
         struct xgl_descriptor_set_layout_create_info info = {0};
-        info.name = "Frame";
+        info.name = make_string("Frame");
         info.bindings = bindings;
         info.binding_count = COUNT_OF(bindings);
 
@@ -197,7 +197,7 @@ static result_e _create_descriptor_set_layouts(struct rgpu_cache *cache)
         bindings[0].binding = 0;
 
         struct xgl_descriptor_set_layout_create_info info = {0};
-        info.name = "Pass";
+        info.name = make_string("Pass");
         info.bindings = bindings;
         info.binding_count = COUNT_OF(bindings);
 
@@ -212,7 +212,7 @@ static result_e _create_descriptor_set_layouts(struct rgpu_cache *cache)
         bindings[0].binding = 0;
 
         struct xgl_descriptor_set_layout_create_info info = {0};
-        info.name = "Material";
+        info.name = make_string("Material");
         info.bindings = bindings;
         info.binding_count = COUNT_OF(bindings);
 
@@ -227,7 +227,7 @@ static result_e _create_descriptor_set_layouts(struct rgpu_cache *cache)
         bindings[0].binding = 0;
 
         struct xgl_descriptor_set_layout_create_info info = {0};
-        info.name = "Object";
+        info.name = make_string("Object");
         info.bindings = bindings;
         info.binding_count = COUNT_OF(bindings);
 
@@ -301,7 +301,7 @@ static result_e _create_shaders(struct rgpu_cache *cache)
 
         // shader program
         struct xgl_shader_create_info info = {0};
-        info.name = "shader.vertex_color";
+        info.name = make_string("shader.vertex_color");
         info.vertex_shader_stage = &vs_stage;
         info.fragment_shader_stage = &fs_stage;
 
@@ -347,19 +347,19 @@ static result_e _create_pso_lines(struct rgpu_cache *cache)
     ////////////////////////////////////////
 
     // lines
-    info.name = "pso.lines";
+    info.name = make_string("pso.lines");
     info.rasterizer_state->line_width = 1;
 
     check_expr(xgl_create_pipeline(&info, &cache->pipeline.lines) == RC_SUCCESS);
 
     // lines thick
-    info.name = "pso.lines_thick";
+    info.name = make_string("pso.lines_thick");
     info.rasterizer_state->line_width = 2;
 
     check_expr(xgl_create_pipeline(&info, &cache->pipeline.lines_thick) == RC_SUCCESS);
 
     // lines fat
-    info.name = "pso.lines_fat";
+    info.name = make_string("pso.lines_fat");
     info.rasterizer_state->line_width = 3;
 
     check_expr(xgl_create_pipeline(&info, &cache->pipeline.lines_fat) == RC_SUCCESS);

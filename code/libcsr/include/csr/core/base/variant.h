@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "types.h"
+#include "string.h"
 
 #include <csr/core/math/vec2.h>
 #include <csr/core/math/vec3.h>
@@ -30,7 +30,7 @@ enum variant_type
 
     VARIANT_TYPE_BOOL,
 
-    VARIANT_TYPE_STR,
+    VARIANT_TYPE_STRING,
     VARIANT_TYPE_PTR,
 };
 
@@ -49,13 +49,14 @@ struct variant
         f32 as_f32;
         f64 as_f64;
 
+        bool as_bool;
+
         struct vec2 as_vec2;
         struct vec3 as_vec3;
         struct vec4 as_vec4;
 
-        bool as_bool;
+        struct string as_string;
 
-        const char* as_str;
         void* as_ptr;
     };
 };
@@ -75,11 +76,12 @@ struct variant
 #define make_variant_f32(v)             make_variant(VARIANT_TYPE_F32, .as_f32 = v)
 #define make_variant_f64(v)             make_variant(VARIANT_TYPE_F64, .as_f64 = v)
 
+#define make_variant_bool(v)            make_variant(VARIANT_TYPE_BOOL, .as_bool = v)
+
 #define make_variant_vec2(x, y)         make_variant(VARIANT_TYPE_VEC2, .as_vec2 = make_vec2(x, y))
 #define make_variant_vec3(x, y, z)      make_variant(VARIANT_TYPE_VEC3, .as_vec3 = make_vec3(x, y, z))
 #define make_variant_vec4(x, y, z, w)   make_variant(VARIANT_TYPE_VEC4, .as_vec4 = make_vec4(x, y, z, w))
 
-#define make_variant_bool(v)            make_variant(VARIANT_TYPE_BOOL, .as_bool = v)
+#define make_variant_string(v)          make_variant(VARIANT_TYPE_STRING, .as_string = make_string(v))
 
-#define make_variant_str(v)             make_variant(VARIANT_TYPE_STR, .as_str = strdup(v))
 #define make_variant_ptr(v)             make_variant(VARIANT_TYPE_PTR, .as_ptr = (void*) v)

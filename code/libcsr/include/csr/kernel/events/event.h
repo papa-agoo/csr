@@ -34,7 +34,7 @@ struct window_event
 
     // platform error
     result_e error_id;
-    const char *error_msg;
+    struct string error_msg;
 };
 
 struct mouse_event

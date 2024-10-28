@@ -28,7 +28,7 @@ static result_e _plugin_startup()
     // xgl framebuffer
     {
         struct screen_create_info create_info = {0};
-        create_info.name = "XGL Framebuffer";
+        create_info.name = make_string("XGL Framebuffer");
         create_info.keep_aspect_ratio = true;
 
         create_info.surface.viewport.width = size.w;
@@ -42,7 +42,7 @@ static result_e _plugin_startup()
     // opengl framebuffer
     {
         struct screen_create_info create_info = {0};
-        create_info.name = "OpenGL Framebuffer";
+        create_info.name = make_string("OpenGL Framebuffer");
 
         create_info.surface.viewport.width = size.w;
         create_info.surface.viewport.height = size.h;
@@ -55,7 +55,7 @@ static result_e _plugin_startup()
     // pixelbuffer
     {
         struct screen_create_info create_info = {0};
-        create_info.name = "Pixelbuffer";
+        create_info.name = make_string("Pixelbuffer");
 
         create_info.surface.type = SCREEN_SURFACE_TYPE_CPU;
         create_info.surface.viewport.width = size.w;

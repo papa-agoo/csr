@@ -23,7 +23,7 @@ result_e fio_load_file(struct string path, struct fio_buffer *buffer)
     check_ptr(buffer);
 
     fio_file *file = fio_open(path, FIO_MODE_READ_ONLY);
-    check(file, "could not open the file for reading ... ("string_fmt")", string_fmt_arg(path));
+    check(file, "could not open the file for reading ... (%S)", &path);
 
     buffer->byte_length = fio_get_size(file);
 

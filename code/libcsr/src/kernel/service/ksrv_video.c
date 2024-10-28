@@ -49,7 +49,7 @@ result_e ksrv_video_init(struct ksrv_video_init_info *init_info)
 
     struct version v = driver_info.version;
 
-    klog_info(" - xgl driver : %s v%d.%d.%d", driver_info.name, v.major, v.minor, v.micro);
+    klog_info(" - xgl driver : %S v%d.%d.%d", &driver_info.name, v.major, v.minor, v.micro);
 
     // FIXME check : platform_get_platform_info()->renderer.version >= driver_info.version
 

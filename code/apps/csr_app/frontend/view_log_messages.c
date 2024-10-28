@@ -48,11 +48,11 @@ static void _on_draw_log_message(struct log_message *message, void *style)
 
         // message
         igTableNextColumn();
-        igTextColored(color, "%s", message->message);
+        igTextColored(color, "%S", &message->message);
 
         // module
         igTableNextColumn();
-        igTextColored(color, "%s", message->module);
+        igTextColored(color, "%S", &message->module);
     }
 }
 

@@ -60,7 +60,7 @@ static bool _cond_custom_resolution_selected()
 static void _draw_video_resolution()
 {
     u32 preset_count = 0;
-    const char **preset_list = NULL;
+    string_cstr *preset_list = NULL;
 
     video_mode_preset_get_list(&preset_count, &preset_list);
 
@@ -78,7 +78,7 @@ static void _draw_video_resolution()
 
     ////////////////////////////////////////
 
-    if (igCombo_Str_arr("##window_resolution", (u32*) &vm->preset, preset_list, preset_count, preset_count))
+    if (igCombo_Str_arr("##window_resolution", (s32*) &vm->preset, preset_list, preset_count, preset_count))
     {
         video_mode_preset_get_resolution(vm->preset, &vm->resolution);
 

@@ -29,7 +29,7 @@ struct xgl_driver_features
 
 struct xgl_driver_info
 {
-    const char *name;
+    struct string name;
 
     struct version version;
     enum xgl_driver_type type;
@@ -182,7 +182,7 @@ enum xgl_sampler_addr_mode
 
 struct xgl_sampler_desc
 {
-    const char *name;
+    struct string name;
 
     // filter settings
     enum xgl_texture_filter min_filter;
@@ -221,7 +221,7 @@ struct xgl_shader_stage_desc
 {
     enum xgl_shader_stage stage;
 
-    void* src_ptr;
+    void *src_ptr;
 };
 
 struct xgl_shader_reflection_data
@@ -231,7 +231,7 @@ struct xgl_shader_reflection_data
 
 struct xgl_shader_create_info
 {
-    const char* name;
+    struct string name;
 
     struct xgl_shader_stage_desc *vertex_shader_stage;
     struct xgl_shader_stage_desc *fragment_shader_stage;
@@ -273,7 +273,7 @@ struct xgl_clear_values
 
 struct xgl_render_pass_info
 {
-    const char* name;
+    struct string name;
 
     xgl_framebuffer framebuffer;
     struct xgl_clear_values clear_values;
@@ -346,7 +346,7 @@ struct xgl_stencil_op_state
 {
     s32 ref_value;
 
-    u32 write_mask; 
+    u32 write_mask;
     u32 compare_mask;
 
     enum xgl_compare_op compare_op;
@@ -558,7 +558,7 @@ struct xgl_descriptor_set_update_info
 
 struct xgl_descriptor_set_layout_create_info
 {
-    const char *name;
+    struct string name;
 
     struct xgl_descriptor_binding *bindings;
     u32 binding_count;
@@ -581,7 +581,7 @@ enum xgl_pipeline_type
 
 struct xgl_pipeline_create_info
 {
-    const char *name;
+    struct string name;
     enum xgl_pipeline_type type;
 
     struct xgl_ia_state *ia_state;

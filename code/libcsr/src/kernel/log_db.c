@@ -7,7 +7,7 @@
 
 struct log_db
 {
-    const char *name;
+    struct string name;
 
     struct vector *messages;
 };
@@ -20,7 +20,7 @@ struct log_db* log_db_create(struct log_db_create_info *info)
     struct log_db *db = calloc(1, sizeof(struct log_db));
     check_mem(db);
 
-    db->name = (info->name) ? strdup(info->name) : "unnamed";
+    db->name = string_is_valid(info->name) ? info->name : make_string("<no name>");
 
     db->messages = vector_create(info->max_messages, sizeof(struct log_message));
     check_mem(db->messages);

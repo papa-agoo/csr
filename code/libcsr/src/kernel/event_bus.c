@@ -41,7 +41,7 @@ static struct handler_pool g_handlers = {0};
 
 ////////////////////////////////////////////////////////////////////////////////
 
-const char* event_type_str(enum event_type type)
+string_cstr event_type_cstr(enum event_type type)
 {
     switch (type)
     {
@@ -97,7 +97,7 @@ void event_bus_register_handler(enum event_type type, event_handler_cb_t callbac
     check_expr(type != EVENT_NONE);
     check_expr(g_handlers.count < MAX_EVENT_HANDLERS);
 
-    clog_trace("registering handler: %s (%p)", event_type_str(type), callback);
+    clog_trace("registering handler: %s (%p)", event_type_cstr(type), callback);
 
     struct event_handler handler = {0};
     handler.type = type;
@@ -148,7 +148,7 @@ void event_bus_dispatch_events()
     struct event* event = NULL;
     struct event_handler* handler = NULL;
 
-    while (event = event_bus_pop_event())
+    while ((event = event_bus_pop_event()))
     {
         // broadcast messages
         for (u32 i = 0; i < g_handlers.count; i++)

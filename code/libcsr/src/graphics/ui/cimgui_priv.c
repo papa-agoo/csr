@@ -1,13 +1,15 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+#include <csr/core/memory/arena_priv.h>
+
 #include <csr/graphics/ui/imgui/cimgui_priv.h>
 #include <csr/graphics/ui/imgui/cimgui_pimpl.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 static struct cimgui_info g_backend_info = {
-    .platform_name = "NONE",
-    .renderer_name = "NONE",
+    .platform_name = make_string_static("NONE"),
+    .renderer_name = make_string_static("NONE"),
 };
 
 const struct cimgui_info* cimgui_get_info()
@@ -15,9 +17,9 @@ const struct cimgui_info* cimgui_get_info()
     return &g_backend_info;
 }
 
-result_e cimgui_init(const char *ini_file)
+result_e cimgui_init(struct string ini_file)
 {
-    check_ptr(ini_file);
+    check_expr(string_is_valid(ini_file));
 
     ////////////////////////////////////////
 
@@ -33,22 +35,17 @@ result_e cimgui_init(const char *ini_file)
     ctx->IO.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
     // misc
-    ctx->IO.IniFilename = strdup(ini_file);
+    ctx->IO.IniFilename = string_get_cstr(_arena_priv_ptr(), ini_file);
 
     ////////////////////////////////////////
 
-    result_e result = RC_FAILURE;
+    check_expr(cimgui_platform_startup() == RC_SUCCESS);
+    check_expr(cimgui_renderer_startup() == RC_SUCCESS);
 
-    result = cimgui_platform_startup();
-    check_result(result, "cimgui_platform_startup() failed ...");
+    g_backend_info.platform_name = cimgui_platform_get_name();
+    g_backend_info.renderer_name = cimgui_renderer_get_name();
 
-    result = cimgui_renderer_startup();
-    check_result(result, "cimgui_renderer_startup() failed ...");
-
-    g_backend_info.platform_name = strdup( cimgui_platform_get_name() );
-    g_backend_info.renderer_name = strdup( cimgui_renderer_get_name() );
-
-    return result;
+    return RC_SUCCESS;
 
 error:
     return RC_FAILURE;

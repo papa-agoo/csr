@@ -8,7 +8,7 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-CSR_INLINE const char* _gl_type_str(GLenum type)
+CSR_INLINE string_cstr _gl_type_str(GLenum type)
 {
     switch (type)
     {
@@ -56,7 +56,7 @@ CSR_INLINE const char* _gl_type_str(GLenum type)
     }
 }
 
-CSR_INLINE const char* _gl_framebuffer_status_str(GLenum fbo_status)
+CSR_INLINE string_cstr _gl_framebuffer_status_str(GLenum fbo_status)
 {
     switch (fbo_status)
     {
@@ -92,7 +92,7 @@ CSR_INLINE const char* _gl_framebuffer_status_str(GLenum fbo_status)
     }
 }
 
-CSR_INLINE const char* _gl_error_str(GLenum error)
+CSR_INLINE string_cstr _gl_error_str(GLenum error)
 {
     switch (error)
     {
@@ -125,7 +125,7 @@ CSR_INLINE const char* _gl_error_str(GLenum error)
     }
 }
 
-CSR_INLINE const char* _gl_error_source_str(GLenum source)
+CSR_INLINE string_cstr _gl_error_source_cstr(GLenum source)
 {
     switch (source)
     {
@@ -152,7 +152,7 @@ CSR_INLINE const char* _gl_error_source_str(GLenum source)
     }
 }
 
-CSR_INLINE const char* _gl_error_type_str(GLenum type)
+CSR_INLINE string_cstr _gl_error_type_cstr(GLenum type)
 {
     switch (type)
     {
@@ -182,7 +182,7 @@ CSR_INLINE const char* _gl_error_type_str(GLenum type)
     }
 }
 
-CSR_INLINE const char* _gl_error_severity_str(GLenum severity)
+CSR_INLINE string_cstr _gl_error_severity_cstr(GLenum severity)
 {
     switch (severity)
     {
@@ -214,13 +214,13 @@ CSR_INLINE const char* _gl_error_severity_str(GLenum severity)
     #define GL_CALL(cmd) cmd
 #endif
 
-CSR_INLINE result_e _gl_check_error(const char* cmd, const char* fname, s32 line)
+CSR_INLINE result_e _gl_check_error(string_cstr cmd, string_cstr fname, s32 line)
 {
     result_e result = RC_SUCCESS;
 
     GLenum error = GL_NO_ERROR;
 
-    while (error = glGetError() && error != GL_NO_ERROR)
+    while ((error = glGetError() && error != GL_NO_ERROR))
     {
         clog_trace("!!! %08x (%s), at %s:%i - for %s\n", error, _gl_error_str(error), fname, line, cmd);
 
@@ -233,8 +233,8 @@ CSR_INLINE result_e _gl_check_error(const char* cmd, const char* fname, s32 line
 static void _gl_message_callback(GLenum source, GLenum type, GLuint id,
     GLenum severity, GLsizei length, GLchar const* message, void const* user_param)
 {
-    clog_trace("%s, %s, %s, %d : %s", _gl_error_source_str(source),
-        _gl_error_type_str(type), _gl_error_severity_str(severity), id, message);
+    clog_trace("%s, %s, %s, %d : %s", _gl_error_source_cstr(source),
+        _gl_error_type_cstr(type), _gl_error_severity_cstr(severity), id, message);
 }
 
 static void opengl_init_debug_callbacks()

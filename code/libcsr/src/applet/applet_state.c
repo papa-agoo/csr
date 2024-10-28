@@ -24,11 +24,11 @@ void applet_state_init(struct applet *applet)
     check_ptr(state->allocator.arena_frame);
 
     // clock
-    state->clock = clock_create("VTC");
+    state->clock = clock_create(make_string("VTC"));
     check_ptr(state->clock);
 
     // ui
-    state->ui = ui_ctx_create("Applet");
+    state->ui = ui_ctx_create(make_string("Applet"));
     check_ptr(state->ui);
 
     // callbacks

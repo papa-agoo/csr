@@ -24,6 +24,3 @@ u32 gp_clip_triangle(struct softgl_vertex* a, struct softgl_vertex* b, struct so
 void gp_rasterize_point(struct softgl_vertex* a);
 void gp_rasterize_line(struct softgl_vertex* a, struct softgl_vertex* b);
 void gp_rasterize_triangle(struct softgl_vertex* a, struct softgl_vertex* b, struct softgl_vertex* c);
-
-// output merger
-// ...

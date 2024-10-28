@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include <csr/platform/platform_pimpl.h>
+#include <csr/core/memory/arena_priv.h>
 
 #include <epoxy/gl.h>
 #include <GLFW/glfw3.h>
@@ -21,15 +22,14 @@ extern s32 get_glfw_mouse_button(enum mouse_button button);
 ////////////////////////////////////////////////////////////////////////////////
 // platform callbacks
 ////////////////////////////////////////////////////////////////////////////////
-static void error_callback(s32 error, const char* msg)
+static void error_callback(s32 error, string_cstr msg)
 {
-    g_platform_callbacks->on_error(error, msg);
+    g_platform_callbacks->on_error(error, make_string_from_cstr(msg));
 }
 
 static void _key_input_cb(GLFWwindow* window, s32 key, s32 code, s32 action, s32 mods)
 {
-    g_platform_callbacks->on_keyboard_key_change(
-        get_csr_kbd_key(key), (action == GLFW_PRESS));
+    g_platform_callbacks->on_keyboard_key_change(get_csr_kbd_key(key), (action == GLFW_PRESS));
 }
 
 static void _win_close_cb(GLFWwindow* window)
@@ -58,8 +58,7 @@ static void _mouse_wheel_callback(GLFWwindow* window, f64 x, f64 y)
 
 static void _mouse_button_callback(GLFWwindow* window, s32 button, s32 action, s32 mods)
 {
-    g_platform_callbacks->on_mouse_button_change(
-        get_csr_mouse_button(button), (action == GLFW_PRESS));
+    g_platform_callbacks->on_mouse_button_change(get_csr_mouse_button(button), (action == GLFW_PRESS));
 }
 
 
@@ -98,11 +97,13 @@ result_e platform_init_impl(struct platform_init_info *init_info, struct platfor
 
     ////////////////////////////////////////
 
+    string_cstr title_cstr = string_get_cstr(_arena_priv_ptr(), init_info->title);
+
     // create window and opengl context
     glfwWindowHint(GLFW_SAMPLES, init_info->hint.sample_count);
     glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, init_info->hint.debug_context);
 
-    g_window = glfwCreateWindow(init_info->width, init_info->height, init_info->title, NULL, NULL);
+    g_window = glfwCreateWindow(init_info->width, init_info->height, title_cstr, NULL, NULL);
     check(g_window != NULL, "could not create window");
 
     glfwMakeContextCurrent(g_window);
@@ -119,7 +120,7 @@ result_e platform_init_impl(struct platform_init_info *init_info, struct platfor
     glfwSetScrollCallback(g_window, _mouse_wheel_callback);
     glfwSetMouseButtonCallback(g_window, _mouse_button_callback);
 
-    //////////////////////////////////////// 
+    ////////////////////////////////////////
 
     // apply current settings
     platform_win_enable_vsync_impl(init_info->enable_vsync);
@@ -157,7 +158,7 @@ void platform_get_info_impl(struct platform_info *info)
         GLFWmonitor *monitor = glfwGetPrimaryMonitor();
 
         // display name
-        display->name = strdup(glfwGetMonitorName(monitor));
+        display->name = make_string_from_cstr(glfwGetMonitorName(monitor));
 
         // resolution in pixels
         const GLFWvidmode *mode = glfwGetVideoMode(monitor);
@@ -178,7 +179,7 @@ void platform_get_info_impl(struct platform_info *info)
     // provide backend info
     struct platform_backend_info *backend = &info->backend;
     {
-        backend->name = "GLFW";
+        backend->name = make_string("GLFW");
         backend->type = PLATFORM_BACKEND_GLFW3;
 
         struct version v = {0};
@@ -192,7 +193,7 @@ void platform_get_info_impl(struct platform_info *info)
     // provide renderer info
     struct platform_renderer_info *renderer = &info->renderer;
     {
-        renderer->name = "OpenGL";
+        renderer->name = make_string("OpenGL");
         renderer->type = PLATFORM_RENDERER_OPENGL;
 
         // opengl version
@@ -203,7 +204,7 @@ void platform_get_info_impl(struct platform_info *info)
         renderer->version = v;
 
         // glsl version
-        renderer->version_shading_lang = glGetString(GL_SHADING_LANGUAGE_VERSION);
+        renderer->version_shading_lang = make_string_from_cstr(glGetString(GL_SHADING_LANGUAGE_VERSION));
 
         // sample count (MSAA)
         glGetIntegerv(GL_SAMPLES, &renderer->sample_count);
@@ -264,8 +265,8 @@ void platform_win_enable_fullscreen_impl(bool enable)
     static s32 x_windowed = 0;
     static s32 y_windowed = 0;
 
-    static u32 w_windowed = 0;
-    static u32 h_windowed = 0;
+    static s32 w_windowed = 0;
+    static s32 h_windowed = 0;
 
     ////////////////////////////////////////
 
@@ -274,8 +275,8 @@ void platform_win_enable_fullscreen_impl(bool enable)
     s32 x = x_windowed;
     s32 y = y_windowed;
 
-    u32 w = w_windowed;
-    u32 h = h_windowed;
+    s32 w = w_windowed;
+    s32 h = h_windowed;
 
     s32 refresh_rate = GLFW_DONT_CARE;
 

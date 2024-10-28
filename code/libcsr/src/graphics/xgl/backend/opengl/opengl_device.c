@@ -254,6 +254,8 @@ static GLenum _sampler_min_filter(enum xgl_texture_filter min_filter, enum xgl_m
 
     if (min_filter == XGL_TEXTURE_FILTER_LINEAR && mip_mode == XGL_MIPMAP_MODE_LINEAR)
         return GL_LINEAR_MIPMAP_LINEAR;
+
+    return GL_LINEAR_MIPMAP_LINEAR;
 }
 
 static GLenum _sampler_mag_filter(enum xgl_texture_filter mag_filter)
@@ -735,7 +737,7 @@ error:
 
 ////////////////////////////////////////////////////////////////////////////////
 
-static GLuint _compile_shader_stage(GLenum type, const char* src_str)
+static GLuint _compile_shader_stage(GLenum type, string_cstr src_str)
 {
     GLint compile_status_ok = 0;
 
@@ -815,17 +817,17 @@ error:
     return 0;
 }
 
-guid xgl_create_shader_impl(void* vs_ptr, void* fs_ptr)
+guid xgl_create_shader_impl(string_cstr* vs_ptr, string_cstr* fs_ptr)
 {
     check_ptr(vs_ptr);
     check_ptr(fs_ptr);
 
     ////////////////////////////////////////
 
-    GLuint vs = _compile_shader_stage(GL_VERTEX_SHADER, (const char*) vs_ptr);
+    GLuint vs = _compile_shader_stage(GL_VERTEX_SHADER, (string_cstr) vs_ptr);
     check(vs > 0, "could not compile vertex shader");
 
-    GLuint fs = _compile_shader_stage(GL_FRAGMENT_SHADER, (const char*) fs_ptr);
+    GLuint fs = _compile_shader_stage(GL_FRAGMENT_SHADER, (string_cstr) fs_ptr);
     check(fs > 0, "could not compile fragment shader");
 
     GLuint shader_stages[] = { vs, fs };
@@ -1140,14 +1142,14 @@ error:
     return 0;
 }
 
-guid xgl_create_pipeline_impl(const char *name, enum xgl_pipeline_type type)
+guid xgl_create_pipeline_impl(struct string name, enum xgl_pipeline_type type)
 {
     check_expr(type != XGL_PIPELINE_TYPE_UNKNOWN);
 
     struct gl_storage *storage = gl_storage_ptr();
 
     struct gl_pipeline pipeline = {0};
-    pipeline.name = strdup(name);
+    pipeline.name = name;
 
     return object_pool_alloc(storage->pipelines, &pipeline);
 

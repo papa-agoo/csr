@@ -29,7 +29,7 @@ static result_e _create_pso()
 
         // shader program
         struct xgl_shader_create_info info = {0};
-        info.name = "no_ia";
+        info.name = make_string("no_ia");
         info.vertex_shader_stage = &vs;
         info.fragment_shader_stage = &fs;
 
@@ -50,7 +50,7 @@ static result_e _create_pso()
     xgl_pipeline pipeline;
     {
         struct xgl_pipeline_create_info info = {0};
-        info.name = "no_ia";
+        info.name = make_string("no_ia");
         info.type = XGL_PIPELINE_TYPE_GRAPHICS;
         info.ia_state = &ia_state;
         info.shader_state = &shader_state;
@@ -90,7 +90,7 @@ static result_e _plugin_startup()
 {
     // add screen
     struct screen_create_info create_info = {0};
-    create_info.name = "XGL Triangle";
+    create_info.name = make_string("XGL Triangle");
 
     create_info.surface.type = SCREEN_SURFACE_TYPE_GPU;
     create_info.surface.clear_values.color = make_vec4(0.22, 0.22, 0.22, 1.0);

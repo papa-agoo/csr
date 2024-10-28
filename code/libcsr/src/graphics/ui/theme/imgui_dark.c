@@ -14,8 +14,8 @@ struct ui_theme* ui_theme_imgui_dark_ptr()
 {
     static struct ui_theme theme = {
         .info = {
-            .name = "ImGui Dark",
-            .author = "Omar Cornut",
+            .name = make_string_static("ImGui Dark"),
+            .author = make_string_static("Omar Cornut"),
             .version = make_version(1, 0, 0),
 
             // FIXME use appropriate colors :)

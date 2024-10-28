@@ -2,9 +2,15 @@
 
 #pragma once
 
-#include <csr/core/memory/arena.h>
+// disable warnings for the custom printf specifier "%S"
+#pragma GCC diagnostic ignored "-Wformat"
+#pragma GCC diagnostic ignored "-Wformat-extra-args"
+
+#include "common.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+struct arena;
 
 struct string
 {
@@ -20,8 +26,11 @@ struct string_pair
 
 typedef const char* string_cstr;
 
-#define make_string(str)            string_create(str, sizeof(str) - 1)
-#define make_string_from_cstr(str)  string_create(str, strlen(str))
+#define make_string(str)            string_create((u8*)str, sizeof(str) - 1)
+#define make_string_from_cstr(str)  string_create((u8*)str, strlen(str))
+
+#define make_string_static(str)     (struct string) {.ptr = str, .length = sizeof(str) - 1}
+#define make_string_invalid()       make_string("")
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -65,6 +74,6 @@ struct string_pair string_cut(struct string str, u32 position);
 
 ////////////////////////////////////////////////////////////////////////////////
 
-// printf helpers
+// printf helpers (strings as rvalue args)
 #define string_fmt "%.*s"
 #define string_fmt_arg(str) (s32)(str).length, (str).ptr

@@ -19,9 +19,9 @@ extern void ImGui_ImplGlfw_CharCallback(GLFWwindow* window,unsigned int c);
 
 ////////////////////////////////////////////////////////////
 
-const char* cimgui_platform_get_name()
+struct string cimgui_platform_get_name()
 {
-    return "GLFW";
+    return make_string("GLFW");
 }
 
 result_e cimgui_platform_startup()

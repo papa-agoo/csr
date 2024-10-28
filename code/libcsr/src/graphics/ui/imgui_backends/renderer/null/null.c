@@ -5,9 +5,9 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-const char* cimgui_renderer_get_name()
+struct string cimgui_renderer_get_name()
 {
-    return "NULL";
+    return make_string("NULL");
 }
 
 result_e cimgui_renderer_startup()
@@ -22,5 +22,5 @@ result_e cimgui_renderer_startup()
 
 void cimgui_renderer_shutdown() {}
 
-void cimgui_renderer_new_frame() {}
+void cimgui_renderer_new_frame(bool update_fonts_texture) {}
 void cimgui_renderer_render_draw_data() {}

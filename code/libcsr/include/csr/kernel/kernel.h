@@ -8,7 +8,7 @@
 
 struct kernel_init_info
 {
-    const char* name;
+    struct string name;
 
     void (*kernel_tick_cb)();
 

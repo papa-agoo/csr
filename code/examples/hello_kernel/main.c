@@ -24,7 +24,7 @@ error:
 static void on_kernel_tick()
 {
     struct xgl_render_pass_info pass_info = {0};
-    pass_info.name = "My Pass";
+    pass_info.name = make_string("My Pass");
     pass_info.clear_values.color = make_vec4(0, 0, 1, 1);
     pass_info.framebuffer = kio_video_get_framebuffer();
 
@@ -56,7 +56,7 @@ result_e main()
     ////////////////////////////////////////
 
     struct kernel_init_info init_info = {0};
-    init_info.name = "Hello Kernel";
+    init_info.name = make_string("Hello Kernel");
     init_info.kernel_tick_cb = on_kernel_tick;
 
     init_info.conf.core = &core_conf;

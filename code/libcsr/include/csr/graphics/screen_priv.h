@@ -10,7 +10,7 @@
 
 struct screen
 {
-    const char *name;
+    struct string name;
 
     f32 scale_factor;
     enum screen_scale_policy scale_policy;

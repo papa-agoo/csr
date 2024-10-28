@@ -7,7 +7,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // platform
-const char* cimgui_platform_get_name();
+struct string cimgui_platform_get_name();
 
 result_e cimgui_platform_startup();
 void cimgui_platform_shutdown();
@@ -16,7 +16,7 @@ void cimgui_platform_new_frame();
 
 
 // renderer
-const char* cimgui_renderer_get_name();
+struct string cimgui_renderer_get_name();
 
 result_e cimgui_renderer_startup();
 void cimgui_renderer_shutdown();

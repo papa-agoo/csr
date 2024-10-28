@@ -62,7 +62,7 @@ static result_e init_app_home_dir()
         fio_fs_create_directory(kio_env_expand_str(ENV_APP_CONFIG_DIR));
     }
 
-    klog_trace("using app home dir : "string_fmt, string_fmt_arg(app_home_dir));
+    klog_trace("using app home dir : %S", &app_home_dir);
 
     return RC_SUCCESS;
 
@@ -76,7 +76,7 @@ static result_e init_user_config()
 
     struct string ini_file = kio_env_expand_str(ENV_APP_INI_FILE);
 
-    klog_trace("loading user config ( "string_fmt" ) ...", string_fmt_arg(ini_file));
+    klog_trace("loading user config ( %S ) ...", &ini_file);
 
     conf->user = config_create_from_ini(ini_file);
     check_ptr(conf->user);
@@ -99,11 +99,11 @@ static void on_kernel_tick()
 
     ////////////////////////////////////////
 
-    const struct ui_theme_info *theme_info = ui_get_theme_info(ui_get_theme());
+    const struct ui_theme_info *theme_info = ui_get_theme_info();
     check_ptr(theme_info);
 
     struct xgl_render_pass_info pass_info = {0};
-    pass_info.name = "Application";
+    pass_info.name = make_string("Application");
     pass_info.clear_values.color = theme_info->style.color.background;
     pass_info.framebuffer = kio_video_get_framebuffer();
 
@@ -305,7 +305,7 @@ static struct ui_workspace* create_frontend_workspace()
 
     // create workspace
     struct ui_workspace_create_info info = {0};
-    info.name = "Main";
+    info.name = make_string("Main");
     info.enable_docking = true;
     info.workspace_tick_cb = on_workspace_main_tick;
 
@@ -313,7 +313,7 @@ static struct ui_workspace* create_frontend_workspace()
     check_ptr(workspace);
 
     // add application ctx to workspace
-    struct ui_ctx *application_ctx = ui_ctx_create("Application");
+    struct ui_ctx *application_ctx = ui_ctx_create(make_string("Application"));
     check_ptr(application_ctx);
 
     init_frontend_application_ctx(application_ctx);
@@ -369,8 +369,6 @@ error:
 static void init_applet_mgr_config()
 {
     struct application_conf *conf = application_conf_ptr();
-
-    ////////////////////////////////////////
 
     struct applet_mgr_conf *mgr_conf = &conf->applet_mgr;
     {
@@ -496,14 +494,14 @@ result_e application_init()
         init_kernel_config();
 
         struct kernel_init_info init_info = {0};
-        init_info.name = ENV_APP_NAME;
+        init_info.name = make_string(ENV_APP_NAME);
         init_info.kernel_tick_cb = on_kernel_tick;
 
         init_info.conf.core = &conf->kernel.core;
         init_info.conf.video = &conf->kernel.video;
         init_info.conf.audio = &conf->kernel.audio;
 
-        check_result(kernel_init(&init_info), "could not init kernel");
+        check_expr(kernel_init(&init_info) == RC_SUCCESS);
 
         // global events
         event_bus_register_handler(EVENT_WINDOW_CLOSE, on_window_close);
@@ -524,12 +522,12 @@ result_e application_init()
         init_frontend_config();
 
         struct ui_init_info init_info = {0};
-        init_info.imgui_ini_file = kio_env_expand_str_cstr(ENV_IMGUI_INI_FILE);
-        init_info.fonts_dir = kio_env_expand_str_cstr("{RESOURCE_DIR}/fonts");
+        init_info.imgui_ini_file = kio_env_expand_str(ENV_IMGUI_INI_FILE);
+        init_info.fonts_dir = kio_env_expand_str("{RESOURCE_DIR}/fonts");
         init_info.conf = &conf->ui;
         init_info.workspace = create_frontend_workspace();
 
-        check_result(ui_init(&init_info), "could not init frontend");
+        check_expr(ui_init(&init_info) == RC_SUCCESS);
     }
 
     ////////////////////////////////////////
@@ -544,8 +542,7 @@ result_e application_init()
         init_info.callbacks.on_post_applet_load = on_post_applet_load;
         init_info.callbacks.on_pre_applet_unload = on_pre_applet_unload;
 
-        result_e result = applet_mgr_init(&init_info);
-        check_result(result, "applet manager init failed");
+        check_expr(applet_mgr_init(&init_info) == RC_SUCCESS);
     }
 
     ////////////////////////////////////////

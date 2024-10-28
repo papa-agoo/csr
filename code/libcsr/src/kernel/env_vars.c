@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include <csr/core/hashmap.h>
+#include <csr/core/memory/arena.h>
 #include <csr/kernel/env_vars.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -64,7 +65,7 @@ bool env_vars_set_var(struct env_vars *vars, string_cstr name, string_cstr value
     return true;
 
 error:
-    return false;    
+    return false;
 }
 
 struct string env_vars_get_var(struct env_vars *vars, string_cstr name)
@@ -116,7 +117,7 @@ struct string env_vars_expand_str(struct env_vars *vars, string_cstr str)
         struct string var_name = string_rchop(string_chop(var, 1), -1);
 
         // lookup var value
-        struct string var_value = env_vars_get_var(vars, string_get_cstr(vars->arena, var_name)); 
+        struct string var_value = env_vars_get_var(vars, string_get_cstr(vars->arena, var_name));
 
         // save result
         result = string_replace(vars->arena, result, var, var_value);

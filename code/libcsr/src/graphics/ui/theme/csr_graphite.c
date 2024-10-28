@@ -79,8 +79,8 @@ struct ui_theme* ui_theme_csr_graphite_ptr()
 {
     static struct ui_theme theme = {
         .info = {
-            .name = "CSR Graphite",
-            .author = "Andreas Gummer",
+            .name = make_string_static("CSR Graphite"),
+            .author = make_string_static("Andreas Gummer"),
             .version = make_version(1, 0, 0),
 
             .style = {

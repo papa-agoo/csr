@@ -19,7 +19,7 @@ struct xgl_buffer
 
 struct xgl_sampler
 {
-    const char *name;
+    struct string name;
 
     // filter settings
     enum xgl_texture_filter min_filter;
@@ -66,7 +66,7 @@ struct xgl_texture
 
 struct xgl_shader
 {
-    const char *name;
+    struct string name;
 
     // struct xgl_shader_reflection_data reflection;
 
@@ -134,7 +134,7 @@ struct xgl_pipeline_layout
 
 struct xgl_pipeline
 {
-    const char *name;
+    struct string name;
     enum xgl_pipeline_type type;
 
     struct xgl_ia_state ia_state;
@@ -143,7 +143,7 @@ struct xgl_pipeline
     struct xgl_rasterizer_state rasterizer_state;
     struct xgl_color_blend_state color_blend_state;
 
-    struct vector *buffer_inputs;
+    struct vector *buffer_inputs; // FIXME move from xgl_pipeline to xgl_state
     struct vector *attrib_inputs;
 
     guid gpu_id;

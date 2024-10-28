@@ -127,9 +127,10 @@ static void draw_screen_context_menu(struct ui_window *window)
     igPopStyleVar(2);
 }
 
+// FIXME relpace with custom xgl font renderer
 static void draw_surface_info(struct screen *screen)
 {
-    const char *surface_type_str = screen_get_surface_type_cstr(screen);
+    string_cstr surface_type_str = screen_get_surface_type_cstr(screen);
 
     struct vec2 size = screen_get_size(screen);
 

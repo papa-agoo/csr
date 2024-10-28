@@ -30,7 +30,7 @@ result_e kernel_init(struct kernel_init_info *init_info)
     ////////////////////////////////////////
 
     struct platform_init_info platform_info = {0};
-    platform_info.title = strdup(init_info->name);
+    platform_info.title = init_info->name;
     platform_info.width = init_info->conf.video->window.video_mode.resolution.w;
     platform_info.height = init_info->conf.video->window.video_mode.resolution.h;
     platform_info.fullscreen = init_info->conf.video->window.fullscreen;

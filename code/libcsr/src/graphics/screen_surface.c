@@ -187,7 +187,7 @@ error:
 bool screen_surface_begin(struct screen_surface* surface)
 {
     struct xgl_render_pass_info pass_info = {0};
-    pass_info.name = "Screen Surface Pass"; // make_string()
+    pass_info.name = make_string("Screen Surface Pass");
     pass_info.clear_values = surface->clear_values;
     pass_info.framebuffer = surface->framebuffer;
 

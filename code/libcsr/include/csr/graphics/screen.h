@@ -50,7 +50,7 @@ struct screen_stats
 
 struct screen_create_info
 {
-    const char* name;
+    struct string name;
 
     f32 scale_factor;
     enum screen_scale_policy scale_policy;
@@ -67,9 +67,9 @@ void screen_destroy(struct screen* screen);
 bool screen_begin(struct screen* screen, enum screen_surface_type surface_type);
 void screen_end();
 
-const char* screen_get_name(struct screen* screen);
+struct string screen_get_name(struct screen* screen);
 
-const char* screen_get_surface_type_cstr(struct screen* screen);
+string_cstr screen_get_surface_type_cstr(struct screen* screen);
 enum screen_surface_type screen_get_surface_type(struct screen* screen);
 
 f32 screen_get_aspect_ratio(struct screen* screen);

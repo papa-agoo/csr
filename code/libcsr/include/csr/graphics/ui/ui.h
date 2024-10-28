@@ -18,7 +18,7 @@ struct ui_conf
     struct {
         bool use_custom_font;
 
-        const char *name;
+        string_cstr name; // FIXME
         f32 size;
     } font;
 
@@ -29,7 +29,7 @@ static void ui_conf_defaults(struct ui_conf *conf)
 {
     check_ptr(conf);
 
-    // content 
+    // content
     conf->content_scale.use_custom_scale = false;
     conf->content_scale.scale_factor = 1.0f;
 
@@ -49,8 +49,8 @@ error:
 
 struct ui_init_info
 {
-    const char *imgui_ini_file;
-    const char *fonts_dir;
+    struct string imgui_ini_file;
+    struct string fonts_dir;
 
     struct ui_workspace *workspace;
 
@@ -73,9 +73,6 @@ enum ui_theme_type ui_get_theme();
 const struct ui_style* ui_get_theme_style();
 const struct ui_theme_info* ui_get_theme_info();
 
-typedef void (*ui_traverse_themes_cb_t)(const struct ui_theme_info *info);
-void ui_traverse_themes(ui_traverse_themes_cb_t callback);
-
 // fonts
 struct ui_font_info ui_get_font_info();
 
@@ -95,13 +92,13 @@ struct ui_workspace* ui_get_workspace();
 // void ui_traverse_workspaces(ui_traverse_workspaces_cb_t callback, void *data);
 
 // menus
-void ui_menu_init(struct ui_menu *menu, const char *title);
+void ui_menu_init(struct ui_menu *menu, string_cstr title);
 void ui_menu_draw(struct ui_menu* menu, struct ui_style *style);
 
 // windows / views
 void ui_view_init(struct ui_view *view, enum ui_view_type view_type, void* user_data);
 
-void ui_window_init(struct ui_window *window, const char *title);
+void ui_window_init(struct ui_window *window, string_cstr title);
 void ui_window_draw(struct ui_window* window, struct ui_style *style);
 
 struct ui_window* ui_window_get_focused();

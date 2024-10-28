@@ -18,7 +18,7 @@ result_e main()
     clog_info("platform init ...");
 
     struct platform_init_info init_info = {0};
-    init_info.title = "Hello Platform";
+    init_info.title = make_string("Hello Platform");
     init_info.width = 640;
     init_info.height = 480;
 
@@ -31,12 +31,12 @@ result_e main()
 
     const struct platform_backend_info *backend = &platform_get_info()->backend;
 
-    clog_info(" - os backend : %s v%d.%d.%d", backend->name,
+    clog_info(" - os backend : %S v%d.%d.%d", &backend->name,
         backend->version.major, backend->version.minor, backend->version.micro);
 
     const struct platform_renderer_info *renderer = &platform_get_info()->renderer;
 
-    clog_info(" - render api : %s v%d.%d.%d", renderer->name,
+    clog_info(" - render api : %S v%d.%d.%d", &renderer->name,
         renderer->version.major, renderer->version.minor, renderer->version.micro);
 
     ////////////////////////////////////////

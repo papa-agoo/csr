@@ -22,15 +22,15 @@ struct log_message
     u32 frame;
     u32 frame_time_ms;
 
-    const char* module;
-    const char* message;
+    struct string module;
+    struct string message;
 
     enum log_level_type level;
 };
 
 struct log_db_create_info
 {
-    const char *name;
+    struct string name;
 
     u32 max_messages;
 };

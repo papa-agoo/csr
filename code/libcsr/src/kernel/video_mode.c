@@ -4,12 +4,12 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void video_mode_preset_get_list(u32* count, const char*** list)
+void video_mode_preset_get_list(u32* count, string_cstr** list)
 {
     check_ptr(count);
     check_ptr(list);
 
-    static const char* presets[VIDEO_MODE_PRESET_MAX] =
+    static string_cstr presets[VIDEO_MODE_PRESET_MAX] =
     {
         [VIDEO_MODE_PRESET_HD_READY]    = "HD Ready (1280x720)",
         [VIDEO_MODE_PRESET_FULL_HD]     = "Full HD (1920x1080)",

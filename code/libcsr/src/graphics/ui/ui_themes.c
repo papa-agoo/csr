@@ -126,14 +126,3 @@ const struct ui_theme_info* ui_get_theme_info()
 error:
     return NULL;
 }
-
-void ui_traverse_themes(ui_traverse_themes_cb_t callback)
-{
-    check_ptr(callback);
-
-    callback(ui_get_theme_info(UI_THEME_TYPE_IMGUI_DARK));
-    callback(ui_get_theme_info(UI_THEME_TYPE_CSR_GRAPHITE));
-
-error:
-    return;
-}

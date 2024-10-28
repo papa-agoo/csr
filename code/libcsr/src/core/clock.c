@@ -6,7 +6,7 @@
 
 struct clock
 {
-    const char* name;
+    struct string name;
 
     f64 elapsed_s;
     f64 elapsed_delta_s;
@@ -14,14 +14,12 @@ struct clock
     f32 time_scale;
 };
 
-struct clock* clock_create(const char* name)
+struct clock* clock_create(struct string name)
 {
-    check_ptr(name);
-
     struct clock* clock = malloc(sizeof(struct clock));
     check_mem(clock);
 
-    clock->name = strdup(name);
+    clock->name = string_is_valid(name) ? name : make_string("<no name>");
     clock->time_scale = 1.0f;
 
     clock_init(clock, 0.0f);
@@ -66,14 +64,14 @@ error:
     return;
 }
 
-const char* clock_get_name(struct clock* clock)
+struct string clock_get_name(struct clock* clock)
 {
     check_ptr(clock);
 
     return clock->name;
 
 error:
-    return "unknown";
+    return make_string("unknown");
 }
 
 f32 clock_get_scale(struct clock* clock)

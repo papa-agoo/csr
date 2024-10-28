@@ -15,18 +15,13 @@ enum screen_surface_type
     SCREEN_SURFACE_TYPE_CPU,
 };
 
-CSR_INLINE const char* screen_surface_type_cstr(enum screen_surface_type type)
+CSR_INLINE string_cstr screen_surface_type_cstr(enum screen_surface_type type)
 {
     switch (type)
     {
-        case SCREEN_SURFACE_TYPE_GPU:
-            return "GPU Surface";
-
-        case SCREEN_SURFACE_TYPE_CPU:
-            return "CPU Surface";
-
-        default:
-            return "Unknown";
+        case SCREEN_SURFACE_TYPE_GPU:   return "GPU Surface";
+        case SCREEN_SURFACE_TYPE_CPU:   return "CPU Surface";
+        default:                        return "Unknown";
     }
 }
 

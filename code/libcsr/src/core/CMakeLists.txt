@@ -32,6 +32,7 @@ target_sources(${MY_TARGET}
 
         base/guid.c
         base/string.c
+        base/string_printf.c
         base/version.c
 
         math/transform.c

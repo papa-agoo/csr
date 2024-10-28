@@ -6,7 +6,7 @@
 
 struct object_pool
 {
-    const char *name;
+    struct string name;
 
     size_t object_size;
     size_t object_chunk_size;
@@ -74,9 +74,8 @@ error:
     return RC_FAILURE;
 }
 
-struct object_pool* object_pool_create(const char* name, size_t object_size)
+struct object_pool* object_pool_create(struct string name, size_t object_size)
 {
-    check_ptr(name);
     check_expr(object_size > 0);
 
     ////////////////////////////////////////
@@ -84,7 +83,7 @@ struct object_pool* object_pool_create(const char* name, size_t object_size)
     struct object_pool *pool = calloc(1, sizeof(struct object_pool));
     check_mem(pool);
 
-    pool->name = strdup(name);
+    pool->name = string_is_valid(name) ? name : make_string("<no name>");
 
     pool->object_size = object_size;
     pool->object_chunk_size = 4096;
@@ -109,8 +108,8 @@ void object_pool_destroy(struct object_pool *pool)
 {
     check_ptr(pool);
 
-    check(pool->object_count == 0, "object_pool_destroy( %s ) : %u / %u slots still allocated !?",
-        pool->name, pool->object_count, pool->object_count_max);
+    check(pool->object_count == 0, "object_pool_destroy( %S ) : %u / %u slots still allocated !?",
+       &pool->name, pool->object_count, pool->object_count_max);
 
     ////////////////////////////////////////
 
@@ -173,8 +172,8 @@ guid object_pool_alloc(struct object_pool* pool, void* object)
 
     ////////////////////////////////////////
 #ifdef CSR_TRACE_OBJECT_POOL
-    clog_trace(">>> object_pool_alloc( %s ) : guid = %lu, magic = %u, index = %u [ chunk: %u, object: %u ]",
-        pool->name, id.id, magic, index, chunk_idx, object_idx);
+    clog_trace(">>> object_pool_alloc( %S ) : guid = %lu, magic = %u, index = %u [ chunk: %u, object: %u ]",
+        &pool->name, id.id, magic, index, chunk_idx, object_idx);
 
     size_t byte_size_used = pool->object_count * pool->object_size;
     size_t byte_size_total = pool->object_count_max * pool->object_size;
@@ -196,7 +195,7 @@ void object_pool_free(struct object_pool* pool, guid object)
     check_expr(pool->object_count > 0);
 
     u32 index = guid_get_value(object);
-    check(index < pool->object_count_max, "[ %s ] guid invalid (bad index) : %u", pool->name, index);
+    check(index < pool->object_count_max, "[ %S ] guid invalid (bad index) : %u", &pool->name, index);
 
     // _read_magic_from_index()
     u32 chunk_idx = index / pool->object_count_per_chunk;
@@ -205,7 +204,7 @@ void object_pool_free(struct object_pool* pool, guid object)
     u32 magic_src = guid_get_magic(object);
     u32 magic_dst = pool->magic_chunks[chunk_idx][object_idx];
 
-    check(magic_src == magic_dst, "[ %s ] guid invalid (bad magic) : %u != %u", pool->name, magic_src, magic_dst);
+    check(magic_src == magic_dst, "[ %S ] guid invalid (bad magic) : %u != %u", &pool->name, magic_src, magic_dst);
 
     pool->magic_chunks[chunk_idx][object_idx] = 0xFFFFFFFF;
 
@@ -220,8 +219,8 @@ void object_pool_free(struct object_pool* pool, guid object)
 
     ////////////////////////////////////////
 #ifdef CSR_TRACE_OBJECT_POOL
-    clog_trace("<<< object_pool_free( %s ) : guid = %lu, magic = %u, index = %u [ chunk: %u, object: %u ]",
-        pool->name, object.id, magic, index, chunk_idx, object_idx);
+    clog_trace("<<< object_pool_free( %S ) : guid = %lu, magic = %u, index = %u [ chunk: %u, object: %u ]",
+        &pool->name, object.id, magic, index, chunk_idx, object_idx);
 
     size_t byte_size_used = pool->object_count * pool->object_size;
     size_t byte_size_total = pool->object_count_max * pool->object_size;
@@ -240,7 +239,7 @@ void* object_pool_get(struct object_pool* pool, guid object)
     check_ptr(pool);
 
     u32 index = guid_get_value(object);
-    check(index < pool->object_count_max, "[ %s ] guid invalid (bad index) : %u", pool->name, index);
+    check(index < pool->object_count_max, "[ %S ] guid invalid (bad index) : %u", &pool->name, index);
 
     u32 chunk_idx = index / pool->object_count_per_chunk;
     u32 object_idx = index % pool->object_count_per_chunk;
@@ -248,7 +247,7 @@ void* object_pool_get(struct object_pool* pool, guid object)
     u32 magic_src = guid_get_magic(object);
     u32 magic_dst = pool->magic_chunks[chunk_idx][object_idx];
 
-    check(magic_src == magic_dst, "[ %s ] guid invalid (bad magic) : %u != %u", pool->name, magic_src, magic_dst);
+    check(magic_src == magic_dst, "[ %S ] guid invalid (bad magic) : %u != %u", &pool->name, magic_src, magic_dst);
 
     return pool->object_chunks[chunk_idx] + (object_idx * pool->object_size);
 

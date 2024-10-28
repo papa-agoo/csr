@@ -108,7 +108,7 @@ struct my_conf
     const char *name;
 
     f32 factor;
-    u32 count;
+    s32 count;
 
     bool enabled;
 
@@ -122,7 +122,7 @@ static void my_conf_set_defaults(struct my_conf *data)
     check_ptr(data);
 
     data->name = "<unknown>";
-    
+
     data->factor = 1.0f;
     data->count = 100;
 

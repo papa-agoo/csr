@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include <csr/core/base/string.h>
+#include <csr/core/memory/arena.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -9,7 +10,7 @@ string_cstr string_get_cstr(struct arena *arena, struct string str)
     check_expr(string_is_valid(str));
 
     // string_create_fmt() actually creates a null terminated string, so we'll exploit it :)
-    return string_create_fmt(arena, string_fmt, string_fmt_arg(str)).ptr;
+    return (string_cstr) string_create_fmt(arena, "%S", &str).ptr;
 
 error:
     return "";
@@ -94,8 +95,7 @@ struct string string_replace(struct arena *arena, struct string str, struct stri
         struct string right = (old_end < str.length) ? string_substr(str, old_end, 0) : make_string("");
 
         // merge left + middle (new) + right
-        str = string_create_fmt(arena, string_fmt""string_fmt""string_fmt,
-            string_fmt_arg(left), string_fmt_arg(new), string_fmt_arg(right));
+        str = string_create_fmt(arena, "%S%S%S", &left, &new, &right);
     }
 
 error:

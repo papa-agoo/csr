@@ -145,7 +145,7 @@ error:
     return;
 }
 
-void* hashmap_set(struct hashmap *map, const char *key, void *data)
+void* hashmap_set(struct hashmap *map, string_cstr key, void *data)
 {
     u32 hash = 0;
 
@@ -186,7 +186,7 @@ error:
     return NULL;
 }
 
-void *hashmap_get(struct hashmap *map, const char *key)
+void *hashmap_get(struct hashmap *map, string_cstr key)
 {
     u32 hash = 0;
 
@@ -205,7 +205,7 @@ error:
     return NULL;
 }
 
-bool hashmap_has(struct hashmap* map, const char* key)
+bool hashmap_has(struct hashmap* map, string_cstr key)
 {
     return hashmap_get(map, key) != NULL;
 }

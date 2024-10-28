@@ -109,11 +109,10 @@ struct config* aio_get_config()
         struct string config_dir = kio_env_expand_str("{APPLET_CONFIG_DIR}");
         struct string config_file = string_replace(arena, applet_plugin_ptr()->filename, make_string(".so"), make_string(".ini"));
 
-        struct string config_path = string_create_fmt(arena, string_fmt"/"string_fmt,
-            string_fmt_arg(config_dir), string_fmt_arg(config_file));
+        struct string config_path = string_create_fmt(arena, "%S/%S", &config_dir, &config_file);
 
         // load config
-        klog_trace("loading ini file ... ("string_fmt")", string_fmt_arg(config_path));
+        klog_trace("loading ini file ... (%S)", &config_path);
 
         applet_state_ptr()->config = config_create_from_ini(config_path);
     }
@@ -187,7 +186,7 @@ error:
 // user interface
 ////////////////////////////////////////////////////////////////////////////////
 #define _get_unique_ui_name(name) \
-    (string_create_fmt(applet_arena_main_ptr(), "%s##"string_fmt, name, string_fmt_arg(applet_plugin_ptr()->filename)).ptr)
+    ((string_cstr)string_create_fmt(applet_arena_main_ptr(), "%s##%S", name, &applet_plugin_ptr()->filename).ptr)
 
 result_e aio_add_ui_menu(string_cstr key, struct ui_menu *menu)
 {
@@ -342,6 +341,9 @@ struct screen* aio_add_screen(string_cstr key, struct screen_create_info *ci)
 
     ////////////////////////////////////////
 
+    struct arena *arena = applet_arena_main_ptr();
+    check_ptr(arena);
+
     // create screen
     _normalize_screen_create_info_values(ci);
 
@@ -349,14 +351,14 @@ struct screen* aio_add_screen(string_cstr key, struct screen_create_info *ci)
     check_ptr(screen);
 
     // show screen info
-    string_cstr screen_name = screen_get_name(screen);
+    struct string screen_name = screen_get_name(screen);
     struct vec2 screen_size = screen_get_size(screen);
 
     enum screen_surface_type surface_type = screen_get_surface_type(screen);
-    string_cstr surface_type_str = screen_surface_type_cstr(surface_type);
+    string_cstr surface_type_cstr = screen_surface_type_cstr(surface_type);
 
-    alog_info("adding screen (%s) ...", screen_name);
-    alog_info(" - %s (%.0fx%.0f)", surface_type_str, screen_size.w, screen_size.h);
+    alog_info("adding screen (%S) ...", &screen_name);
+    alog_info(" - %s (%.0fx%.0f)", surface_type_cstr, screen_size.w, screen_size.h);
 
     ////////////////////////////////////////
 
@@ -364,7 +366,7 @@ struct screen* aio_add_screen(string_cstr key, struct screen_create_info *ci)
     struct ui_window *window = calloc(1, sizeof(struct ui_window));
     check_mem(window);
 
-    ui_window_init(window, screen_name);
+    ui_window_init(window, string_get_cstr(arena, screen_name));
     ui_view_init(&window->view, UI_VIEW_TYPE_SCREEN, screen);
 
     // window and screen ownership go to the ui ctx (will be freed there)

@@ -44,7 +44,7 @@ static void _draw_detail_view(struct model *model)
     // - materials
 
     struct string name = model_get_name(model);
-    igText("Model : "string_fmt, string_fmt_arg(name));
+    igText("Model : %S", &name);
 
     // - [ ] draw aabb
     // - [ ] draw parent aabb
@@ -57,9 +57,9 @@ static void _draw_transform_view(struct model* model)
         TRANSFORM_TYPE_LOCAL,
     } transform_type;
 
-    igRadioButton_IntPtr("Global", (u32*)&transform_type, 0);
+    igRadioButton_IntPtr("Global", (s32*)&transform_type, 0);
     igSameLine(0, 10);
-    igRadioButton_IntPtr("Local", (u32*)&transform_type, 1);
+    igRadioButton_IntPtr("Local", (s32*)&transform_type, 1);
 
     igNewLine();
 

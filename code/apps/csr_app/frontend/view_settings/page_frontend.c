@@ -49,10 +49,10 @@ static void _draw_ui_content_scale()
 static void _draw_ui_color_scheme()
 {
     // FIXME ui_get_theme_list()
-    const char *themes_list[] = { "ImGui Dark", "CSR Graphite" };
+    string_cstr themes_list[] = { "ImGui Dark", "CSR Graphite" };
     u32 theme_count = COUNT_OF(themes_list);
 
-    u32 selection = ui_get_theme();
+    s32 selection = (s32)ui_get_theme();
 
     if (igCombo_Str_arr("##color_scheme", &selection, themes_list, theme_count, 3))
     {

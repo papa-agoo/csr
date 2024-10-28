@@ -28,7 +28,7 @@
 #define klog_trace(msg, ...) _klog_msg(LOG_LEVEL_TRACE, msg, ##__VA_ARGS__)
 
 struct log_db* kio_log_get_db();
-void kio_log_message(enum log_level_type level, const char* module, const char* message, ...);
+void kio_log_message(enum log_level_type level, string_cstr module, string_cstr fmt, ...);
 
 
 ////////////////////////////////////////////////////////////////////////////////

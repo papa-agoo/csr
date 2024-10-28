@@ -123,7 +123,7 @@ static result_e _plugin_startup()
 {
     // add screen
     struct screen_create_info create_info = {0};
-    create_info.name = "SoftGL Triangle";
+    create_info.name = make_string("SoftGL Triangle");
 
     create_info.surface.type = SCREEN_SURFACE_TYPE_CPU;
     create_info.surface.clear_values.color = make_vec4(0.22, 0.22, 0.22, 1.0);

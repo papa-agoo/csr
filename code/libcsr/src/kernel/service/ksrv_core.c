@@ -7,13 +7,13 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-static void _on_error(s32 id, const char *message)
+static void _on_error(s32 id, struct string message)
 {
     struct event event = {0};
 
     event.type = EVENT_WINDOW_ERROR;
     event.window.error_id = id;
-    event.window.error_msg = (message) ? strdup(message) : "???";
+    event.window.error_msg = string_is_valid(message) ? message : make_string("???");
 
     event_bus_push_event(&event);
 }
@@ -185,13 +185,13 @@ result_e ksrv_core_init(struct ksrv_core_init_info *init_info)
     // show platform info
     const struct platform_backend_info *backend = &platform_get_info()->backend;
 
-    klog_info(" - os backend : %s v%d.%d.%d", backend->name,
+    klog_info(" - os backend : %S v%d.%d.%d", &backend->name,
         backend->version.major, backend->version.minor, backend->version.micro);
 
     const struct platform_renderer_info *renderer = &platform_get_info()->renderer;
 
-    klog_info(" - render api : %s v%d.%d.%d (GLSL v%s)", renderer->name, renderer->version.major,
-        renderer->version.minor, renderer->version.micro, renderer->version_shading_lang);
+    klog_info(" - render api : %S v%d.%d.%d (GLSL v%S)", &renderer->name,
+        renderer->version.major, renderer->version.minor, renderer->version.micro, &renderer->version_shading_lang);
 
     // set callbacks
     struct platform_callbacks *callbacks = platform_get_callbacks();
@@ -213,7 +213,7 @@ result_e ksrv_core_init(struct ksrv_core_init_info *init_info)
     check_ptr(srv->allocator.arena_frame);
 
     // create clock
-    srv->clock = clock_create("main");
+    srv->clock = clock_create(make_string("main"));
     check_ptr(srv->clock);
 
     // init mainloop
@@ -274,7 +274,7 @@ struct log_db* ksrv_get_log_db()
     if (!srv->log_db)
     {
         struct log_db_create_info log_db_info = {0};
-        log_db_info.name = "Kernel";
+        log_db_info.name = make_string("Kernel");
         log_db_info.max_messages = KSRV_CORE_MAX_LOG_MESSAGES;
 
         srv->log_db = log_db_create(&log_db_info);

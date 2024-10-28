@@ -26,7 +26,7 @@ enum mouse_button
     MOUSE_BUTTON_LAST = MOUSE_BUTTON_8,
 };
 
-static const char *mouse_button_cstr(enum mouse_button button)
+static string_cstr mouse_button_cstr(enum mouse_button button)
 {
     switch (button)
     {

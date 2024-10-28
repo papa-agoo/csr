@@ -14,7 +14,7 @@ struct applet* applet_create(struct string path)
 
     // load plugin
     result_e result = applet_plugin_load(&applet->plugin, path);
-    check_result(result, "applet_plugin_load() failed : "string_fmt, string_fmt_arg(path));
+    check_result(result, "applet_plugin_load() failed : %S", &path);
 
     applet_state_init(applet);
 

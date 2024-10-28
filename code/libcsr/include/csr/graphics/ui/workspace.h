@@ -10,7 +10,7 @@ struct ui_workspace;
 
 struct ui_workspace_create_info
 {
-    const char *name;
+    struct string name;
 
     bool enable_docking;
 
@@ -20,7 +20,7 @@ struct ui_workspace_create_info
 struct ui_workspace* ui_workspace_create(struct ui_workspace_create_info *info);
 void ui_workspace_destroy(struct ui_workspace* workspace);
 
-const char* ui_workspace_get_name(struct ui_workspace* workspace);
+struct string ui_workspace_get_name(struct ui_workspace* workspace);
 
 // contexts
 result_e ui_workspace_add_context(struct ui_workspace *workspace, struct ui_ctx* ctx);

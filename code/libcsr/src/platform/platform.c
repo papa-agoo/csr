@@ -14,7 +14,7 @@ struct platform* platform_ptr()
 
 ////////////////////////////////////////////////////////////////////////////////
 
-static void _on_error(s32 id, const char *message) {}
+static void _on_error(s32 id, struct string message) {}
 
 static void _on_window_close() {}
 static void _on_window_resize(s32 width, s32 height) {}
@@ -30,10 +30,10 @@ static void _on_keyboard_key_change(enum keyboard_key key, bool is_down) {}
 static void _init_platform_info(struct platform_info *info, struct platform_init_info *init_info)
 {
     struct platform_renderer_info *renderer = &info->renderer;
-    renderer->name = "unknown";
+    renderer->name = make_string("<unknown>");
 
     struct platform_backend_info *backend = &info->backend;
-    backend->name = "unknown";
+    backend->name = make_string("<unknown>");
 }
 
 static void _init_platform_callbacks(struct platform_callbacks *callbacks)
@@ -57,7 +57,6 @@ result_e platform_init(struct platform_init_info *init_info)
     csr_assert(!platform_ptr()->is_initialized);
 
     check_ptr(init_info);
-    check_ptr(init_info->title);
 
     check_expr(init_info->width > 0);
     check_expr(init_info->height > 0);
@@ -180,7 +179,7 @@ void platform_win_set_mouse_capture(bool state)
 
 #include <pwd.h> // FIXME move to impl.
 
-const char* platform_get_user_home_dir()
+string_cstr platform_get_user_home_dir()
 {
     return getenv("HOME"); // FIXME move to impl.
 }

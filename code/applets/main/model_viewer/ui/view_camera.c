@@ -10,8 +10,7 @@ void ui_widget_transform(struct transform *transform, bool* show_matrix, f64 dt)
 static void _draw_info_view(struct camera *camera)
 {
     struct string name = camera_get_name(camera);
-
-    igText("Camera : "string_fmt, string_fmt_arg(name));
+    igText("Camera : %S", &name);
 
     // ...
 }

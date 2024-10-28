@@ -15,10 +15,10 @@ static result_e _init_driver_storage(struct softgl_storage *storage)
 {
     check_ptr(storage);
 
-    storage->shaders = object_pool_create("SoftGL Shaders", sizeof(struct softgl_shader));
+    storage->shaders = object_pool_create(make_string("SoftGL Shaders"), sizeof(struct softgl_shader));
     check_ptr(storage->shaders);
 
-    storage->pipelines = object_pool_create("SoftGL Pipelines", sizeof(struct softgl_pipeline));
+    storage->pipelines = object_pool_create(make_string("SoftGL Pipelines"), sizeof(struct softgl_pipeline));
     check_ptr(storage->pipelines);
 
     return RC_SUCCESS;
@@ -88,4 +88,3 @@ void softgl_get_driver_info(struct softgl_driver_info *info)
 error:
     return;
 }
-

@@ -17,15 +17,15 @@ static void _on_draw_applet_entry(struct applet_db_entry *entry, void *data)
 
     // name
     igTableNextColumn();
-    igText(string_fmt, string_fmt_arg(entry->name));
+    igText("%S", &entry->name);
 
     // description
     igTableNextColumn();
-    igText(string_fmt, string_fmt_arg(entry->description));
+    igText("%S", &entry->description);
 
     // version string
     igTableNextColumn();
-    igText(string_fmt, string_fmt_arg(entry->version_str));
+    igText("%S", &entry->version_str);
 
     // applet filename (unique id)
     igTableNextColumn();

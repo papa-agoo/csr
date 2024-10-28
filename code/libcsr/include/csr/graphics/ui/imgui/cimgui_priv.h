@@ -8,7 +8,7 @@
 
 const struct cimgui_info* cimgui_get_info();
 
-result_e cimgui_init(const char *ini_file);
+result_e cimgui_init(struct string ini_file);
 void cimgui_quit();
 
 void cimgui_frame_begin(bool update_content_scale);

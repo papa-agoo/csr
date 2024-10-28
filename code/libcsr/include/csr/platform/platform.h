@@ -26,4 +26,4 @@ void platform_win_set_vsync(bool state);
 void platform_win_set_fullscreen(bool state);
 void platform_win_set_mouse_capture(bool state);
 
-const char* platform_get_user_home_dir();
+string_cstr platform_get_user_home_dir();

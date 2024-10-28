@@ -1,5 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+#include <csr/core/memory/arena_priv.h>
+
 #include <csr/kernel/kio.h>
 #include <csr/kernel/kernel_priv.h>
 
@@ -14,44 +16,39 @@ struct log_db* kio_log_get_db()
     return ksrv_get_log_db();
 }
 
-void kio_log_message(enum log_level_type level, const char* module, const char* message, ...)
+void kio_log_message(enum log_level_type level, string_cstr module, string_cstr fmt, ...)
 {
+    struct arena *arena = kio_mem_get_main_arena();
+
     va_list args;
-    va_start(args, message);
+    va_start(args, fmt);
 
-    va_list args_dupe;
-    va_copy(args_dupe, args);
-
-    size_t msg_len = vsnprintf(NULL, 0, message, args);
-    char *msg_tmp = malloc(msg_len + 1);
-
-    vsnprintf(msg_tmp, msg_len + 1, message, args_dupe);
+    struct string message = string_create_vfmt(arena, fmt, args);
 
     va_end(args);
-    va_end(args_dupe);
 
     ////////////////////////////////////////
 
     switch (level)
     {
         case LOG_LEVEL_INFO:
-            clog_info("( %s ) %s", module, msg_tmp);
+            clog_info("( %s ) %S", module, &message);
         break;
 
         case LOG_LEVEL_NOTICE:
-            clog_notice("( %s ) %s", module, msg_tmp);
+            clog_notice("( %s ) %S", module, &message);
         break;
 
         case LOG_LEVEL_WARN:
-            clog_warn("( %s ) %s", module, msg_tmp);
+            clog_warn("( %s ) %S", module, &message);
         break;
 
         case LOG_LEVEL_ERROR:
-            clog_error("( %s ) %s", module, msg_tmp);
+            clog_error("( %s ) %S", module, &message);
         break;
 
         default:
-            clog_trace("( %s ) %s", module, msg_tmp);
+            clog_trace("( %s ) %S", module, &message);
     }
 
     ////////////////////////////////////////
@@ -64,14 +61,14 @@ void kio_log_message(enum log_level_type level, const char* module, const char* 
 
         u32 current_frame_time = kio_time_elapsed_ms_rtc() - stats->runtime_ms;
 
-        struct log_message message = {0};
-        message.level = level;
-        message.frame = stats->num_frames;
-        message.frame_time_ms = current_frame_time;
-        message.message = strdup(msg_tmp);
-        message.module = strdup(module);
+        struct log_message log_entry = {0};
+        log_entry.level = level;
+        log_entry.frame = stats->num_frames;
+        log_entry.frame_time_ms = current_frame_time;
+        log_entry.message = message;
+        log_entry.module = string_copy(arena, make_string_from_cstr(module));
 
-        log_db_add_message(log_db, &message);
+        log_db_add_message(log_db, &log_entry);
     }
 }
 
@@ -105,18 +102,17 @@ string_cstr kio_env_expand_str_cstr(string_cstr str)
 }
 
 
-
 ////////////////////////////////////////////////////////////////////////////////
 // memory
 ////////////////////////////////////////////////////////////////////////////////
 struct arena* kio_mem_get_main_arena()
 {
-    check_expr(ksrv_core_ptr()->is_initialized);
+    check_quiet(ksrv_core_ptr()->is_initialized);
 
     return ksrv_core_ptr()->allocator.arena_main;
 
 error:
-    return NULL;
+    return _arena_priv_ptr();
 }
 
 struct arena* kio_mem_get_frame_arena()
@@ -129,6 +125,7 @@ error:
     return NULL;
 }
 
+
 ////////////////////////////////////////////////////////////////////////////////
 // time
 ////////////////////////////////////////////////////////////////////////////////
@@ -139,7 +136,7 @@ f64 kio_time_elapsed()
     return clock_time_elapsed(ksrv_core_ptr()->clock);
 
 error:
-    return 0; 
+    return 0;
 }
 
 f64 kio_time_elapsed_delta()
@@ -149,7 +146,7 @@ f64 kio_time_elapsed_delta()
     return clock_time_elapsed_delta(ksrv_core_ptr()->clock);
 
 error:
-    return 0; 
+    return 0;
 }
 
 f64 kio_time_elapsed_rtc()
@@ -223,7 +220,7 @@ void kio_video_toggle_vsync()
     platform_win_set_vsync(vsync);
 
 error:
-    return;   
+    return;
 }
 
 void kio_video_enable_fullscreen(bool enable)
@@ -233,7 +230,7 @@ void kio_video_enable_fullscreen(bool enable)
     platform_win_set_fullscreen(enable);
 
 error:
-    return;   
+    return;
 }
 
 void kio_video_toggle_fullscreen()
@@ -245,7 +242,7 @@ void kio_video_toggle_fullscreen()
     platform_win_set_fullscreen(fullscreen);
 
 error:
-    return;   
+    return;
 }
 
 struct vec2 kio_video_get_window_resolution()

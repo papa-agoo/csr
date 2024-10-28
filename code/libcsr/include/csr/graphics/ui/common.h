@@ -16,7 +16,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 struct ui_font_info
 {
-    const char *name;
+    string_cstr name;
 
     f32 size;
     f32 size_scaled;
@@ -35,9 +35,8 @@ struct ui_font
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 struct ui_menu
 {
-    const char *key;
-
-    const char *title;
+    string_cstr key;
+    string_cstr title;
 
     void (*draw_cb)(struct ui_menu* menu, struct ui_style *style);
     bool (*draw_cond_cb)(struct ui_menu *menu);
@@ -67,8 +66,8 @@ struct ui_view
 
 struct ui_window
 {
-    const char* key;
-    const char* title;
+    string_cstr  key;
+    string_cstr title;
 
     bool is_opened;
 
@@ -100,7 +99,7 @@ struct ui_window
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // page layout
-// 
+//
 // - property page
 //      - property set group (collapsable header)
 //          - property set (section of the group)
@@ -110,8 +109,8 @@ struct ui_window
 
 struct ui_property
 {
-    const char *name;
-    const char *tooltip;
+    string_cstr name;
+    string_cstr tooltip;
 
     void (*draw_cb)();
     bool (*draw_cond_cb)();
@@ -122,7 +121,7 @@ struct ui_property
 
 struct ui_property_set
 {
-    const char *name;
+    string_cstr name;
 
     u32 property_count;
     struct ui_property *properties;
@@ -130,7 +129,7 @@ struct ui_property_set
 
 struct ui_property_set_group
 {
-    const char *name;
+    string_cstr name;
 
     u32 set_count;
     struct ui_property_set **sets;
@@ -138,7 +137,7 @@ struct ui_property_set_group
 
 struct ui_property_page
 {
-    const char *title;
+    string_cstr title;
 
     void (*draw_cb)(struct ui_view *view, struct ui_style *style);
 };

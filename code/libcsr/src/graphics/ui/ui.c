@@ -16,9 +16,10 @@ result_e ui_init(struct ui_init_info *init_info)
     csr_assert(!ui_ptr()->is_initialized);
 
     check_ptr(init_info);
-    check_ptr(init_info->imgui_ini_file);
-    check_ptr(init_info->fonts_dir);
     check_ptr(init_info->conf);
+
+    check_expr(string_is_valid(init_info->imgui_ini_file));
+    check_expr(string_is_valid(init_info->fonts_dir));
 
     ui_ptr()->conf = init_info->conf;
     ui_ptr()->workspace = init_info->workspace;
@@ -27,14 +28,13 @@ result_e ui_init(struct ui_init_info *init_info)
     ////////////////////////////////////////
 
     // init imgui
-    result_e result = cimgui_init(init_info->imgui_ini_file);
-    check(R_SUCCESS(result), "cimgui_init() failed ...");
+    check_expr(cimgui_init(init_info->imgui_ini_file) == RC_SUCCESS);
 
     // imgui backend info
     const struct cimgui_info *info = cimgui_get_info();
 
-    klog_info(" - platform : %s", info->platform_name);
-    klog_info(" - renderer : %s", info->renderer_name);
+    klog_info(" - platform : %S", &info->platform_name);
+    klog_info(" - renderer : %S", &info->renderer_name);
 
     ////////////////////////////////////////
 
@@ -182,14 +182,13 @@ struct ui_workspace* ui_get_workspace()
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // menus
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void ui_menu_init(struct ui_menu *menu, const char *title)
+void ui_menu_init(struct ui_menu *menu, string_cstr title)
 {
     check_ptr(menu);
     check_ptr(title);
 
-    menu->title = title;
-
     menu->key = NULL;
+    menu->title = title;
 
     menu->draw_cb = NULL;
     menu->draw_cond_cb = NULL;
@@ -255,7 +254,7 @@ error:
 static void _default_window_push_properties_cb(struct ui_window* win) {}
 static void _default_window_pop_properties_cb(struct ui_window* win) {}
 
-void ui_window_init(struct ui_window *window, const char *title)
+void ui_window_init(struct ui_window *window, string_cstr title)
 {
     check_ptr(window);
     check_ptr(title);
@@ -404,7 +403,8 @@ void ui_build_fonts()
         my_font->info.size = ui_conf_ptr()->font.size;
         my_font->info.size_scaled = ceilf(my_font->info.size * scale_factor);
 
-        string_cstr font_path = string_create_fmt(kio_mem_get_main_arena(), "%s/%s", ui_ptr()->fonts_dir, my_font->info.name).ptr;
+        string_cstr font_path = (string_cstr)string_create_fmt(kio_mem_get_main_arena(), "%S/%s",
+            &ui_ptr()->fonts_dir, my_font->info.name).ptr;
 
         my_font->data = ImFontAtlas_AddFontFromFileTTF(font_atlas, font_path, my_font->info.size_scaled, NULL, NULL);
 

@@ -4,11 +4,8 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-#define _print_result_a(fn_name, in) \
-    clog_info(fn_name"() => "string_fmt, string_fmt_arg(str_out))
-
-#define _print_result_ab(fn_name, in, out) \
-    clog_info(fn_name"("string_fmt") => "string_fmt, string_fmt_arg(str_in), string_fmt_arg(str_out))
+#define _print_result_a(fn_name, in) clog_info(fn_name"() => %S", &str_out)
+#define _print_result_ab(fn_name, in, out) clog_info(fn_name"(%S) => %S", &str_in, &str_out)
 
 result_e main()
 {
@@ -75,7 +72,7 @@ result_e main()
 
         str_out = fio_fs_get_current_path();
         _print_result_a("fio_fs_get_current_path", str_out);                // <your shell cwd>
-        
+
         str_in = path_abs;
         str_out = fio_fs_get_parent_path(str_in);
         _print_result_ab("fio_fs_get_parent_path", str_in, str_out);        // /opt
@@ -162,7 +159,7 @@ result_e main()
 
         // path_base must be deleted manually first :)
         check(!fio_fs_exists(path_base),
-            "cannot run r/w tests, please delete "string_fmt" manually", string_fmt_arg(path_base));
+            "cannot run r/w tests, please delete %S manually", &path_base);
 
         result_e r = RC_FAILURE;
 

@@ -5,9 +5,9 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-const char* cimgui_platform_get_name()
+struct string cimgui_platform_get_name()
 {
-    return "NULL";
+    return make_string("NULL");
 }
 
 result_e cimgui_platform_startup()

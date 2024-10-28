@@ -1,5 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+#include <csr/core/memory/arena.h>
+
 #include <csr/core/config.h>
 #include <csr/core/hashmap.h>
 #include <csr/core/file_io.h>
@@ -330,7 +332,7 @@ void config_clear(struct config *cfg)
 
     cfg->ini = dictionary_new(0);
     check_ptr(cfg->ini);
-    
+
 error:
     return;
 }
@@ -354,11 +356,11 @@ void config_dump(struct config *cfg)
 
     struct string filename = (string_is_valid(cfg->filename)) ? (cfg->filename) : make_string("???");
 
-    clog_info(">>> dump : "string_fmt, string_fmt_arg(filename));
+    clog_info(">>> dump : %S", &filename);
 
     iniparser_dump_ini(cfg->ini, stdout);
 
-    clog_info("<<< dump : "string_fmt, string_fmt_arg(filename));
+    clog_info("<<< dump : %S", &filename);
 
 error:
     return;
@@ -369,7 +371,7 @@ result_e config_load_ini(struct config *cfg, struct string filename)
     check_ptr(cfg);
     check_expr(string_is_valid(filename));
 
-    clog_trace("loading config from ini : "string_fmt, string_fmt_arg(filename));
+    clog_trace("loading config from ini : %S", &filename);
 
     ////////////////////////////////////////
 
@@ -408,7 +410,7 @@ result_e config_save_ini(struct config *cfg, struct string filename)
     check_ptr(cfg);
     check_expr(string_is_valid(filename));
 
-    clog_trace("saving config to ini : "string_fmt, string_fmt_arg(filename));
+    clog_trace("saving config to ini : %S", &filename);
 
     check_expr(_config_has_entries(cfg));
 
@@ -426,7 +428,7 @@ result_e config_save_ini(struct config *cfg, struct string filename)
     ////////////////////////////////////////
 
     fio_file *file = fio_open(filename, FIO_MODE_WRITE_ONLY);
-    check(file, "could not open file for writing : "string_fmt, string_fmt_arg(filename));
+    check(file, "could not open file for writing : %S", &filename);
 
     iniparser_dump_ini(cfg->ini, fio_get_stream(file));
 
@@ -605,7 +607,7 @@ bool config_get_str(struct config *cfg, string_cstr key, string_cstr *out)
     return true;
 
 error:
-    return false;   
+    return false;
 }
 
 bool config_set_str(struct config *cfg, string_cstr key, string_cstr value)
@@ -616,7 +618,7 @@ bool config_set_str(struct config *cfg, string_cstr key, string_cstr value)
     return _ini_set_value(cfg->ini, key, value);
 
 error:
-    return false;   
+    return false;
 }
 
 bool config_map_str(struct config *cfg, string_cstr key, string_cstr *value)
@@ -679,7 +681,7 @@ bool config_set_vec2(struct config *cfg, string_cstr key, struct vec2 value)
     return _ini_set_value(cfg->ini, key, strdup(g_str_buf));
 
 error:
-    return false;   
+    return false;
 }
 
 bool config_map_vec2(struct config *cfg, string_cstr key, struct vec2* value)
@@ -745,7 +747,7 @@ bool config_set_vec3(struct config *cfg, string_cstr key, struct vec3 value)
     return _ini_set_value(cfg->ini, key, strdup(g_str_buf));
 
 error:
-    return false;   
+    return false;
 }
 
 bool config_map_vec3(struct config *cfg, string_cstr key, struct vec3* value)

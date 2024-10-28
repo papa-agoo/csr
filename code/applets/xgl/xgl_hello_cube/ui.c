@@ -73,7 +73,7 @@ static void _draw_settings_view_cb(struct ui_view *view, struct ui_style *style)
 
         igNewLine();
 
-        u32 sampler_idx = g_sampler_idx;
+        s32 sampler_idx = g_sampler_idx;
 
         if (igCombo_Str_arr("Sampler", &sampler_idx, items, 3, 3))
         {

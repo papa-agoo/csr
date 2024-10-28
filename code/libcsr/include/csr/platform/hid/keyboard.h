@@ -142,7 +142,7 @@ enum keyboard_key
     KBD_KEY_LAST = KBD_KEY_MENU
 };
 
-static const char *keyboard_key_cstr(enum keyboard_key key)
+static string_cstr keyboard_key_cstr(enum keyboard_key key)
 {
     switch (key)
     {

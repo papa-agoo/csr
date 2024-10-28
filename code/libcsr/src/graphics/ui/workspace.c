@@ -7,13 +7,12 @@
 struct ui_workspace* ui_workspace_create(struct ui_workspace_create_info *info)
 {
     check_ptr(info);
-    check_ptr(info->name);
     check_ptr(info->workspace_tick_cb);
 
     struct ui_workspace *workspace = calloc(1, sizeof(struct ui_workspace));
     check_mem(workspace);
 
-    workspace->name = strdup(info->name);
+    workspace->name = string_is_valid(info->name) ? info->name : make_string("<unnamed workspace>");
     workspace->enable_docking = info->enable_docking;
     workspace->workspace_tick_cb = info->workspace_tick_cb;
 
@@ -41,14 +40,14 @@ error:
     return;
 }
 
-const char* ui_workspace_get_name(struct ui_workspace* workspace)
+struct string ui_workspace_get_name(struct ui_workspace* workspace)
 {
     check_ptr(workspace);
 
     return workspace->name;
 
 error:
-    return NULL;
+    return make_string_invalid();
 }
 
 

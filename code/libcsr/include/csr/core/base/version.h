@@ -9,9 +9,9 @@
 
 struct version
 {
-    u32 major;
-    u32 minor;
-    u32 micro;
+    s32 major;
+    s32 minor;
+    s32 micro;
 };
 
 #define make_version(...) \

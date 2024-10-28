@@ -5,7 +5,7 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-extern bool ImGui_ImplOpenGL3_Init(const char* glsl_version);
+extern bool ImGui_ImplOpenGL3_Init(string_cstr glsl_version);
 extern void ImGui_ImplOpenGL3_Shutdown();
 extern void ImGui_ImplOpenGL3_NewFrame();
 extern void ImGui_ImplOpenGL3_RenderDrawData(ImDrawData* draw_data);
@@ -16,9 +16,9 @@ extern void ImGui_ImplOpenGL3_DestroyDeviceObjects();
 
 ////////////////////////////////////////////////////////////
 
-const char* cimgui_renderer_get_name()
+struct string cimgui_renderer_get_name()
 {
-    return "OpenGL";
+    return make_string("OpenGL");
 }
 
 result_e cimgui_renderer_startup()

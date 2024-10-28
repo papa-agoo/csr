@@ -38,8 +38,8 @@ struct ui_style
 
 struct ui_theme_info
 {
-    const char *name;
-    const char *author;
+    struct string name;
+    struct string author;
     struct version version;
 
     enum ui_theme_type theme_type;

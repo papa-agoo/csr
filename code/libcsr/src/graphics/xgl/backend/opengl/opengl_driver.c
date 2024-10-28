@@ -46,22 +46,22 @@ static result_e _init_driver_storage(struct gl_storage *storage)
 {
     check_ptr(storage);
 
-    storage->framebuffers = object_pool_create("OpenGL Framebuffers", sizeof(struct gl_framebuffer));
+    storage->framebuffers = object_pool_create(make_string("OpenGL Framebuffers"), sizeof(struct gl_framebuffer));
     check_ptr(storage->framebuffers)
-    
-    storage->samplers = object_pool_create("OpenGL Samplers", sizeof(struct gl_sampler));
+
+    storage->samplers = object_pool_create(make_string("OpenGL Samplers"), sizeof(struct gl_sampler));
     check_ptr(storage->samplers)
-    
-    storage->textures = object_pool_create("OpenGL Texures", sizeof(struct gl_texture));
+
+    storage->textures = object_pool_create(make_string("OpenGL Texures"), sizeof(struct gl_texture));
     check_ptr(storage->textures)
-    
-    storage->buffers = object_pool_create("OpenGL Buffers", sizeof(struct gl_buffer));
+
+    storage->buffers = object_pool_create(make_string("OpenGL Buffers"), sizeof(struct gl_buffer));
     check_ptr(storage->buffers)
-    
-    storage->shaders = object_pool_create("OpenGL Shaders", sizeof(struct gl_shader));
+
+    storage->shaders = object_pool_create(make_string("OpenGL Shaders"), sizeof(struct gl_shader));
     check_ptr(storage->shaders)
-    
-    storage->pipelines = object_pool_create("OpenGL Pipelines", sizeof(struct gl_pipeline));
+
+    storage->pipelines = object_pool_create(make_string("OpenGL Pipelines"), sizeof(struct gl_pipeline));
     check_ptr(storage->pipelines)
 
     return RC_SUCCESS;
@@ -72,7 +72,7 @@ error:
 
 static void _init_driver_info(struct xgl_driver_info *info)
 {
-    info->name = "OpenGL";
+    info->name = make_string("OpenGL");
     info->type = XGL_DRIVER_TYPE_OPENGL;
 
     // DSA needs opengl v4.5+

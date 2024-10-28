@@ -11,8 +11,8 @@
 
 struct cimgui_info
 {
-    const char* platform_name;
-    const char* renderer_name;
+    struct string platform_name;
+    struct string renderer_name;
 };
 
 

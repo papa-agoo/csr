@@ -9,7 +9,7 @@
 
 struct ui_ctx
 {
-    const char* name;
+    struct string name;
 
     struct list* menus;
     struct list* windows;
@@ -19,14 +19,14 @@ struct ui_ctx
 
 ////////////////////////////////////////////////////////////////////////////////
 
-struct ui_ctx* ui_ctx_create(const char* name)
+struct ui_ctx* ui_ctx_create(struct string name)
 {
-    check_ptr(name);
+    check_expr(string_is_valid(name));
 
     struct ui_ctx* ctx = calloc(1, sizeof(struct ui_ctx));
     check_mem(ctx);
 
-    ctx->name = strdup(name);
+    ctx->name = name;
 
     ctx->menus = list_create();
     check_ptr(ctx->menus);
@@ -60,14 +60,14 @@ error:
     return;
 }
 
-const char* ui_ctx_get_name(struct ui_ctx* ctx)
+struct string ui_ctx_get_name(struct ui_ctx* ctx)
 {
     check_ptr(ctx);
 
     return ctx->name;
 
 error:
-    return NULL;
+    return make_string_invalid();
 }
 
 
@@ -84,7 +84,7 @@ error:
     return 0;
 }
 
-result_e ui_ctx_add_menu(struct ui_ctx *ctx, const char *key, struct ui_menu *menu)
+result_e ui_ctx_add_menu(struct ui_ctx *ctx, string_cstr key, struct ui_menu *menu)
 {
     check_ptr(ctx);
     check_ptr(key);
@@ -104,7 +104,7 @@ error:
     return RC_FAILURE;
 }
 
-struct ui_menu *ui_ctx_get_menu(struct ui_ctx *ctx, const char *key)
+struct ui_menu *ui_ctx_get_menu(struct ui_ctx *ctx, string_cstr key)
 {
     return hashmap_get(ctx->ui_items, key);
 }
@@ -122,7 +122,7 @@ error:
     return;
 }
 
-void ui_ctx_remove_menu_by_key(struct ui_ctx *ctx, const char *key)
+void ui_ctx_remove_menu_by_key(struct ui_ctx *ctx, string_cstr key)
 {
     ui_ctx_remove_menu(ctx, ui_ctx_get_menu(ctx, key));
 }
@@ -172,7 +172,7 @@ error:
     return 0;
 }
 
-result_e ui_ctx_add_window(struct ui_ctx *ctx, const char *key, struct ui_window *window)
+result_e ui_ctx_add_window(struct ui_ctx *ctx, string_cstr key, struct ui_window *window)
 {
     check_ptr(ctx);
     check_ptr(key);
@@ -192,7 +192,7 @@ error:
     return RC_FAILURE;
 }
 
-struct ui_window *ui_ctx_get_window(struct ui_ctx *ctx, const char *key)
+struct ui_window *ui_ctx_get_window(struct ui_ctx *ctx, string_cstr key)
 {
     return hashmap_get(ctx->ui_items, key);
 }
@@ -210,7 +210,7 @@ error:
     return;
 }
 
-void ui_ctx_remove_window_by_key(struct ui_ctx *ctx, const char *key)
+void ui_ctx_remove_window_by_key(struct ui_ctx *ctx, string_cstr key)
 {
     ui_ctx_remove_window(ctx, ui_ctx_get_window(ctx, key));
 }

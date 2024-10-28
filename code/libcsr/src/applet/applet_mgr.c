@@ -139,22 +139,20 @@ result_e applet_mgr_load_applet(struct string filename)
 
     ////////////////////////////////////////
 
-    klog_notice("loading applet : "string_fmt, string_fmt_arg(filename));
+    klog_notice("loading applet : %S", &filename);
 
     // build applet path
     struct arena* arena = kio_mem_get_main_arena();
     check_ptr(arena);
 
     struct string db_scan_path = applet_db_get_scan_path(mgr_ptr()->applet_db);
+    struct string path_to_file = string_create_fmt(arena, "%S/%S", &db_scan_path, &filename);
 
-    struct string path_to_file = string_create_fmt(arena,
-        string_fmt"/"string_fmt, string_fmt_arg(db_scan_path), string_fmt_arg(filename));
-    
     // load applet
     check_expr(fio_fs_is_file(path_to_file));
 
     struct applet *applet = applet_create(path_to_file);
-    check(applet != NULL, "could not load applet : "string_fmt, string_fmt_arg(path_to_file));
+    check(applet != NULL, "could not load applet : %S", &path_to_file);
 
     mgr_ptr()->applet = applet;
 
@@ -171,7 +169,7 @@ result_e applet_mgr_load_applet(struct string filename)
 
     if (R_FAILURE(result))
     {
-        klog_error("applet->startup() failed ("string_fmt") ...", string_fmt_arg(applet_get_filename(applet)));
+        klog_error("applet->startup() failed (%S) ...", &filename);
 
         applet_mgr_unload_applet();
 
@@ -234,7 +232,8 @@ void applet_mgr_unload_applet()
         mgr_ptr()->callbacks.on_pre_applet_unload(applet);
     }
 
-    klog_notice("unloading applet : "string_fmt, string_fmt_arg(applet_get_filename(applet)));
+    struct string applet_filename = applet_get_filename(applet);
+    klog_notice("unloading applet : %S", &applet_filename);
 
     applet_destroy(applet);
 

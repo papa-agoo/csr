@@ -17,7 +17,7 @@ enum video_mode_preset
     VIDEO_MODE_PRESET_MAX,
 };
 
-void video_mode_preset_get_list(u32* count, const char*** list);
+void video_mode_preset_get_list(u32* count, string_cstr** list);
 void video_mode_preset_get_resolution(enum video_mode_preset preset, struct vec2 *resolution);
 enum video_mode_preset video_mode_preset_from_resolution(struct vec2 resolution);
 

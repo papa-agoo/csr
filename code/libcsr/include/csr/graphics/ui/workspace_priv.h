@@ -10,7 +10,7 @@
 
 struct ui_workspace
 {
-    const char *name;
+    struct string name;
 
     bool enable_docking;
 

@@ -24,7 +24,7 @@ enum platform_backend_type
 
 struct platform_display_info
 {
-    const char* name;
+    struct string name;
 
     struct vec2 resolution;
     struct vec2 physical_size;
@@ -34,23 +34,23 @@ struct platform_display_info
 
 struct platform_renderer_info
 {
-    const char *name;
+    struct string name;
 
     enum platform_renderer_type type;
 
     struct version version;
-    const char *version_shading_lang;
+    struct string version_shading_lang;
 
     // FIXME capabilities / features / ...
-    u32 sample_count;
-    u32 sample_count_max;
+    s32 sample_count;
+    s32 sample_count_max;
 
     bool debug_context_enabled;
 };
 
 struct platform_backend_info
 {
-    const char *name;
+    struct string name;
 
     struct version version;
     enum platform_backend_type type;
@@ -68,7 +68,7 @@ struct platform_info
 
 struct platform_callbacks
 {
-    void (*on_error)(s32 id, const char* message);
+    void (*on_error)(s32 id, struct string message);
 
     void (*on_window_close)();
     void (*on_window_resize)(s32 width, s32 height);
@@ -82,7 +82,7 @@ struct platform_callbacks
 
 struct platform_init_info
 {
-    const char* title;
+    struct string title;
 
     u32 width;
     u32 height;

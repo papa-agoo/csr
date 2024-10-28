@@ -54,7 +54,7 @@ static u32 g_cube_elements[] = {
 // layout location 0 : XGL_VERTEX_ATTRIB_POSITION
 // layout location 3 : XGL_VERTEX_ATTRIB_TEX_COORD0
 
-static u8* g_cube_vs = ""
+static string_cstr g_cube_vs = ""
 "#version 450\n"
 "\n"
 "layout (location = 0) in vec3 a_position;\n"
@@ -73,7 +73,7 @@ static u8* g_cube_vs = ""
     "ourTexCoord = a_tex_coord0 * texture_scale;\n"
 "}\n";
 
-static u8* g_cube_fs = ""
+static string_cstr g_cube_fs = ""
 "#version 450\n"
 "\n"
 "uniform sampler2D ourTexture;\n"
@@ -114,7 +114,7 @@ static result_e _create_pso()
 
         // shader program
         struct xgl_shader_create_info info = {0};
-        info.name = "xgl_hello_cube";
+        info.name = make_string("xgl_hello_cube");
         info.vertex_shader_stage = &vs_stage;
         info.fragment_shader_stage = &stage_fs;
 
@@ -200,7 +200,7 @@ static result_e _create_pso()
     {
         struct xgl_pipeline_create_info info = {0};
 
-        info.name = "hello_cube_pipeline";
+        info.name = make_string("hello_cube_pipeline");
         info.type = XGL_PIPELINE_TYPE_GRAPHICS;
         info.ia_state = &ia_state;
         info.shader_state = &shader_state;
@@ -210,7 +210,7 @@ static result_e _create_pso()
         info.pipeline_layout = pipeline_layout;
 
         result = xgl_create_pipeline(&info, &pipeline);
-        check_result(result, "could not create pipeline: %s", info.name);
+        check_result(result, "could not create pipeline: %S", &info.name);
 
         g_cube.material.effect.pipeline = pipeline;
     }
@@ -302,10 +302,9 @@ static result_e _create_texture(struct string image_dir, u32 texture_id, u32 mip
 
     ////////////////////////////////////////
 
-    struct string filename = string_create_fmt(aio_get_main_arena(), string_fmt"/%s",
-        string_fmt_arg(image_dir), tex_info->filename);
+    struct string filename = string_create_fmt(aio_get_main_arena(), "%S/%s", &image_dir, tex_info->filename);
 
-    alog_trace("loading image file ("string_fmt") ...", string_fmt_arg(filename));
+    alog_trace("loading image file (%S) ...", &filename);
 
     tex_info->image = pixelbuffer_create_from_file(filename, true);
     check_ptr(tex_info->image);
@@ -354,33 +353,33 @@ static result_e _create_samplers()
     xgl_sampler* sampler_nearest = g_samplers;
     {
         struct xgl_sampler_desc ci = {0};
-        ci.name = "nearest";
+        ci.name = make_string("nearest");
         ci.min_filter = XGL_TEXTURE_FILTER_NEAREST;
         ci.mag_filter = XGL_TEXTURE_FILTER_NEAREST;
 
         result = xgl_create_sampler(&ci, sampler_nearest);
-        check_result(result, "could not create sampler : %s", ci.name);
+        check_result(result, "could not create sampler : %S", &ci.name);
     }
 
     // linear filtering
     xgl_sampler* sampler_linear = g_samplers + 1;
     {
         struct xgl_sampler_desc ci = {0};
-        ci.name = "linear";
+        ci.name = make_string("linear");
 
         result = xgl_create_sampler(&ci, sampler_linear);
-        check_result(result, "could not create sampler : %s", ci.name);
+        check_result(result, "could not create sampler : %S", &ci.name);
     }
 
     // anisotropic filtering
     xgl_sampler* sampler_linear_af16x = g_samplers + 2;
     {
         struct xgl_sampler_desc ci = {0};
-        ci.name = "linear af16x";
+        ci.name = make_string("linear af16x");
         ci.max_anisotropy = 16.0f;
 
         result = xgl_create_sampler(&ci, sampler_linear_af16x);
-        check_result(result, "could not create sampler : %s", ci.name);
+        check_result(result, "could not create sampler : %S", &ci.name);
     }
 
 error:

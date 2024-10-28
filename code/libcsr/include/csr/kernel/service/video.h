@@ -17,7 +17,7 @@ struct ksrv_video_conf
     } window;
 
     struct {
-        u32 msaa_count;
+        s32 msaa_count;
 
         bool debug_mode;
     } xgl;

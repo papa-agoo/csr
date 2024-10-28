@@ -31,7 +31,7 @@ result_e softgl_create_shader(struct softgl_shader_create_info* info, softgl_sha
     shader.vertex_shader_ptr = info->vertex_shader_ptr;
     shader.fragment_shader_ptr = info->fragment_shader_ptr;
 
-    check_expr(_check_shader_runtime_valid(&shader)); // FIXME
+    check_expr(_check_shader_runtime_valid(&shader));
 
     ////////////////////////////////////////
 

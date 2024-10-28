@@ -26,8 +26,8 @@ struct ui
         struct ui_font custom;
         struct ui_font builtin;
     } font;
-    
-    const char *fonts_dir;
+
+    struct string fonts_dir;
 };
 
 struct ui* ui_ptr();
