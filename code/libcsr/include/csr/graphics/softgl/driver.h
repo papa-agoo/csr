@@ -11,6 +11,7 @@ void softgl_quit_driver();
 
 void softgl_get_driver_info(struct softgl_driver_info *info);
 
+
 ////////////////////////////////////////////////////////////////////////////////
 // device api
 ////////////////////////////////////////////////////////////////////////////////
@@ -31,7 +32,7 @@ void softgl_set_viewport(struct softgl_viewport vp);
 void softgl_set_pixelbuffer(struct pixelbuffer *pb);
 
 void softgl_bind_pipeline(softgl_pipeline pipeline);
-// void softgl_bind_descriptor_set();
+void softgl_bind_descriptor_set(enum softgl_descriptor_set_type type, const void* data);
 
 void softgl_bind_index_buffer(struct softgl_index_buffer *buffer);
 void softgl_bind_vertex_buffers(struct softgl_vertex_buffer **buffers, u32 buffer_count);

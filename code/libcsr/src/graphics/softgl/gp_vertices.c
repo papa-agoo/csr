@@ -29,7 +29,7 @@
 //                  - c) line_loop
 //                  - d) triangle_strip
 //                  - e) triangle_fan
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 static void _update_vertex_attrib_ptrs(u32 index)
@@ -53,12 +53,11 @@ static void _update_vertex_attrib_ptrs(u32 index)
 
 static struct softgl_vertex* _create_vertex(u32 index)
 {
+    struct softgl_state *state = softgl_state_ptr();
     struct softgl_pipeline *pso = softgl_pso_ptr();
     struct softgl_graphics_pipeline *gp = softgl_gp_ptr();
 
     // init vertex
-    ////////////////////////////////////////
-
     u32 ia_vertex_id = gp->ia.num_processed_vertices++;
     u32 vc_vertex_id = gp->vc.vertex_count++;
 
@@ -71,15 +70,11 @@ static struct softgl_vertex* _create_vertex(u32 index)
     // reset attrib outputs
     vertex->attribs_out.count = 0;
 
-
-    // process vertex
-    ////////////////////////////////////////
-
     // update attrib pointers
     _update_vertex_attrib_ptrs(index);
 
     // exec vertex shader
-    pso->shader->vertex_shader_ptr(&gp->ia.va_ptrs, vertex);
+    pso->shader->vertex_shader_ptr(&gp->ia.va_ptrs, &state->binding.resources, vertex);
 
     return vertex;
 }
@@ -89,8 +84,6 @@ static struct softgl_vertex* _create_vertex(u32 index)
 void gp_process_vertices(struct softgl_index_buffer *index_buffer)
 {
     struct softgl_graphics_pipeline *gp = softgl_gp_ptr();
-
-    ////////////////////////////////////////
 
     // reset vertex cache
     struct vertex_cache* vc = &gp->vc;
@@ -104,8 +97,7 @@ void gp_process_vertices(struct softgl_index_buffer *index_buffer)
     pc->primitive_count = 0;
     pc->vertex_count = 0;
 
-    ////////////////////////////////////////
-
+    // fill vertex / primitive cache
     struct input_assembler* ia = &gp->ia;
 
     for (u32 i = ia->vs.start; i < ia->vs.stop; i++)

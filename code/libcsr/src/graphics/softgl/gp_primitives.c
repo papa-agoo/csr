@@ -3,18 +3,18 @@
 #include "gp.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 //  FRAGMENT PIPELINE FLOW
-// 
+//
 // - gp_process_primitives
-// 
+//
 //      - process_points
 //         << LOOP >>
 //              - clip_point
 //              - project_to_screen
 //              - rasterize_point
 //                  - process_fragment
-// 
+//
 //      - process_lines
 //          << LOOP >>
 //              - clip_line
@@ -25,7 +25,7 @@
 //                      <<LOOP>>
 //                          - interpolate data
 //                          - process_fragment
-// 
+//
 //      - process_triangles
 //          << LOOP >>
 //              - clip_triangle
@@ -37,11 +37,11 @@
 //                      <<LOOP>>
 //                          - interpolate data
 //                          - process_fragment
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-// 
+//
 //  FUNCTIONS
-// 
+//
 // (F) setup_line()
 //      - calc aabb
 //      - ...
@@ -50,28 +50,28 @@
 //      - calc aabb
 //      - clip aabb to some rect (viewport, ie.)
 //      - calc edge functions (interpolation coefficients)
-// 
+//
 // (F) project_to_screen()
 //      - perspective divide
 //      - viewport transform
-// 
+//
 // (F) process_fragment()
 //      - early depth test
 //      - exec fragment shader
 //      - merge_output()
-// 
+//
 // (F) merge_output()
 //      - scissor test ?
 //      - stencil test ?
 //      - depth test ?
 //      - blend colors ?
 //      - set pixel
-// 
+//
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 static void _project_to_screen(struct softgl_vertex* v)
 {
-    // position in clip space
+    // position is in clip space
     struct vec4* p = &v->position;
 
     // perspective divide (clip -> ndc)
@@ -117,8 +117,8 @@ static void _process_lines()
         struct softgl_vertex* a = pc->vertices[i];
         struct softgl_vertex* b = pc->vertices[i+1];
 
-        // FIXME < 2?
-        if (gp_clip_line(a, b) < 2) continue;
+        // FIXME
+        if (gp_clip_line(a, b) > 0) continue;
 
         _project_to_screen(a);
         _project_to_screen(b);
@@ -137,10 +137,8 @@ static void _process_triangles()
         struct softgl_vertex* b = pc->vertices[i+1];
         struct softgl_vertex* c = pc->vertices[i+2];
 
-        // FIXME < 3?
-        if (gp_clip_triangle(a, b, c) < 3) continue;
-
-        // FIXME handle num_triangles > 1
+        // FIXME
+        if (gp_clip_triangle(a, b, c) > 0) continue;
 
         _project_to_screen(a);
         _project_to_screen(b);

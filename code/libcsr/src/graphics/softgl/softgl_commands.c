@@ -7,7 +7,7 @@
 void softgl_set_viewport(struct softgl_viewport vp)
 {
     check_expr(vp.width > 0 && vp.height > 0);
-    check_expr(vp.x < vp.width && vp.y < vp.height);
+    // check_expr(vp.x < vp.width && vp.y < vp.height);
     check_expr(vp.min_depth != vp.max_depth);
 
     softgl_state_ptr()->viewport = vp;
@@ -32,6 +32,16 @@ void softgl_bind_pipeline(softgl_pipeline p_pipeline)
     check_ptr(pipeline);
 
     softgl_binding_ptr().pipeline = pipeline;
+
+error:
+    return;
+}
+
+void softgl_bind_descriptor_set(enum softgl_descriptor_set_type type, const void* data)
+{
+    check_expr(type < SOFTGL_DESCRIPTOR_SET_TYPE_MAX);
+
+    softgl_binding_ptr().resources.uniform_buffers[type] = data;
 
 error:
     return;

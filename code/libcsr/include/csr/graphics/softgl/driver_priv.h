@@ -97,13 +97,14 @@ struct softgl_state
     struct pixelbuffer *pb;
 
     struct softgl_viewport viewport;
-    struct softgl_shader_data shader_data;
 
     struct {
         struct softgl_pipeline *pipeline;
+
         struct softgl_index_buffer* index_buffer;
         struct softgl_vertex_buffer* vertex_buffers[SOFTGL_VERTEX_BUFFER_BINDING_COUNT];
-        void* textures;
+
+        struct softgl_resource_bindings resources;
     } binding;
 };
 

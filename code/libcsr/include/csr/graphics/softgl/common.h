@@ -49,14 +49,6 @@ struct softgl_vertex_buffer
 //     SOFTGL_VERTEX_FORMAT_1P1N1UV,
 // };
 
-struct softgl_shader_data
-{
-    struct softgl_shader_data_frame {
-        struct mat44 view;
-        struct mat44 projection;
-    } frame;
-};
-
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // shaders
@@ -77,6 +69,16 @@ enum softgl_vertex_attrib
     SOFTGL_VERTEX_ATTRIB_MAX,
 };
 
+enum softgl_descriptor_set_type
+{
+    SOFTGL_DESCRIPTOR_SET_TYPE_FRAME    = 0,
+    SOFTGL_DESCRIPTOR_SET_TYPE_PASS     = 1,
+    SOFTGL_DESCRIPTOR_SET_TYPE_MATERIAL = 2,
+    SOFTGL_DESCRIPTOR_SET_TYPE_OBJECT   = 3,
+
+    SOFTGL_DESCRIPTOR_SET_TYPE_MAX
+};
+
 // vertex attrib inputs (provided by the geometry pipeline)
 struct vertex_attrib_input_ptrs
 {
@@ -88,6 +90,13 @@ struct vertex_attrib_cache
 {
     u32 count;
     struct vec4 slots[SOFTGL_VERTEX_ATTRIB_MAX];
+};
+
+// read only shader resources (buffers, textures)
+struct softgl_resource_bindings
+{
+    const void* uniform_buffers[SOFTGL_DESCRIPTOR_SET_TYPE_MAX];
+    const void* textures;
 };
 
 struct softgl_vertex
@@ -116,10 +125,6 @@ struct softgl_fragment
     struct vertex_attrib_cache attribs_in;
 };
 
-// shader stage callbacks
-typedef void (softgl_vertex_shader_cb)(const struct vertex_attrib_input_ptrs* in, struct softgl_vertex* out);
-typedef void (softgl_fragment_shader_cb)(struct softgl_fragment* io);
-
 enum softgl_shader_type
 {
     SOFTGL_SHADER_TYPE_UNKNOWN,
@@ -128,6 +133,18 @@ enum softgl_shader_type
     // SOFTGL_SHADER_TYPE_LUA_SCRIPT,
     // SOFTGL_SHADER_TYPE_BUILT_IN,
 };
+
+// shader stage callbacks
+#define VERTEX_SHADER_SIGNATURE \
+    const struct vertex_attrib_input_ptrs* in, \
+    const struct softgl_resource_bindings *resource, \
+    struct softgl_vertex* out
+
+#define FRAGMENT_SHADER_SIGNATURE \
+    struct softgl_fragment* io
+
+typedef void (softgl_vertex_shader_cb)(VERTEX_SHADER_SIGNATURE);
+typedef void (softgl_fragment_shader_cb)(FRAGMENT_SHADER_SIGNATURE);
 
 struct softgl_shader_create_info
 {
@@ -140,7 +157,10 @@ struct softgl_shader_create_info
 };
 
 // vertex shader macros
-#define vertex_shader(name) void name(const struct vertex_attrib_input_ptrs* in, struct softgl_vertex* out)
+#define vertex_shader(name) void name(VERTEX_SHADER_SIGNATURE)
+
+#define layout_buffer(slot, type, var) const struct type* var = (struct type*) (resource->uniform_buffers[SOFTGL_DESCRIPTOR_SET_TYPE_##slot])
+#define layout_texture(slot, var)
 
 #define vs_in(semantic, type, var) const struct type* var = (struct type*) (in->va_map[SOFTGL_VERTEX_ATTRIB_##semantic])
 #define vs_out(type, var) struct type* var = (struct type*) &(out->attribs_out.slots[out->attribs_out.count++])
@@ -150,7 +170,7 @@ struct softgl_shader_create_info
 #define vs_primitive_id(var) const u32 var = out->primitive_id
 
 // fragment shader macros
-#define fragment_shader(name) void name(struct softgl_fragment* io)
+#define fragment_shader(name) void name(FRAGMENT_SHADER_SIGNATURE)
 
 #define fs_in(slot, type, var) struct type* var = (struct type*) &(io->attribs_in.slots[slot])
 #define fs_return(v) io->color = v
