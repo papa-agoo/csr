@@ -221,7 +221,8 @@ struct xgl_shader_stage_desc
 {
     enum xgl_shader_stage stage;
 
-    void *src_ptr;
+    string_cstr *src_ptrs;
+    u32 src_ptr_count;
 };
 
 struct xgl_shader_reflection_data

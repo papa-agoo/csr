@@ -54,7 +54,7 @@ void rgpu_destroy_cache(struct rgpu_cache *cache)
 
     // pipeline layouts
     xgl_destroy_pipeline_layout(cache->pipeline_layout.main);
-    xgl_destroy_pipeline_layout(cache->pipeline_layout.environment);
+    // xgl_destroy_pipeline_layout(cache->pipeline_layout.environment);
 
     // shaders
     xgl_destroy_shader(cache->shader.vertex_color);
@@ -274,7 +274,9 @@ static void* _load_shader_from_file(string_cstr shader_file)
     struct arena *arena = aio_get_frame_arena(); // FIXME
 
     struct string path = string_create_fmt(arena, "%s/%s", SHADER_RESOURCE_DIR, shader_file);
-    path = aio_env_expand_str(path.ptr);
+    path = aio_env_expand_str((string_cstr)path.ptr);
+
+    clog_trace("loading shader source : %s ...", path.ptr);
 
     struct fio_buffer buffer = {0};
     check_result(fio_load_file(path, &buffer), "could not load shader file : %s", path.ptr);
@@ -287,17 +289,29 @@ error:
 
 static result_e _create_shaders(struct rgpu_cache *cache)
 {
+    // shader source files
+    string_cstr vs_src_common = _load_shader_from_file("common.inc.glsl");
+    string_cstr vs_src_vertex_color = _load_shader_from_file("vertex_color.vs.glsl");
+    string_cstr fs_src_vertex_color = _load_shader_from_file("vertex_color.fs.glsl");
+
     // vertex color
     {
         // vertex shader
+        string_cstr vs_src_ptrs[] = {
+            vs_src_common,
+            vs_src_vertex_color
+        };
+
         struct xgl_shader_stage_desc vs_stage = {0};
         vs_stage.stage = XGL_SHADER_STAGE_VERTEX;
-        vs_stage.src_ptr = _load_shader_from_file("vertex_color.vs.glsl");
+        vs_stage.src_ptrs = vs_src_ptrs;
+        vs_stage.src_ptr_count = COUNT_OF(vs_src_ptrs);
 
         // fragment shader
         struct xgl_shader_stage_desc fs_stage = {0};
         fs_stage.stage = XGL_SHADER_STAGE_FRAGMENT;
-        fs_stage.src_ptr = _load_shader_from_file("vertex_color.fs.glsl");
+        fs_stage.src_ptrs = &fs_src_vertex_color;
+        fs_stage.src_ptr_count = 1;
 
         // shader program
         struct xgl_shader_create_info info = {0};
@@ -306,10 +320,6 @@ static result_e _create_shaders(struct rgpu_cache *cache)
         info.fragment_shader_stage = &fs_stage;
 
         check_result(xgl_create_shader(&info, &cache->shader.vertex_color));
-
-        // FIXME migrate to arenas
-        free(vs_stage.src_ptr);
-        free(fs_stage.src_ptr);
     }
 
     return RC_SUCCESS;

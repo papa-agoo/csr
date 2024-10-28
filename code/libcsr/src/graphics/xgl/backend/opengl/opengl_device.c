@@ -737,10 +737,11 @@ error:
 
 ////////////////////////////////////////////////////////////////////////////////
 
-static GLuint _compile_shader_stage(GLenum type, string_cstr src_str)
+static GLuint _compile_shader_stage(GLenum type, string_cstr* src_ptrs, u32 src_ptr_count)
 {
     GLint compile_status_ok = 0;
 
+    // FIXME arena
     GLuint log_buf_len = 512;
     char log_str_buf[log_buf_len];
 
@@ -749,7 +750,7 @@ static GLuint _compile_shader_stage(GLenum type, string_cstr src_str)
     GLuint id = 0;
     GL_CALL( id = glCreateShader(type) );
 
-    GL_CALL( glShaderSource(id, 1, &src_str, NULL) );
+    GL_CALL( glShaderSource(id, src_ptr_count, src_ptrs, NULL) );
     GL_CALL( glCompileShader(id) );
 
     ////////////////////////////////////////
@@ -817,17 +818,20 @@ error:
     return 0;
 }
 
-guid xgl_create_shader_impl(string_cstr* vs_ptr, string_cstr* fs_ptr)
+guid xgl_create_shader_impl(string_cstr* vs_ptrs, u32 vs_ptr_count, string_cstr* fs_ptrs, u32 fs_ptr_count)
 {
-    check_ptr(vs_ptr);
-    check_ptr(fs_ptr);
+    check_ptr(vs_ptrs);
+    check_expr(vs_ptr_count > 0);
+
+    check_ptr(fs_ptrs);
+    check_expr(fs_ptr_count > 0);
 
     ////////////////////////////////////////
 
-    GLuint vs = _compile_shader_stage(GL_VERTEX_SHADER, (string_cstr) vs_ptr);
+    GLuint vs = _compile_shader_stage(GL_VERTEX_SHADER, vs_ptrs, vs_ptr_count);
     check(vs > 0, "could not compile vertex shader");
 
-    GLuint fs = _compile_shader_stage(GL_FRAGMENT_SHADER, (string_cstr) fs_ptr);
+    GLuint fs = _compile_shader_stage(GL_FRAGMENT_SHADER, fs_ptrs, fs_ptr_count);
     check(fs > 0, "could not compile fragment shader");
 
     GLuint shader_stages[] = { vs, fs };
@@ -927,7 +931,7 @@ CSR_INLINE GLenum _gl_compare_op(enum xgl_compare_op compare_op)
 
         case XGL_COMPARE_OP_ALWAYS:
             return GL_ALWAYS;
-        
+
         default:
             return GL_INVALID_ENUM;
     }
@@ -975,7 +979,7 @@ CSR_INLINE GLenum _gl_front_face(enum xgl_front_face front_face)
 
         case XGL_FRONT_FACE_CLOCKWISE:
             return GL_CW;
-        
+
         default:
             return GL_INVALID_ENUM;
     }
@@ -993,7 +997,7 @@ CSR_INLINE GLenum _gl_cull_mode(enum xgl_cull_mode mode)
 
         case XGL_CULL_MODE_FRONT_AND_BACK:
             return GL_FRONT_AND_BACK;
-        
+
         default:
             return GL_INVALID_ENUM;
     }
@@ -1011,10 +1015,10 @@ CSR_INLINE GLenum _gl_blend_op(enum xgl_blend_op blend_op)
 
         case XGL_BLEND_OP_REVERSE_SUBTRACT:
             return GL_FUNC_REVERSE_SUBTRACT;
-        
+
         case XGL_BLEND_OP_MIN:
             return GL_MIN;
-        
+
         case XGL_BLEND_OP_MAX:
             return GL_MAX;
 
@@ -1089,7 +1093,7 @@ CSR_INLINE GLenum _gl_polygon_mode(enum xgl_polygon_mode mode)
 
         case XGL_POLYGON_MODE_POINT:
             return GL_POINT;
-        
+
         default:
             return GL_INVALID_ENUM;
     }
@@ -1102,7 +1106,7 @@ CSR_INLINE u32 _attrib_component_count(enum xgl_vertex_attrib type)
         case XGL_VERTEX_ATTRIB_TEX_COORD0:
         case XGL_VERTEX_ATTRIB_TEX_COORD1:
             return 2;
-        
+
         default:
             return 3;
     }

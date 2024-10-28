@@ -20,12 +20,14 @@ static result_e _create_pso()
         // vertex shader
         struct xgl_shader_stage_desc vs = {0};
         vs.stage = XGL_SHADER_STAGE_VERTEX;
-        vs.src_ptr = g_vs_no_ia_src;
+        vs.src_ptrs = &g_vs_no_ia_src;
+        vs.src_ptr_count = 1;
 
         // fragment shader
         struct xgl_shader_stage_desc fs = {0};
         fs.stage = XGL_SHADER_STAGE_FRAGMENT;
-        fs.src_ptr = g_fs_no_ia_src;
+        fs.src_ptrs = &g_fs_no_ia_src;
+        fs.src_ptr_count = 1;
 
         // shader program
         struct xgl_shader_create_info info = {0};

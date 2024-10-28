@@ -105,18 +105,20 @@ static result_e _create_pso()
         // vertex shader
         struct xgl_shader_stage_desc vs_stage = {0};
         vs_stage.stage = XGL_SHADER_STAGE_VERTEX;
-        vs_stage.src_ptr = g_cube_vs;
+        vs_stage.src_ptrs = &g_cube_vs;
+        vs_stage.src_ptr_count = 1;
 
         // fragment shader
-        struct xgl_shader_stage_desc stage_fs = {0};
-        stage_fs.stage = XGL_SHADER_STAGE_FRAGMENT;
-        stage_fs.src_ptr = g_cube_fs;
+        struct xgl_shader_stage_desc fs_stage = {0};
+        fs_stage.stage = XGL_SHADER_STAGE_FRAGMENT;
+        fs_stage.src_ptrs = &g_cube_fs;
+        fs_stage.src_ptr_count = 1;
 
         // shader program
         struct xgl_shader_create_info info = {0};
         info.name = make_string("xgl_hello_cube");
         info.vertex_shader_stage = &vs_stage;
-        info.fragment_shader_stage = &stage_fs;
+        info.fragment_shader_stage = &fs_stage;
 
         result = xgl_create_shader(&info, &shader);
         check_result(result, "could not create shader");

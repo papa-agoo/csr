@@ -595,7 +595,7 @@ result_e xgl_create_shader(struct xgl_shader_create_info* info, xgl_shader* p_sh
     struct xgl_shader shader = {0};
     shader.name = info->name;
 
-    shader.gpu_id = xgl_create_shader_impl(vs->src_ptr, fs->src_ptr);
+    shader.gpu_id = xgl_create_shader_impl(vs->src_ptrs, vs->src_ptr_count, fs->src_ptrs, fs->src_ptr_count);
     check_guid(shader.gpu_id);
 
     ////////////////////////////////////////

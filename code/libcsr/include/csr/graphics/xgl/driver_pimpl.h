@@ -48,7 +48,7 @@ void* xgl_get_texture_handle_impl(guid p_texture);
 
 
 // shaders
-guid xgl_create_shader_impl(string_cstr* vs_ptr, string_cstr* fs_ptr);
+guid xgl_create_shader_impl(string_cstr* vs_ptrs, u32 vs_ptr_count, string_cstr* fs_ptrs, u32 fs_ptr_count);
 void xgl_destroy_shader_impl(guid p_shader);
 
 
