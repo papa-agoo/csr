@@ -24,6 +24,8 @@ add_library(${MY_TARGET}
         renderer/rgpu.c
         renderer/rgpu_cache.c
         renderer/rcpu.c
+        renderer/rcpu_cache.c
+        renderer/rcpu_cache_shaders.c
 )
 
 target_include_directories(${MY_TARGET}

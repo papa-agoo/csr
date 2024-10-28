@@ -8,6 +8,7 @@
 #include <csr/core/vector.h>
 
 #include <csr/graphics/xgl.h>
+#include <csr/graphics/softgl.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -85,6 +86,7 @@ struct shader_data_material
 struct shader_data_object
 {
     struct mat44 mat_model;
+    struct mat44 mat_mvp;
 
     // ...
 };

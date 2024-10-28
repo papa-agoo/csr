@@ -117,7 +117,7 @@ static void _process_lines()
         struct softgl_vertex* a = pc->vertices[i];
         struct softgl_vertex* b = pc->vertices[i+1];
 
-        // FIXME
+        // FIXME < 2?
         if (gp_clip_line(a, b) > 0) continue;
 
         _project_to_screen(a);
@@ -137,8 +137,10 @@ static void _process_triangles()
         struct softgl_vertex* b = pc->vertices[i+1];
         struct softgl_vertex* c = pc->vertices[i+2];
 
-        // FIXME
+        // FIXME < 3?
         if (gp_clip_triangle(a, b, c) > 0) continue;
+
+        // FIXME handle num_triangles > 1
 
         _project_to_screen(a);
         _project_to_screen(b);

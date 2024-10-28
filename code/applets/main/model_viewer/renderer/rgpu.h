@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "renderer_priv.h"
+#include "renderer.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -12,7 +12,6 @@ struct rgpu* rgpu_create();
 void rgpu_destroy();
 
 void rgpu_tick(struct renderer *renderer, struct xgl_viewport vp);
-// void rgpu_tick(struct renderer *renderer, struct xgl_viewport vp, ...);
 
 void rgpu_draw_mesh_primitive(struct mesh_primitive *primitive);
 

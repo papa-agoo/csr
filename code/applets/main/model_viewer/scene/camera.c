@@ -58,7 +58,7 @@ void camera_reset(struct camera *camera)
     camera->mode = CAMERA_PROJECTION_PERSPECTIVE;
 
     camera->near = 0.1;
-    camera->far = 100.0;
+    camera->far = 1000.0;
     camera->fov = 60.0;
     camera->ortho_size = 1.0;
 

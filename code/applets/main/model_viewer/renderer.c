@@ -4,11 +4,15 @@
 
 #include "renderer_priv.h"
 #include "renderer/rgpu_priv.h"
+#include "renderer/rcpu_priv.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 static result_e _create_shader_data(struct renderer *renderer);
+static void _destroy_shader_data(struct renderer *renderer);
+
 static result_e _create_gizmos(struct renderer *renderer);
+static void _destroy_gizmos(struct renderer *renderer);
 
 result_e renderer_init(struct renderer *renderer)
 {
@@ -26,7 +30,9 @@ result_e renderer_init(struct renderer *renderer)
     {
         struct screen_create_info create_info = {0};
         create_info.name = make_string("GPU Renderer");
+        create_info.keep_aspect_ratio = true;
 
+        create_info.surface.type = SCREEN_SURFACE_TYPE_GPU;
         create_info.surface.viewport.width = 1280;
         create_info.surface.viewport.height = 720;
         create_info.surface.clear_values.color = screen_clear_color;
@@ -49,12 +55,13 @@ result_e renderer_init(struct renderer *renderer)
         create_info.surface.viewport.height = 360;
         create_info.surface.clear_values.color = screen_clear_color;
         create_info.surface.clear_values.depth = 1.0;
+        create_info.keep_aspect_ratio = true;
 
         renderer->screen.rcpu = aio_add_screen("rcpu", &create_info);
         check_ptr(renderer->screen.rcpu);
 
         renderer->rcpu = rcpu_create();
-        // check_ptr(renderer->rcpu);
+        check_ptr(renderer->rcpu);
     }
 
     ////////////////////////////////////////
@@ -72,7 +79,10 @@ void renderer_quit(struct renderer *renderer)
 {
     check_ptr(renderer);
 
-    // rcpu_destroy();
+    _destroy_gizmos(renderer);
+    _destroy_shader_data(renderer);
+
+    rcpu_destroy();
     rgpu_destroy();
 
 error:
@@ -99,7 +109,16 @@ void renderer_tick(struct renderer *renderer)
     // cpu renderer
     if (screen_begin(renderer->screen.rcpu, SCREEN_SURFACE_TYPE_CPU))
     {
-        // rcpu_tick(renderer);
+        struct pixelbuffer *pb = screen_get_pixelbuffer(renderer->screen.rcpu);
+        struct xgl_viewport vp_src = screen_get_viewport(renderer->screen.rcpu);
+
+        struct softgl_viewport vp = {0};
+        vp.width = vp_src.width;
+        vp.height = vp_src.height;
+        vp.min_depth = vp_src.min_depth;
+        vp.max_depth = vp_src.max_depth;
+
+        rcpu_tick(renderer, pb, vp);
 
         screen_end();
     }
@@ -176,6 +195,22 @@ error:
     return RC_FAILURE;
 }
 
+static void _destroy_shader_data(struct renderer *renderer)
+{
+    check_ptr(renderer);
+
+    struct renderer_shader_data *shader_data = &renderer->shader_data;
+
+    xgl_destroy_buffer(shader_data->frame.buffer.gpu);
+    xgl_destroy_descriptor_set(shader_data->frame.ds);
+
+    xgl_destroy_buffer(shader_data->pass_main.buffer.gpu);
+    xgl_destroy_descriptor_set(shader_data->pass_main.ds);
+
+error:
+    return;
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // gizmos
@@ -186,7 +221,7 @@ static result_e _create_axes_gizmo(struct renderer *renderer)
 
     ////////////////////////////////////////
 
-    struct vertex_1p1c vertex;
+    struct vertex_1p1c vertex = {0};
 
     u32 num_lines = 3;
 
@@ -260,7 +295,7 @@ static result_e _create_grid_gizmo(struct renderer *renderer, f32 size_qm)
 
     ////////////////////////////////////////
 
-    struct vertex_1p1c vertex;
+    struct vertex_1p1c vertex = {0};
 
     u32 num_lines = (2 * (size_qm + 1)) + 2;
 
@@ -367,6 +402,30 @@ static result_e _create_gizmos(struct renderer *renderer)
 
 error:
     return RC_FAILURE;
+}
+
+static void _destroy_gizmos(struct renderer *renderer)
+{
+    check_ptr(renderer);
+
+    // axes
+    {
+        struct mesh_gizmo *gizmo = &renderer->gizmo.axes;
+
+        vector_destroy(gizmo->buffer.cpu.vertices);
+        xgl_destroy_buffer(gizmo->buffer.gpu.vertices);
+    }
+
+    // grid
+    {
+        struct mesh_gizmo *gizmo = &renderer->gizmo.grid;
+
+        vector_destroy(gizmo->buffer.cpu.vertices);
+        xgl_destroy_buffer(gizmo->buffer.gpu.vertices);
+    }
+
+error:
+    return;
 }
 
 
