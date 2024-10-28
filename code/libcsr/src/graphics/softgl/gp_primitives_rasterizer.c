@@ -1,7 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "gp.h"
-#include "triangle.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -22,7 +21,7 @@ static void _merge_output(struct softgl_fragment *fragment)
     pixelbuffer_draw_point_fast(pb, p_x, p_y, final_color);
 }
 
-static void _process_fragment(struct softgl_fragment* fragment)
+void gp_process_fragment(struct softgl_fragment* fragment)
 {
     struct pixelbuffer *pb = softgl_state_ptr()->pb;
 
@@ -65,29 +64,29 @@ void gp_rasterize_point(struct softgl_vertex* a)
     fragment.attribs_in = a->attribs_out;
     fragment.front_facing = true;
 
-    _process_fragment(&fragment);
+    gp_process_fragment(&fragment);
 }
 
 void gp_rasterize_line(struct softgl_vertex* a, struct softgl_vertex* b)
 {
-    u32 x1 = a->position.x;
-    u32 y1 = a->position.y;
+    s32 x1 = a->position.x;
+    s32 y1 = a->position.y;
 
-    u32 x2 = b->position.x;
-    u32 y2 = b->position.y;
+    s32 x2 = b->position.x;
+    s32 y2 = b->position.y;
 
     ////////////////////////////////////////
 
     // deltas for x and y
-    s32 dx = abs(x2 - x1);
-    s32 dy = -abs(y2 - y1);
+    s32 delta_x = abs(x2 - x1);
+    s32 delta_y = -abs(y2 - y1);
 
     // steps for x and y
-    s32 sx = (x1 < x2) ? 1 : -1;
-    s32 sy = (y1 < y2) ? 1 : -1;
+    s32 step_x = (x1 < x2) ? 1 : -1;
+    s32 step_y = (y1 < y2) ? 1 : -1;
 
     // step error
-    s32 se = dx + dy;
+    s32 step_error = delta_x + delta_y;
 
     ////////////////////////////////////////
 
@@ -100,79 +99,28 @@ void gp_rasterize_line(struct softgl_vertex* a, struct softgl_vertex* b)
         fragment.frag_coords.x = x1;
         fragment.frag_coords.y = y1;
 
-        _process_fragment(&fragment);
+        gp_process_fragment(&fragment);
 
         if (x1 == x2 && y1 == y2) break;
 
-        s32 error = se << 1;
+        s32 error = step_error << 1;
 
         // x axis
-        if (error > dy)
+        if (error > delta_y)
         {
-            se += dy;
-            x1 += sx;
+            step_error += delta_y;
+            x1 += step_x;
 
             // fragment_step_x();
         }
 
         // y axis
-        if (error < dx)
+        if (error < delta_x)
         {
-            se += dx;
-            y1 += sy;
+            step_error += delta_x;
+            y1 += step_y;
 
             // fragment_step_y();
         }
     }
 }
-
-void gp_rasterize_triangle(struct softgl_vertex* a, struct softgl_vertex* b, struct softgl_vertex* c)
-{
-    struct triangle triangle = {0};
-    triangle_setup(&triangle, a, b, c, false);
-
-    if (triangle.area <= 0) return; // FIXME
-
-    ////////////////////////////////////////
-
-    struct softgl_fragment fragment = {0};
-    fragment.front_facing = triangle.area > 0;
-    fragment.attribs_in.count = triangle.attrib_count;
-
-    f32 px = 0;
-    f32 py = 0;
-
-    for (s32 y = triangle.ymin; y < triangle.ymax; y++)
-    {
-        py = y + 1;
-
-        for (s32 x = triangle.xmin; x < triangle.xmax; x++)
-        {
-            px = x + 1;
-
-            if (point_inside_triangle(&triangle, px, py))
-            {
-                fragment_setup(&fragment, &triangle, px, py);
-
-                _process_fragment(&fragment);
-            }
-        }
-    }
-}
-
-// void gp_rasterize_line(struct softgl_vertex* a, struct softgl_vertex* b)
-// {
-//     gp_rasterize_point(a);
-//     gp_rasterize_point(b);
-
-//     // ...
-// }
-
-// void gp_rasterize_triangle(struct softgl_vertex* a, struct softgl_vertex* b, struct softgl_vertex* c)
-// {
-//     gp_rasterize_point(a);
-//     gp_rasterize_point(b);
-//     gp_rasterize_point(c);
-
-//     // ...
-// }

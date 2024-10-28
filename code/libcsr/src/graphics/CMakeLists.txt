@@ -38,6 +38,7 @@ target_sources(${MY_TARGET}
         softgl/gp_primitives.c
         softgl/gp_primitives_clipper.c
         softgl/gp_primitives_rasterizer.c
+        softgl/gp_primitives_rasterizer_triangle.c
 )
 
 add_subdirectory(xgl/backend)

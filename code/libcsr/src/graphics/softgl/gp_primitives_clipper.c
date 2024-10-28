@@ -8,11 +8,12 @@ u32 gp_clip_point(struct softgl_vertex* a)
 {
     struct vec4* pa = &a->position;
 
-    // if (pa->x < -pa->w || pa->x > pa->w) return 0;
-    // if (pa->y < -pa->w || pa->y > pa->w) return 0;
-    if (pa->z < -pa->w || pa->z > pa->w) return 0;
+    // everything outside of -w <= xyz <= w gets clipped
+    if (-pa->w >= pa->x || pa->x >= pa->w) return 1;
+    if (-pa->w >= pa->y || pa->y >= pa->w) return 1;
+    if (-pa->w >= pa->z || pa->z >= pa->w) return 1;
 
-    return 1;
+    return 0;
 }
 
 u32 gp_clip_line(struct softgl_vertex* a, struct softgl_vertex* b)
