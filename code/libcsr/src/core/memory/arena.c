@@ -55,6 +55,26 @@ error:
     return;
 }
 
+u64 arena_get_size(struct arena *arena)
+{
+    check_ptr(arena);
+
+    return arena->size;
+
+error:
+    return 0;
+}
+
+u64 arena_get_size_free(struct arena *arena)
+{
+    check_ptr(arena);
+
+    return arena->size_free;
+
+error:
+    return 0;
+}
+
 void* arena_get_current_ptr(struct arena *arena)
 {
     check_ptr(arena);

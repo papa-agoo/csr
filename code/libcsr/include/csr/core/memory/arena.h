@@ -15,6 +15,9 @@ struct arena;
 struct arena* arena_create(struct string name, u64 size);
 void arena_destroy(struct arena *arena);
 
+u64 arena_get_size(struct arena *arena);
+u64 arena_get_size_free(struct arena *arena);
+
 void* arena_get_current_ptr(struct arena *arena);
 u64 arena_get_current_position(struct arena *arena);
 

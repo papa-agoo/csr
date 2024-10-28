@@ -96,7 +96,7 @@ fio_file* fio_open(struct string path, enum fio_mode mode)
         case FIO_MODE_READ_WRITE:
             mode_cstr = "w+";
             break;
-        
+
         default: {
             mode_cstr = "r";
         }
@@ -314,26 +314,19 @@ bool fio_fs_is_relative_path(struct string path)
 
 struct string fio_fs_get_current_path()
 {
-    struct arena *arena = _arena_priv_ptr();
-    check_ptr(arena);
-
     static string_cstr cwd = NULL;
 
     if (!cwd)
     {
-        // get current workdir and its length
-        u8* cwd_tmp = getcwd(NULL, 0);
-        check_ptr(cwd_tmp);
+        struct arena *arena = _arena_priv_ptr();
+        check_ptr(arena);
 
-        size_t str_len = strlen(cwd_tmp);
-
-        // try to copy the cwd to our arena space
-        cwd = memcpy(arena_push(arena, str_len), cwd_tmp, str_len);
-
-        // cwd_tmp is not needed anymore
-        free(cwd_tmp);
-
+        // copy cwd cstr to arena
+        cwd = getcwd(arena_get_current_ptr(arena), arena_get_size_free(arena));
         check_ptr(cwd);
+
+        // advance arenas ptr position manually
+        arena_push(arena, strlen(cwd));
     }
 
     return make_string_from_cstr(cwd);
