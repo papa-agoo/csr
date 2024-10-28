@@ -13,7 +13,7 @@ struct arena* _arena_priv_ptr()
 
 __attribute__((constructor)) static void _construct_arena()
 {
-    g_arena_priv = make_arena();
+    g_arena_priv = make_arena("_priv");
 }
 
 __attribute__((destructor)) static void _destruct_arena()

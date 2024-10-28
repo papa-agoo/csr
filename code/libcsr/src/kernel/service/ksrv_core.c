@@ -206,10 +206,10 @@ result_e ksrv_core_init(struct ksrv_core_init_info *init_info)
     ////////////////////////////////////////
 
     // create allocators
-    srv->allocator.arena_main = make_arena();
+    srv->allocator.arena_main = make_arena("kernel.main");
     check_ptr(srv->allocator.arena_main);
 
-    srv->allocator.arena_frame = make_arena();
+    srv->allocator.arena_frame = make_arena("kernel.frame");
     check_ptr(srv->allocator.arena_frame);
 
     // create clock

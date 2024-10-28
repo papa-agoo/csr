@@ -17,7 +17,7 @@ struct env_vars* env_vars_create()
     struct env_vars *vars = calloc(1, sizeof(struct env_vars));
     check_mem(vars);
 
-    vars->arena = make_arena();
+    vars->arena = make_arena("env vars");
     check_mem(vars->arena);
 
     vars->vars_map = hashmap_create();

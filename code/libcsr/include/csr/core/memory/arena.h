@@ -8,11 +8,11 @@
 
 struct arena;
 
-#define make_arena() arena_create(KiloBytes(64))
+#define make_arena(name) arena_create(make_string(name), KiloBytes(64))
 
 ////////////////////////////////////////////////////////////////////////////////
 
-struct arena* arena_create(u64 size);
+struct arena* arena_create(struct string name, u64 size);
 void arena_destroy(struct arena *arena);
 
 void* arena_get_current_ptr(struct arena *arena);

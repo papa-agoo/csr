@@ -10,6 +10,8 @@
 
 struct arena
 {
+    struct string name;
+
     u64 position;
 
     u64 size;
@@ -18,13 +20,14 @@ struct arena
     u8 *data;
 };
 
-struct arena* arena_create(u64 size)
+struct arena* arena_create(struct string name, u64 size)
 {
     check_expr(size > 0);
 
     struct arena *arena = calloc(1, sizeof(struct arena));
     check_mem(arena);
 
+    arena->name = (string_is_valid(name)) ? name : make_string("<no name>");
     arena->size = size;
     arena->size_free = size;
     arena->position = 0;

@@ -264,7 +264,7 @@ struct config* config_create()
 
     cfg->filename = make_string("");
 
-    cfg->arena = make_arena();
+    cfg->arena = make_arena("config"); // FIXME what makes more sense?
     check_ptr(cfg->arena);
 
     cfg->ini = dictionary_new(0);

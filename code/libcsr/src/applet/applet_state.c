@@ -17,10 +17,10 @@ void applet_state_init(struct applet *applet)
     struct applet_state *state = &applet->state;
 
     // allocators
-    state->allocator.arena_main = make_arena();
+    state->allocator.arena_main = make_arena("applet.main");
     check_ptr(state->allocator.arena_main);
 
-    state->allocator.arena_frame = make_arena();
+    state->allocator.arena_frame = make_arena("applet.frame");
     check_ptr(state->allocator.arena_frame);
 
     // clock

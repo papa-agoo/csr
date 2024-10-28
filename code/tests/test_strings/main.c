@@ -208,7 +208,7 @@ void _test_string_substr()
 
 void _test_mutable_api()
 {
-    struct arena *arena = make_arena();
+    struct arena *arena = make_arena("strings");
     check_ptr(arena);
 
     // string to cstr
