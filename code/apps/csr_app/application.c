@@ -430,6 +430,12 @@ static void on_application_kbd_key_down(struct keyboard_event* event)
         }
         break;
 
+        // toggle ui main menu
+        case KBD_KEY_LEFT_ALT: {
+            application_ptr()->show_main_menu ^= 1;
+        }
+        break;
+
         default: {
             klog_error("key not handled : %s", keyboard_key_cstr(event->key));
         }
@@ -528,6 +534,8 @@ result_e application_init()
 
     klog_notice("initializing frontend ...");
     {
+        application_ptr()->show_main_menu = true;
+
         init_frontend_config();
 
         struct ui_init_info init_info = {0};

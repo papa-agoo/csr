@@ -54,6 +54,8 @@ struct application
     bool needs_restart;
     bool has_input_focus;
 
+    bool show_main_menu;
+
     struct {
         struct hid_callbacks hid;
     } callbacks;

@@ -69,7 +69,6 @@ static void _draw_menu_tail(struct ui_style *style)
         igSetCursorPosX(cursor_pos);
 
         igTextColored(make_ImVec4_from_vec4(color), text);
-
     }
 
     // FIXME arena_scratch_end()
@@ -94,12 +93,12 @@ void on_workspace_main_tick(struct ui_workspace *workspace)
     // [ head ] [ application menus | applet menus ] <- ... -> [tail]
 
     // draw main menu
-    if (igBeginMainMenuBar())
+    if (application_ptr()->show_main_menu && igBeginMainMenuBar())
     {
         // menu head
         _draw_menu_head(style);
 
-        // menu 
+        // menu
         ui_workspace_traverse_contexts(workspace, on_draw_menus, style);
 
         // menu tail
