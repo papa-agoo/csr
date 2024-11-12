@@ -24,7 +24,7 @@ struct rgpu* rgpu_create()
         //  - shader_create_stage(...)
     }
 
-    check_expr(rgpu_create_cache(rgpu_cache_ptr()) == RC_SUCCESS);
+    check_result(rgpu_create_cache(rgpu_cache_ptr()));
 
     return &g_rgpu;
 

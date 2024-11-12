@@ -37,7 +37,7 @@ void ui_widget_mat4x4_debug(struct mat44 matrix)
     m[1] = mat44_transpose(m[0]);
 
     // M_I
-    m[2] = mat44_invert(m[0]);
+    m[2] = mat44_inverse(m[0]);
 
     // M_I * M
     m[3] = mat44_mult(m[2], m[0]);

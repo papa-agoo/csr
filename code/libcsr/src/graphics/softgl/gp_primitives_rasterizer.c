@@ -25,12 +25,6 @@ void gp_process_fragment(struct softgl_fragment* fragment)
 {
     struct pixelbuffer *pb = softgl_state_ptr()->pb;
 
-    // integer coords needed for memory offset calc.
-    s32 p_y = fragment->frag_coords.y;
-    s32 p_x = fragment->frag_coords.x;
-
-    u32 offset = (pb->width * p_y) + p_x;
-
     ////////////////////////////////////////
 
     // early depth test
@@ -110,8 +104,6 @@ void gp_rasterize_line(struct softgl_vertex* a, struct softgl_vertex* b)
         {
             step_error += delta_y;
             x1 += step_x;
-
-            // fragment_step_x();
         }
 
         // y axis
@@ -119,8 +111,6 @@ void gp_rasterize_line(struct softgl_vertex* a, struct softgl_vertex* b)
         {
             step_error += delta_x;
             y1 += step_y;
-
-            // fragment_step_y();
         }
     }
 }

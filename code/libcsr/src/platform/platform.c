@@ -71,8 +71,7 @@ result_e platform_init(struct platform_init_info *init_info)
 
     ////////////////////////////////////////
 
-    result_e result = platform_init_impl(init_info, callbacks);
-    check_result(result, "could not init platform impl.");
+    check_result(platform_init_impl(init_info, callbacks));
 
     platform_get_info_impl(info);
 

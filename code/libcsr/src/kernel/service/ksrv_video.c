@@ -37,8 +37,7 @@ result_e ksrv_video_init(struct ksrv_video_init_info *init_info)
     struct ksrv_video *srv = ksrv_video_ptr();
     srv->conf = init_info->conf;
 
-    result_e result = xgl_init_driver();
-    check_result(result, "could not init xgl driver");
+    check_result(xgl_init_driver());
 
     struct xgl_driver_info driver_info = {0};
     xgl_get_driver_info(&driver_info);
@@ -57,8 +56,7 @@ result_e ksrv_video_init(struct ksrv_video_init_info *init_info)
 
     struct video_mode *vm = &srv->conf->window.video_mode;
 
-    result = ksrv_video_create_swapchain((u32)vm->resolution.w, (u32)vm->resolution.h, &srv->swapchain);
-    check_result(result, "could not create swapchain");
+    check_result(ksrv_video_create_swapchain((u32)vm->resolution.w, (u32)vm->resolution.h, &srv->swapchain));
 
     ////////////////////////////////////////
 
@@ -112,8 +110,7 @@ result_e ksrv_video_create_swapchain(u32 width, u32 height, xgl_swapchain *p_swa
         create_info.width = width;
         create_info.height = height;
 
-        result_e result = xgl_create_swapchain(&create_info, &swapchain);
-        check_result(result, "could not create swapchain");
+        check_result(xgl_create_swapchain(&create_info, &swapchain));
     }
 
     // free resources of the old swapchain

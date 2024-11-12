@@ -43,16 +43,14 @@ result_e kernel_init(struct kernel_init_info *init_info)
     core_info.kernel_tick_cb = init_info->kernel_tick_cb;
     core_info.platform_info = &platform_info;
 
-    result = ksrv_core_init(&core_info);
-    check_result(result, "could not init core service");
+    check_result(ksrv_core_init(&core_info));
 
     ////////////////////////////////////////
 
     struct ksrv_video_init_info video_info = {0};
     video_info.conf = init_info->conf.video;
 
-    result = ksrv_video_init(&video_info);
-    check_result(result, "could not init video service");
+    check_result(ksrv_video_init(&video_info));
 
     ////////////////////////////////////////
 

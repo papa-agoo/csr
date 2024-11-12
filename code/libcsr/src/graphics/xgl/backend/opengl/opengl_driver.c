@@ -89,8 +89,7 @@ result_e xgl_init_driver_impl(struct xgl_driver_info *info)
 
     ////////////////////////////////////////
 
-    result_e result = _init_driver_storage(gl_storage_ptr());
-    check_result(result, "could not init opengl driver storage");
+    check_result(_init_driver_storage(gl_storage_ptr()));
 
     gl_driver_ptr()->is_initialized = true;
 

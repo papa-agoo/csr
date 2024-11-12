@@ -23,8 +23,8 @@ static struct version _plugin_get_version()
 
 static result_e _plugin_startup()
 {
-    check_result(model_viewer_init(), "could not init model viewer");
-    check_result(model_viewer_register_ui(), "could not register ui");
+    check_result(model_viewer_init());
+    check_result(model_viewer_register_ui());
 
     return RC_SUCCESS;
 

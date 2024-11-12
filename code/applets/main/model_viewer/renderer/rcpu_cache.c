@@ -14,10 +14,10 @@ result_e rcpu_create_cache(struct rcpu_cache *cache)
 {
     check_ptr(cache);
 
-    check_expr(_create_input_layouts(cache) == RC_SUCCESS);
+    check_result(_create_input_layouts(cache));
 
-    check_expr(_create_shaders(cache) == RC_SUCCESS);
-    check_expr(_create_pipelines(cache) == RC_SUCCESS);
+    check_result(_create_shaders(cache));
+    check_result(_create_pipelines(cache));
 
     return RC_SUCCESS;
 
@@ -98,7 +98,7 @@ static result_e _create_shaders(struct rcpu_cache *cache)
         info.vertex_shader_ptr = vs_vertex_color;
         info.fragment_shader_ptr = fs_vertex_color;
 
-        check_expr(softgl_create_shader(&info, &cache->shader.vertex_color) == RC_SUCCESS);
+        check_result(softgl_create_shader(&info, &cache->shader.vertex_color));
     }
 
     return RC_SUCCESS;
@@ -121,9 +121,7 @@ static result_e _create_pso_lines(struct rcpu_cache *cache)
     info.shader_state = &shader_state;
     info.input_layout = &cache->input_layout.position_color;
 
-    check_expr(softgl_create_pipeline(&info, &cache->pipeline.lines) == RC_SUCCESS);
-
-    return RC_SUCCESS;
+    return softgl_create_pipeline(&info, &cache->pipeline.lines);
 
 error:
     return RC_FAILURE;
@@ -131,7 +129,7 @@ error:
 
 static result_e _create_pipelines(struct rcpu_cache *cache)
 {
-    check_expr(_create_pso_lines(cache) == RC_SUCCESS);
+    check_result(_create_pso_lines(cache));
 
     return RC_SUCCESS;
 

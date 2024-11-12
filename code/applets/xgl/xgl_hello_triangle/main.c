@@ -11,10 +11,6 @@ static xgl_shader g_shader = {0};
 
 static result_e _create_pso()
 {
-    result_e result = RC_FAILURE;
-
-    ////////////////////////////////////////
-
     xgl_shader shader;
     {
         // vertex shader
@@ -35,11 +31,10 @@ static result_e _create_pso()
         info.vertex_shader_stage = &vs;
         info.fragment_shader_stage = &fs;
 
-        result = xgl_create_shader(&info, &shader);
-        check_result(result, "could not create shader");
-    }
+        check_result(xgl_create_shader(&info, &shader));
 
-    g_shader = shader;
+        g_shader = shader;
+    }
 
     ////////////////////////////////////////
 
@@ -57,11 +52,10 @@ static result_e _create_pso()
         info.ia_state = &ia_state;
         info.shader_state = &shader_state;
 
-        result = xgl_create_pipeline(&info, &pipeline);
-        check_result(result, "could not create pipeline");
-    }
+        check_result(xgl_create_pipeline(&info, &pipeline));
 
-    g_pso = pipeline;
+        g_pso = pipeline;
+    }
 
     ////////////////////////////////////////
 
@@ -101,10 +95,9 @@ static result_e _plugin_startup()
     check_ptr(screen);
 
     // create pso
-    result_e result = _create_pso();
-    check_result(result, "could not create pipeline");
+    check_result(_create_pso());
 
-    return result;
+    return RC_SUCCESS;
 
 error:
     return RC_FAILURE;

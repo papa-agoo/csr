@@ -14,10 +14,6 @@ static inline u32 hash_fnv1a_32(char *s, size_t count)
 
 static result_e _create_render_target(struct xgl_render_target *rt, u32 width, u32 height)
 {
-    result_e result = RC_FAILURE;
-
-    ////////////////////////////////////////
-
     // color attachment
     {
         struct xgl_texture_create_info info = {0};
@@ -29,8 +25,7 @@ static result_e _create_render_target(struct xgl_render_target *rt, u32 width, u
         info.sample_count = 1;
         info.array_layer_count = 1;
 
-        result = xgl_create_texture(&info, &rt->color_buffer);
-        check_result(result, "could not create color buffer");
+        check_result(xgl_create_texture(&info, &rt->color_buffer));
     }
 
     // depth stencil attachment
@@ -44,8 +39,7 @@ static result_e _create_render_target(struct xgl_render_target *rt, u32 width, u
         info.sample_count = 1;
         info.array_layer_count = 1;
 
-        result = xgl_create_texture(&info, &rt->depth_stencil_buffer);
-        check_result(result, "could not create depth_stencil buffer");
+        check_result(xgl_create_texture(&info, &rt->depth_stencil_buffer));
     }
 
     ////////////////////////////////////////
@@ -74,17 +68,12 @@ result_e xgl_create_swapchain(struct xgl_swapchain_create_info *info, xgl_swapch
 
     ////////////////////////////////////////
 
-    result_e result = RC_FAILURE;
-
     struct xgl_swapchain swapchain = {0};
     swapchain.width = info->width;
     swapchain.height = info->height;
 
-    result = _create_render_target(&swapchain.rt[0], swapchain.width, swapchain.height);
-    check_result(result, "could not create render target 0");
-
-    result = _create_render_target(&swapchain.rt[1], swapchain.width, swapchain.height);
-    check_result(result, "could not create render target 1");
+    check_result(_create_render_target(&swapchain.rt[0], swapchain.width, swapchain.height));
+    check_result(_create_render_target(&swapchain.rt[1], swapchain.width, swapchain.height));
 
     ////////////////////////////////////////
 
@@ -499,16 +488,13 @@ result_e xgl_update_texture(xgl_texture p_texture, u32 layer, u32 width, u32 hei
     check_expr(texture->storage_allocated);
     check_expr(texture->array_layer_count > layer);
 
-    result_e result = xgl_update_texture_impl(texture->gpu_id, layer, width, height, data);
-    check_result(result, "could not update texture data");
+    check_result(xgl_update_texture_impl(texture->gpu_id, layer, width, height, data));
 
     if (texture->mip_level_count > 1)
     {
         if (texture->array_layer_count == 1)
         {
-            result = xgl_generate_mipmaps_impl(texture->gpu_id);
-
-            if (!R_SUCCESS(result)) {
+            if (!R_SUCCESS(xgl_generate_mipmaps_impl(texture->gpu_id))) {
                 clog_trace("could not generate texture mipmaps");
             }
         }
@@ -637,10 +623,7 @@ static result_e _create_pipeline_shader_state(struct xgl_pipeline *pipeline, str
     struct xgl_shader *shader = object_pool_get(storage->shaders, pipeline->shader_state.shader.handle);
     check_ptr(shader);
 
-    result_e result = xgl_set_pipeline_shader_state_impl(pipeline->gpu_id, shader->gpu_id);
-    check_result(result, "xgl_set_pipeline_shader_state_impl() failed");
-
-    return RC_SUCCESS;
+    return xgl_set_pipeline_shader_state_impl(pipeline->gpu_id, shader->gpu_id);
 
 error:
     return RC_FAILURE;
@@ -669,11 +652,7 @@ static result_e _create_pipeline_input_state(struct xgl_pipeline *pipeline,
 
     ////////////////////////////////////////
 
-    result_e result = xgl_set_pipeline_input_state_impl(pipeline->gpu_id,
-        pipeline->ia_state.topology, pipeline->attrib_inputs);
-    check_result(result, "xgl_set_pipeline_input_state_impl() failed");
-
-    return RC_SUCCESS;
+    return xgl_set_pipeline_input_state_impl(pipeline->gpu_id, pipeline->ia_state.topology, pipeline->attrib_inputs);
 
 error:
 
@@ -694,11 +673,8 @@ static result_e _create_pipeline_depth_stencil_state(struct xgl_pipeline *pipeli
         pipeline->depth_stencil_state = *ds;
     }
 
-    result_e result = xgl_set_pipeline_depth_state_impl(pipeline->gpu_id, &pipeline->depth_stencil_state.depth);
-    check_result(result, "xgl_set_pipeline_depth_state_impl() failed");
-
-    result = xgl_set_pipeline_stencil_state_impl(pipeline->gpu_id, &pipeline->depth_stencil_state.stencil);
-    check_result(result, "xgl_set_pipeline_stencil_state_impl() failed");
+    check_result(xgl_set_pipeline_depth_state_impl(pipeline->gpu_id, &pipeline->depth_stencil_state.depth));
+    check_result(xgl_set_pipeline_stencil_state_impl(pipeline->gpu_id, &pipeline->depth_stencil_state.stencil));
 
     return RC_SUCCESS;
 
@@ -720,10 +696,7 @@ static result_e _create_pipeline_rasterizer_state(struct xgl_pipeline *pipeline,
         pipeline->rasterizer_state.line_width = 1.0f;
     }
 
-    result_e result = xgl_set_pipeline_rasterizer_state_impl(pipeline->gpu_id, &pipeline->rasterizer_state);
-    check_result(result, "xgl_set_pipeline_rasterizer_state_impl() failed");
-
-    return RC_SUCCESS;
+    return xgl_set_pipeline_rasterizer_state_impl(pipeline->gpu_id, &pipeline->rasterizer_state);
 
 error:
     return RC_FAILURE;
@@ -735,10 +708,7 @@ static result_e _create_pipeline_color_blend_state(struct xgl_pipeline *pipeline
         pipeline->color_blend_state = *bs;
     }
 
-    result_e result = xgl_set_pipeline_color_blend_state_impl(pipeline->gpu_id, &pipeline->color_blend_state);
-    check_result(result, "xgl_set_pipeline_color_blend_state_impl() failed");
-
-    return RC_SUCCESS;
+    return xgl_set_pipeline_color_blend_state_impl(pipeline->gpu_id, &pipeline->color_blend_state);
 
 error:
     return RC_FAILURE;
@@ -761,8 +731,6 @@ result_e xgl_create_pipeline(struct xgl_pipeline_create_info* info, xgl_pipeline
 
     ////////////////////////////////////////
 
-    result_e result = RC_FAILURE;
-
     struct xgl_pipeline pipeline = {0};
     pipeline.name = info->name;
     pipeline.type = info->type;
@@ -770,20 +738,11 @@ result_e xgl_create_pipeline(struct xgl_pipeline_create_info* info, xgl_pipeline
     pipeline.gpu_id = xgl_create_pipeline_impl(pipeline.name, pipeline.type);
     check_guid(pipeline.gpu_id);
 
-    result = _create_pipeline_shader_state(&pipeline, info->shader_state);
-    check_result(result, "_create_pipeline_shader_state() failed");
-
-    result = _create_pipeline_input_state(&pipeline, info->ia_state, info->input_layout);
-    check_result(result, "_create_pipeline_input_state() failed");
-
-    result = _create_pipeline_depth_stencil_state(&pipeline, info->depth_stencil_state);
-    check_result(result, "_create_pipeline_depth_stencil_state() failed");
-
-    result = _create_pipeline_rasterizer_state(&pipeline, info->rasterizer_state);
-    check_result(result, "_create_pipeline_rasterizer_state() failed");
-
-    result = _create_pipeline_color_blend_state(&pipeline, info->color_blend_state);
-    check_result(result, "_create_pipeline_color_blend_state() failed");
+    check_result(_create_pipeline_shader_state(&pipeline, info->shader_state));
+    check_result(_create_pipeline_input_state(&pipeline, info->ia_state, info->input_layout));
+    check_result(_create_pipeline_depth_stencil_state(&pipeline, info->depth_stencil_state));
+    check_result(_create_pipeline_rasterizer_state(&pipeline, info->rasterizer_state));
+    check_result(_create_pipeline_color_blend_state(&pipeline, info->color_blend_state));
 
     ////////////////////////////////////////
 

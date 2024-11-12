@@ -60,8 +60,8 @@ result_e softgl_init_driver()
     driver->info.name = make_string("SoftGL");
     driver->info.version = make_version(0, 0, 1);
 
-    check_result(_init_driver_state(&driver->state), "could not init softgl driver state");
-    check_result(_init_driver_storage(&driver->storage), "could not init softgl driver storage");
+    check_result(_init_driver_state(&driver->state));
+    check_result(_init_driver_storage(&driver->storage));
 
     driver->is_initialized = true;
 

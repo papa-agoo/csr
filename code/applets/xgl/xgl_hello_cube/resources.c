@@ -90,10 +90,6 @@ static string_cstr g_cube_fs = ""
 
 static result_e _create_pso()
 {
-    result_e result = RC_FAILURE;
-
-    ////////////////////////////////////////
-
     // ia state
     struct xgl_ia_state ia_state = {0};
     ia_state.topology = XGL_TOPOLOGY_TRIANGLE_LIST;
@@ -120,8 +116,7 @@ static result_e _create_pso()
         info.vertex_shader_stage = &vs_stage;
         info.fragment_shader_stage = &fs_stage;
 
-        result = xgl_create_shader(&info, &shader);
-        check_result(result, "could not create shader");
+        check_result(xgl_create_shader(&info, &shader));
 
         g_cube.material.effect.shader = shader;
     }
@@ -162,8 +157,7 @@ static result_e _create_pso()
         info.bindings = bindings;
         info.binding_count = COUNT_OF(bindings);
 
-        result_e result = xgl_create_descriptor_set_layout(&info, &ds_layout);
-        check_result(result, "could not create ds layout");
+        check_result(xgl_create_descriptor_set_layout(&info, &ds_layout));
 
         g_cube.descriptor_set_layout = ds_layout;
     }
@@ -179,8 +173,7 @@ static result_e _create_pso()
         info.ds_layouts = ds_layouts;
         info.ds_layout_count = COUNT_OF(ds_layouts);
 
-        result_e result = xgl_create_pipeline_layout(&info, &pipeline_layout);
-        check_result(result, "could not create pipeline layout");
+        check_result(xgl_create_pipeline_layout(&info, &pipeline_layout));
 
         g_cube.material.effect.pipeline_layout = pipeline_layout;
     }
@@ -211,22 +204,19 @@ static result_e _create_pso()
         info.input_layout = &input_layout;
         info.pipeline_layout = pipeline_layout;
 
-        result = xgl_create_pipeline(&info, &pipeline);
-        check_result(result, "could not create pipeline: %S", &info.name);
+        check_result(xgl_create_pipeline(&info, &pipeline));
 
         g_cube.material.effect.pipeline = pipeline;
     }
 
+    return RC_SUCCESS;
+
 error:
-    return result;
+    return RC_FAILURE;
 }
 
 static result_e _create_buffers()
 {
-    result_e result = RC_FAILURE;
-
-    ////////////////////////////////////////
-
     // vertex positions
     xgl_buffer vbo_positions;
     {
@@ -235,8 +225,7 @@ static result_e _create_buffers()
         info.byte_length = sizeof(f32) * COUNT_OF(g_cube_positions);
         info.data = g_cube_positions;
 
-        result = xgl_create_buffer(&info, &vbo_positions);
-        check_result(result, "could not create vertex buffer: %s", "positions");
+        check_result(xgl_create_buffer(&info, &vbo_positions));
 
         g_cube.geometry.vertex_buffer.positions = vbo_positions;
     }
@@ -251,8 +240,7 @@ static result_e _create_buffers()
         info.byte_length = sizeof(f32) * COUNT_OF(g_cube_tex_coords);
         info.data = g_cube_tex_coords;
 
-        result = xgl_create_buffer(&info, &vbo_tex_coords);
-        check_result(result, "could not create vertex buffer: %s", "tex_coords");
+        check_result(xgl_create_buffer(&info, &vbo_tex_coords));
 
         g_cube.geometry.vertex_buffer.tex_coords = vbo_tex_coords;
     }
@@ -269,8 +257,7 @@ static result_e _create_buffers()
         info.byte_length = index_count * sizeof(u32);
         info.data = g_cube_elements;
 
-        result = xgl_create_buffer(&info, &index_buffer);
-        check_result(result, "could not create index buffer");
+        check_result(xgl_create_buffer(&info, &index_buffer));
 
         g_cube.geometry.index_buffer.indices = index_buffer;
         g_cube.geometry.index_buffer.index_count = index_count;
@@ -286,16 +273,17 @@ static result_e _create_buffers()
         info.byte_length = sizeof(struct cube_data);
         info.data = &g_cube.material.shader_params.cpu;
 
-        result = xgl_create_buffer(&info, &uniform_buffer);
-        check_result(result, "could not create uniform buffer");
+        check_result(xgl_create_buffer(&info, &uniform_buffer));
 
         g_cube.material.shader_params.gpu = uniform_buffer;
     }
 
     ////////////////////////////////////////
 
+    return RC_SUCCESS;
+
 error:
-    return result;
+    return RC_FAILURE;
 }
 
 static result_e _create_texture(struct string image_dir, u32 texture_id, u32 mip_levels)
@@ -313,8 +301,6 @@ static result_e _create_texture(struct string image_dir, u32 texture_id, u32 mip
 
     ////////////////////////////////////////
 
-    result_e result = RC_FAILURE;
-
     xgl_texture texture;
     {
         struct xgl_texture_create_info info = {};
@@ -327,20 +313,17 @@ static result_e _create_texture(struct string image_dir, u32 texture_id, u32 mip
         info.array_layer_count = 1;
 
         // allocate storage
-        result = xgl_create_texture(&info, &texture);
-        check_result(result, "could not create texture : %d", texture_id);
+        check_result(xgl_create_texture(&info, &texture));
 
         // copy image data
-        result = xgl_update_texture(texture, 0, info.width, info.height, (u8*)tex_info->image->pixels);
-
-        if (!R_SUCCESS(result)){
+        if (!R_SUCCESS(xgl_update_texture(texture, 0, info.width, info.height, (u8*)tex_info->image->pixels))) {
             clog_warn("could not update texture : %d", texture_id);
         }
 
         tex_info->texture = texture;
     }
 
-    return result;
+    return RC_SUCCESS;
 
 error:
 
@@ -349,8 +332,6 @@ error:
 
 static result_e _create_samplers()
 {
-    result_e result = RC_FAILURE;
-
     // nearest filtering
     xgl_sampler* sampler_nearest = g_samplers;
     {
@@ -359,8 +340,7 @@ static result_e _create_samplers()
         ci.min_filter = XGL_TEXTURE_FILTER_NEAREST;
         ci.mag_filter = XGL_TEXTURE_FILTER_NEAREST;
 
-        result = xgl_create_sampler(&ci, sampler_nearest);
-        check_result(result, "could not create sampler : %S", &ci.name);
+        check_result(xgl_create_sampler(&ci, sampler_nearest));
     }
 
     // linear filtering
@@ -369,8 +349,7 @@ static result_e _create_samplers()
         struct xgl_sampler_desc ci = {0};
         ci.name = make_string("linear");
 
-        result = xgl_create_sampler(&ci, sampler_linear);
-        check_result(result, "could not create sampler : %S", &ci.name);
+        check_result(xgl_create_sampler(&ci, sampler_linear));
     }
 
     // anisotropic filtering
@@ -380,20 +359,18 @@ static result_e _create_samplers()
         ci.name = make_string("linear af16x");
         ci.max_anisotropy = 16.0f;
 
-        result = xgl_create_sampler(&ci, sampler_linear_af16x);
-        check_result(result, "could not create sampler : %S", &ci.name);
+        check_result(xgl_create_sampler(&ci, sampler_linear_af16x));
     }
 
+    return RC_SUCCESS;
+
 error:
-    return result;
+    return RC_FAILURE;
 }
 
 static result_e _create_shader_bindings()
 {
-    result_e result = RC_FAILURE;
-
-    result = xgl_create_descriptor_set(g_cube.descriptor_set_layout, &g_cube.descriptor_set);
-    check_result(result, "could not create descriptor set");
+    check_result(xgl_create_descriptor_set(g_cube.descriptor_set_layout, &g_cube.descriptor_set));
 
     struct xgl_buffer_descriptor shader_params = {0};
     shader_params.binding = 0;
@@ -410,24 +387,18 @@ static result_e _create_shader_bindings()
     info.texture_descriptors = &cube_texture;
     info.texture_descriptor_count = 1;
 
-    result = xgl_update_descriptor_set(g_cube.descriptor_set, &info);
-    check_result(result, "could not update descriptor set");
+    return xgl_update_descriptor_set(g_cube.descriptor_set, &info);
 
 error:
-    return result;
+    return RC_FAILURE;
 }
 
 
 result_e create_resources()
 {
-    result_e result = _create_pso();
-    check_result(result, "could not create pipeline");
-
-    result = _create_buffers();
-    check_result(result, "could not create buffers");
-
-    result = _create_samplers();
-    check_result(result, "could not create samplers");
+    check_result(_create_pso());
+    check_result(_create_buffers());
+    check_result(_create_samplers());
 
     ////////////////////////////////////////
 
@@ -437,8 +408,7 @@ result_e create_resources()
     {
         u32 mip_levels = 8;
 
-        result = _create_texture(image_dir, i, mip_levels);
-        check_result(result, "could not create textures");
+        check_result(_create_texture(image_dir, i, mip_levels));
     }
 
     ////////////////////////////////////////
@@ -451,11 +421,12 @@ result_e create_resources()
     g_cube.material.sampler = g_samplers[g_sampler_idx];
     g_cube.material.texture = g_textures[g_texture_idx].texture;
 
-    result = _create_shader_bindings();
-    check_result(result, "could not create descriptor set");
+    check_result(_create_shader_bindings());
+
+    return RC_SUCCESS;
 
 error:
-    return result;
+    return RC_FAILURE;
 }
 
 void destroy_resources()

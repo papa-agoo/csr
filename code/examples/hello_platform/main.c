@@ -22,8 +22,7 @@ result_e main()
     init_info.width = 640;
     init_info.height = 480;
 
-    result_e result = platform_init(&init_info);
-    check_result(result, "could not init platform");
+    check_result(platform_init(&init_info));
 
     platform_get_callbacks()->on_window_close = on_window_close;
 

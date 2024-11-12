@@ -210,7 +210,7 @@ struct mat44 camera_get_view_matrix(struct camera *camera)
 {
     check_ptr(camera);
 
-    return mat44_invert(transform_get_matrix(&camera->transform));
+    return mat44_inverse(transform_get_matrix(&camera->transform));
 
 error:
     return mat44_identity();

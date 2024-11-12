@@ -63,8 +63,7 @@ result_e main()
     init_info.conf.video = &video_conf;
     init_info.conf.audio = &audio_conf;
 
-    result_e result = kernel_init(&init_info);
-    check_result(result, "could not init kernel");
+    check_result(kernel_init(&init_info));
 
     event_bus_register_handler(EVENT_WINDOW_CLOSE, on_window_close);
     event_bus_register_handler(EVENT_KBD_KEY_DOWN, on_keyboard_key_down);

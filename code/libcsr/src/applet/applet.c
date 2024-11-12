@@ -13,8 +13,7 @@ struct applet* applet_create(struct string path)
     check_mem(applet);
 
     // load plugin
-    result_e result = applet_plugin_load(&applet->plugin, path);
-    check_result(result, "applet_plugin_load() failed : %S", &path);
+    check_result(applet_plugin_load(&applet->plugin, path));
 
     applet_state_init(applet);
 
@@ -56,29 +55,30 @@ result_e applet_startup(struct applet* applet)
 
     ////////////////////////////////////////
 
-    result_e result = RC_FAILURE;
-
     clock_init(applet->state.clock, 0);
 
-    result = applet->plugin.startup();
-    check_result(result, "plugin startup failed");
+    check_result(applet->plugin.startup());
 
     ////////////////////////////////////////
 
     applet->is_running = true;
 
+    return RC_SUCCESS;
+
 error:
-    return result;
+    return RC_FAILURE;
 }
 
 void applet_shutdown(struct applet* applet)
 {
     check_ptr(applet);
-    check_expr(applet->is_running);
 
-    applet->plugin.shutdown();
+    if (applet->is_running)
+    {
+        applet->plugin.shutdown();
 
-    applet->is_running = false;
+        applet->is_running = false;
+    }
 
 error:
     return;

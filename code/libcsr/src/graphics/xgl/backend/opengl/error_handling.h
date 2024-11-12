@@ -208,7 +208,7 @@ CSR_INLINE string_cstr _gl_error_severity_cstr(GLenum severity)
 #ifndef NDEBUG
     #define GL_CALL(cmd) do { \
             cmd; \
-            check_result( _gl_check_error(#cmd, __FILE__, __LINE__), "GL_CALL( %s ) failed", _mstring(cmd)); \
+            check( R_SUCCESS(_gl_check_error(#cmd, __FILE__, __LINE__)), "GL_CALL( %s ) failed", _mstring(cmd) ); \
         } while (0)
 #else
     #define GL_CALL(cmd) cmd

@@ -104,14 +104,10 @@ result_e xgl_init_driver()
 
     ////////////////////////////////////////
 
-    result_e result = xgl_init_driver_impl(&driver->info);
-    check_result(result, "could not init xgl driver impl.");
+    check_result(xgl_init_driver_impl(&driver->info));
 
-    result = _init_driver_storage(xgl_storage_ptr());
-    check_result(result, "could not init xgl driver storage");
-
-    result = _init_driver_state(xgl_state_ptr());
-    check_result(result, "could not init xgl driver state");
+    check_result(_init_driver_storage(xgl_storage_ptr()));
+    check_result(_init_driver_state(xgl_state_ptr()));
 
     ////////////////////////////////////////
 

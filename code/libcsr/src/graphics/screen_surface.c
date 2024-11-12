@@ -75,11 +75,10 @@ static result_e _create_buffers(struct screen_surface *surface)
         info.array_layer_count = 1;
         info.sample_count = 1;
 
-        result_e result = xgl_create_texture(&info, &color_buffer);
-        check_result(result, "could not create color buffer");
-    }
+        check_result(xgl_create_texture(&info, &color_buffer));
 
-    surface->color_buffer = color_buffer;
+        surface->color_buffer = color_buffer;
+    }
 
     ////////////////////////////////////////
 
@@ -95,11 +94,10 @@ static result_e _create_buffers(struct screen_surface *surface)
         info.array_layer_count = 1;
         info.sample_count = 1;
 
-        result_e result = xgl_create_texture(&info, &depth_stencil_buffer);
-        check_result(result, "could not create depth_stencil buffer");
-    }
+        check_result(xgl_create_texture(&info, &depth_stencil_buffer));
 
-    surface->depth_stencil_buffer = depth_stencil_buffer;
+        surface->depth_stencil_buffer = depth_stencil_buffer;
+    }
 
     ////////////////////////////////////////
 
@@ -116,11 +114,10 @@ static result_e _create_buffers(struct screen_surface *surface)
         info.attachments = attachments;
         info.attachment_count = COUNT_OF(attachments);
 
-        result_e result = xgl_create_framebuffer(&info, &framebuffer);
-        check_result(result, "could not create framebuffer");
-    }
+        check_result(xgl_create_framebuffer(&info, &framebuffer));
 
-    surface->framebuffer = framebuffer;
+        surface->framebuffer = framebuffer;
+    }
 
     ////////////////////////////////////////
 
@@ -152,8 +149,7 @@ struct screen_surface* screen_surface_create(struct screen_surface_create_info *
     surface->viewport = ci->viewport;
     surface->clear_values = ci->clear_values;
 
-    result_e result = _create_buffers(surface);
-    check_result(result, "could not create buffers");
+    check_result(_create_buffers(surface));
 
     ////////////////////////////////////////
 

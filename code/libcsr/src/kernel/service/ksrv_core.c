@@ -179,8 +179,7 @@ result_e ksrv_core_init(struct ksrv_core_init_info *init_info)
 
     klog_info("initializing core service ...");
 
-    result_e result = platform_init(init_info->platform_info);
-    check_result(result, "could not init platform");
+    check_result(platform_init(init_info->platform_info));
 
     // show platform info
     const struct platform_backend_info *backend = &platform_get_info()->backend;

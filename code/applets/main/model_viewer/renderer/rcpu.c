@@ -12,9 +12,8 @@ static struct rcpu g_rcpu = {0};
 
 struct rcpu* rcpu_create()
 {
-    check_expr(softgl_init_driver() == RC_SUCCESS);
-
-    check_expr(rcpu_create_cache(rcpu_cache_ptr()) == RC_SUCCESS);
+    check_result(softgl_init_driver());
+    check_result(rcpu_create_cache(rcpu_cache_ptr()));
 
     return &g_rcpu;
 

@@ -468,11 +468,20 @@ result_e application_init()
     csr_assert(!application_ptr()->is_initialized);
 
     clog_info("************************************************************");
-    clog_info("     ___________ ____                                       ");
-    clog_info("    / ____/ ___// __ \\                                     ");
-    clog_info("   / /    \\__ \\/ /_/ /                                    ");
-    clog_info("  / /___ ___/ / _, _/                                       ");
-    clog_info("  \\____//____/_/ |_| v%s                                   ", ENV_APP_VERSION);
+    clog_info("   ____  ____  ____  ____                                   ");
+    clog_info("  /\\   \\/\\   \\/\\   \\/\\   \\                          ");
+    clog_info(" /  \\___\\ \\___\\ \\___\\ \\___\\                         ");
+    clog_info(" \\  / __/_/   / /   / /   /                                ");
+    clog_info("  \\/_/\\   \\__/\\/___/\\/___/                             ");
+    clog_info("    /  \\___\\    /  \\___\\                                ");
+    clog_info("    \\  / __/_  _\\  /   /                                  ");
+    clog_info("     \\/_/\\   \\/\\ \\/___/                                ");
+    clog_info("       /  \\__/  \\___\\                                    ");
+    clog_info("       \\  / _\\  /   /            ___________ ____         ");
+    clog_info("        \\/_/\\ \\/___/            / ____/ ___// __ \\      ");
+    clog_info("          /  \\___\\             / /    \\__ \\/ /_/ /      ");
+    clog_info("          \\  /   /            / /___ ___/ / _, _/          ");
+    clog_info("           \\/___/             \\____//____/_/ |_|  v%s     ", ENV_APP_VERSION);
     clog_info("                                                            ");
     clog_info("************************************************************");
 
@@ -482,9 +491,9 @@ result_e application_init()
 
     klog_notice("initializing env ...");
     {
-        check_result(init_env_vars(), "could not init env vars");
-        check_result(init_app_home_dir(), "could not init app home dir");
-        check_result(init_user_config(), "could not init user config");
+        check_result(init_env_vars());
+        check_result(init_app_home_dir());
+        check_result(init_user_config());
     }
 
     ////////////////////////////////////////
@@ -501,7 +510,7 @@ result_e application_init()
         init_info.conf.video = &conf->kernel.video;
         init_info.conf.audio = &conf->kernel.audio;
 
-        check_expr(kernel_init(&init_info) == RC_SUCCESS);
+        check_result(kernel_init(&init_info));
 
         // global events
         event_bus_register_handler(EVENT_WINDOW_CLOSE, on_window_close);
@@ -527,7 +536,7 @@ result_e application_init()
         init_info.conf = &conf->ui;
         init_info.workspace = create_frontend_workspace();
 
-        check_expr(ui_init(&init_info) == RC_SUCCESS);
+        check_result(ui_init(&init_info));
     }
 
     ////////////////////////////////////////
@@ -542,7 +551,7 @@ result_e application_init()
         init_info.callbacks.on_post_applet_load = on_post_applet_load;
         init_info.callbacks.on_pre_applet_unload = on_pre_applet_unload;
 
-        check_expr(applet_mgr_init(&init_info) == RC_SUCCESS);
+        check_result(applet_mgr_init(&init_info));
     }
 
     ////////////////////////////////////////

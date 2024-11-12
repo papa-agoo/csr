@@ -6,12 +6,13 @@
 
 result_e main()
 {
-    result_e result = application_init();
-    check_result(result, "could not init application");
+    check_result(application_init());
 
     application_run();
-    application_quit();
+    application_quit(); // FIXME return application_quit();
+
+    return RC_SUCCESS;
 
 error:
-    return result;
+    return RC_FAILURE;
 }

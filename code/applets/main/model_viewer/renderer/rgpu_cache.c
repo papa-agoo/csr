@@ -24,17 +24,17 @@ result_e rgpu_create_cache(struct rgpu_cache *cache)
 {
     check_ptr(cache);
 
-    check_result(_create_depth_stencil_states(cache), "could not create depth stencil states");
-    check_result(_create_rasterizer_states(cache), "could not create rasterizer states");
-    check_result(_create_color_blend_states(cache), "could not create color blend states");
+    check_result(_create_depth_stencil_states(cache));
+    check_result(_create_rasterizer_states(cache));
+    check_result(_create_color_blend_states(cache));
 
-    check_result(_create_input_layouts(cache), "could not create input layouts");
-    check_result(_create_descriptor_set_layouts(cache), "could not create descriptor set layouts");
-    check_result(_create_pipeline_layouts(cache), "could not create pipeline layouts");
+    check_result(_create_input_layouts(cache));
+    check_result(_create_descriptor_set_layouts(cache));
+    check_result(_create_pipeline_layouts(cache));
 
-    check_result(_create_shaders(cache), "could not create shaders");
-    check_result(_create_pipelines(cache), "could not create pipelines");
-    check_result(_create_samplers(cache), "could not create samplers");
+    check_result(_create_shaders(cache));
+    check_result(_create_pipelines(cache));
+    check_result(_create_samplers(cache));
 
     return RC_SUCCESS;
 
@@ -279,7 +279,7 @@ static void* _load_shader_from_file(string_cstr shader_file)
     clog_trace("loading shader source : %s ...", path.ptr);
 
     struct fio_buffer buffer = {0};
-    check_result(fio_load_file(path, &buffer), "could not load shader file : %s", path.ptr);
+    check_result(fio_load_file(path, &buffer));
 
     return buffer.data;
 
@@ -360,19 +360,19 @@ static result_e _create_pso_lines(struct rgpu_cache *cache)
     info.name = make_string("pso.lines");
     info.rasterizer_state->line_width = 1;
 
-    check_expr(xgl_create_pipeline(&info, &cache->pipeline.lines) == RC_SUCCESS);
+    check_result(xgl_create_pipeline(&info, &cache->pipeline.lines));
 
     // lines thick
     info.name = make_string("pso.lines_thick");
     info.rasterizer_state->line_width = 2;
 
-    check_expr(xgl_create_pipeline(&info, &cache->pipeline.lines_thick) == RC_SUCCESS);
+    check_result(xgl_create_pipeline(&info, &cache->pipeline.lines_thick));
 
     // lines fat
     info.name = make_string("pso.lines_fat");
     info.rasterizer_state->line_width = 3;
 
-    check_expr(xgl_create_pipeline(&info, &cache->pipeline.lines_fat) == RC_SUCCESS);
+    check_result(xgl_create_pipeline(&info, &cache->pipeline.lines_fat));
 
     ////////////////////////////////////////
 
@@ -386,8 +386,8 @@ static result_e _create_pipelines(struct rgpu_cache *cache)
 {
     check_ptr(cache);
 
-    // check_result(_create_pso_points(cache), "could not create pso : points");
-    check_result(_create_pso_lines(cache), "could not create pso : lines");
+    // check_result(_create_pso_points(cache));
+    check_result(_create_pso_lines(cache));
 
     return RC_SUCCESS;
 

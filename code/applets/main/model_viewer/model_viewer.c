@@ -72,7 +72,7 @@ result_e model_viewer_init()
 
     // init renderer
     struct renderer *renderer = mv_renderer_ptr();
-    check_result(renderer_init(renderer), "could not init renderer");
+    check_result(renderer_init(renderer));
 
     mv_conf_ptr()->renderer = &renderer->conf;
 
@@ -80,7 +80,7 @@ result_e model_viewer_init()
 
     // init scene
     struct scene *scene = mv_scene_ptr();
-    check_result(scene_init(scene), "could not init scene");
+    check_result(scene_init(scene));
 
     // set root node
     struct mesh_node *node = &scene->root_node;

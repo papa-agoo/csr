@@ -13,8 +13,8 @@ result_e scene_init(struct scene *scene)
 {
     check_ptr(scene);
 
-    check_result(_build_model_cache(&scene->cache), "could not build model cache");
-    check_result(_build_camera_cache(&scene->cache), "could not build camera cache");
+    check_result(_build_model_cache(&scene->cache));
+    check_result(_build_camera_cache(&scene->cache));
 
     return RC_SUCCESS;
 

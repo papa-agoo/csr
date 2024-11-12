@@ -66,8 +66,8 @@ result_e renderer_init(struct renderer *renderer)
 
     ////////////////////////////////////////
 
-    check_result(_create_shader_data(renderer), "could not create shader data");
-    check_result(_create_gizmos(renderer), "could not create gizmos");
+    check_result(_create_shader_data(renderer));
+    check_result(_create_gizmos(renderer));
 
     return RC_SUCCESS;
 
@@ -277,7 +277,7 @@ static result_e _create_axes_gizmo(struct renderer *renderer)
         info.data = vector_data(vertices);
         info.usage_flags = XGL_BUFFER_USAGE_VERTEX_BUFFER_BIT;
 
-        check_result(xgl_create_buffer(&info, gpu_vertices), "could not create gpu vertices");
+        check_result(xgl_create_buffer(&info, gpu_vertices));
     }
 
     ////////////////////////////////////////
@@ -379,8 +379,7 @@ static result_e _create_grid_gizmo(struct renderer *renderer, f32 size_qm)
         info.data = vector_data(vertices);
         info.usage_flags = XGL_BUFFER_USAGE_VERTEX_BUFFER_BIT;
 
-        result_e result = xgl_create_buffer(&info, gpu_vertices);
-        check_result(result, "could not create gpu vertices");
+        check_result(xgl_create_buffer(&info, gpu_vertices));
     }
 
     ////////////////////////////////////////
@@ -395,8 +394,8 @@ static result_e _create_gizmos(struct renderer *renderer)
 {
     check_ptr(renderer);
 
-    check_result(_create_axes_gizmo(renderer), "could not create axes gizmo");
-    check_result(_create_grid_gizmo(renderer, 100), "could not create grid gizmo");
+    check_result(_create_axes_gizmo(renderer));
+    check_result(_create_grid_gizmo(renderer, 100));
 
     return RC_SUCCESS;
 
