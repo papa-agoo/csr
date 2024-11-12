@@ -180,40 +180,30 @@ void rgpu_pass_gizmos(struct renderer *renderer)
     // bind pass data
     xgl_bind_descriptor_set(XGL_DESCRIPTOR_SET_TYPE_PASS, cache->pipeline_layout.main, shader_data->pass_main.ds);
 
+    // grid
+    struct mesh_gizmo *grid = &renderer->gizmo.grid;
+    {
+        xgl_bind_pipeline(XGL_PIPELINE_TYPE_GRAPHICS, cache->pipeline.lines);
+        rgpu_draw_mesh_primitive(&grid->primitive);
+    }
+
     // axes
     struct mesh_gizmo *axes = &renderer->gizmo.axes;
     {
-        // save current viewport
-        struct xgl_viewport vp = renderer->rgpu->vp;
-
         // draw the axes gizmo (top right corner)
         {
-            // >>> FIXME
-            f32 size_wh = vp.width * 0.03;
-            f32 margin_xy = vp.height * 0.01;
+            struct xgl_viewport vp = rgpu_ptr()->vp;
+            renderer_calc_axes_viewport(&vp.x, &vp.y, &vp.width, &vp.height);
 
-            struct xgl_viewport vp_gizmo = vp;
-            vp_gizmo.width = size_wh;
-            vp_gizmo.height = size_wh;
-            vp_gizmo.x = vp.width - size_wh - margin_xy;
-            vp_gizmo.y = vp.height - size_wh - margin_xy;
-            // <<< FIXME
-
-            xgl_set_viewports(1, &vp_gizmo);
+            xgl_set_viewports(1, &vp);
 
             xgl_bind_pipeline(XGL_PIPELINE_TYPE_GRAPHICS, cache->pipeline.lines_fat);
             rgpu_draw_mesh_primitive(&axes->primitive);
         }
 
         // restore viewport
-        xgl_set_viewports(1, &vp);
-    }
+        xgl_set_viewports(1, &rgpu_ptr()->vp);
 
-    // grid
-    struct mesh_gizmo *grid = &renderer->gizmo.grid;
-    {
-        xgl_bind_pipeline(XGL_PIPELINE_TYPE_GRAPHICS, cache->pipeline.lines);
-        rgpu_draw_mesh_primitive(&grid->primitive);
     }
 
 error:

@@ -108,42 +108,29 @@ void rcpu_pass_gizmos(struct renderer *renderer)
     // bind pass data
     softgl_bind_descriptor_set(SOFTGL_DESCRIPTOR_SET_TYPE_PASS, &shader_data->pass_main.buffer.cpu);
 
-    softgl_bind_pipeline(cache->pipeline.lines);
+    // grid
+    struct mesh_gizmo *grid = &renderer->gizmo.grid;
+    {
+        softgl_bind_pipeline(cache->pipeline.lines);
+        rcpu_draw_mesh_primitive(&grid->primitive);
+    }
 
     // axes
     struct mesh_gizmo *axes = &renderer->gizmo.axes;
     {
-        // save current viewport
-        struct softgl_viewport vp = rcpu_ptr()->vp;
-
         // draw the axes gizmo (top right corner)
         {
-            // >>> FIXME
-            f32 size_wh = vp.width * 0.03;
-            f32 margin_xy = vp.height * 0.01;
+            struct softgl_viewport vp = rcpu_ptr()->vp;
+            renderer_calc_axes_viewport(&vp.x, &vp.y, &vp.width, &vp.height);
 
-            struct softgl_viewport vp_gizmo = vp;
-            vp_gizmo.width = size_wh;
-            vp_gizmo.height = size_wh;
-            vp_gizmo.x = vp.width - size_wh - margin_xy;
-            vp_gizmo.y = vp.height - size_wh - margin_xy;
-            // <<< FIXME
-
-            softgl_set_viewport(vp_gizmo);
+            softgl_set_viewport(vp);
 
             softgl_bind_pipeline(cache->pipeline.lines);
             rcpu_draw_mesh_primitive(&axes->primitive);
         }
 
         // restore viewport
-        softgl_set_viewport(vp);
-    }
-
-    // grid
-    struct mesh_gizmo *grid = &renderer->gizmo.grid;
-    {
-        softgl_bind_pipeline(cache->pipeline.lines);
-        rcpu_draw_mesh_primitive(&grid->primitive);
+        softgl_set_viewport(rcpu_ptr()->vp);
     }
 
 error:

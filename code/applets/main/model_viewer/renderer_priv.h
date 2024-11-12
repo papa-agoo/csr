@@ -75,4 +75,7 @@ void renderer_quit(struct renderer *renderer);
 
 void renderer_tick(struct renderer *renderer);
 
+
+// misc helper functions
+void renderer_calc_axes_viewport(f32 *x, f32 *y, f32 *width, f32 *height);
 // struct material* renderer_find_suitable_material(struct renderer *renderer, u32 vertex_format);

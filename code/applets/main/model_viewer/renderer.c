@@ -100,30 +100,46 @@ void renderer_tick(struct renderer *renderer)
     // update cpu screen aspect ratio
     screen_set_aspect_ratio(renderer->screen.rcpu, screen_get_aspect_ratio(renderer->screen.rgpu));
 
-    // cpu renderer
+    // tick cpu renderer
     if (screen_begin(renderer->screen.rcpu, SCREEN_SURFACE_TYPE_CPU))
     {
         struct pixelbuffer *pb = screen_get_pixelbuffer(renderer->screen.rcpu);
-        struct xgl_viewport vp_src = screen_get_viewport(renderer->screen.rcpu);
+        struct xgl_viewport vp = screen_get_viewport(renderer->screen.rcpu);
 
-        struct softgl_viewport vp = {0};
-        vp.width = vp_src.width;
-        vp.height = vp_src.height;
-        vp.min_depth = vp_src.min_depth;
-        vp.max_depth = vp_src.max_depth;
-
-        rcpu_tick(renderer, pb, vp);
+        rcpu_tick(renderer, pb, *(struct softgl_viewport*) &vp);
 
         screen_end();
     }
 
-    // gpu renderer
+    // tick gpu renderer
     if (screen_begin(renderer->screen.rgpu, SCREEN_SURFACE_TYPE_GPU))
     {
         rgpu_tick(renderer, screen_get_viewport(renderer->screen.rgpu));
 
         screen_end();
     }
+
+    // clear frame resources
+    // ... clear debug primitives ...
+
+error:
+    return;
+}
+
+void renderer_calc_axes_viewport(f32 *x, f32 *y, f32 *width, f32 *height)
+{
+    check_expr(x && y && width && height);
+    check_expr(*width > 0 && *height > 0);
+
+    // FIXME move factors to renderer config
+    f32 size_wh = *width * 0.04;
+    f32 margin_xy = *height * 0.02;
+
+    *x = *width - size_wh - margin_xy;
+    *y = *height - size_wh - margin_xy;
+
+    *width = size_wh;
+    *height = size_wh;
 
 error:
     return;
