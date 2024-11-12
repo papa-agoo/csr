@@ -19,5 +19,4 @@ typedef enum result_codes result_e;
 #define R_FAILURE(rc) ((rc) != RC_SUCCESS)
 #define R_FAILSTATE(expr) ((expr) ? RC_SUCCESS : RC_FAILURE)
 
-#define check_result(A, ...) \
-    check((R_SUCCESS(A)), __VA_ARGS__)
+#define check_result(A) check_expr(A == RC_SUCCESS)

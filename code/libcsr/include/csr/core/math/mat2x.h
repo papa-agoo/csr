@@ -17,7 +17,7 @@ struct mat22
 };
 
 #define make_mat22(...) \
-    ((struct mat22){__VA_ARGS__})
+    make_compound_literal(struct mat22, __VA_ARGS__)
 
 ////////////////////////////////////////////////////////////////////////////////
 

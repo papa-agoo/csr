@@ -19,7 +19,7 @@ struct mat33
 };
 
 #define make_mat33(...) \
-    ((struct mat33){__VA_ARGS__})
+    make_compound_literal(struct mat33, __VA_ARGS__)
 
 ////////////////////////////////////////////////////////////////////////////////
 

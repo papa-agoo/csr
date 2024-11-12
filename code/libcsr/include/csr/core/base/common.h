@@ -18,6 +18,9 @@
 // boolean support
 #include <stdbool.h>
 
+// float type definitions (FLT_EPSILON, ...)
+#include <float.h>
+
 // portable types support
 #include <stdint.h>
 
