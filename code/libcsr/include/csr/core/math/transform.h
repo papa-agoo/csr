@@ -11,8 +11,8 @@
 // transform_local_to_world()
 // transform_world_to_local()
 
-// transform_{get,set}_rotation()
-// transform_rotate()
+// transform_{get,set}_rotation(quat)
+// transform_rotate(quat)
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 

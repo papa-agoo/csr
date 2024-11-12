@@ -57,6 +57,7 @@ struct quat transform_get_rotation(struct transform *transform)
     check_ptr(transform);
 
     // FIXME need quat impl.
+    clog_warn("not implemented yet :(");
 
 error:
     return quat_identity();
@@ -67,6 +68,7 @@ void transform_set_rotation(struct transform *transform, struct quat q)
     check_ptr(transform);
 
     // FIXME need quat impl.
+    clog_warn("not implemented yet :(");
 
 error:
     return;
@@ -77,6 +79,7 @@ void transform_rotate(struct transform *transform, struct quat delta)
     check_ptr(transform);
 
     // FIXME need quat impl.
+    clog_warn("not implemented yet :(");
 
 error:
     return;
@@ -149,16 +152,9 @@ void transform_lookat_from(struct transform *transform, struct vec3 position, st
     check_ptr(transform);
     check_expr(!vec3_equal(position, target));
 
-    // >>> FIXME
-    {
-        transform->matrix = mat44_invert(mat44_lookat_inv(position, target, make_vec3_up()));
-        // transform->matrix = mat44_lookat(position, target, make_vec3_up());
+    transform->matrix = mat44_lookat(position, target, make_vec3_up());
 
-        mat44_decompose(transform->matrix, &transform->position, &transform->rotation_euler, &transform->scale);
-
-        // transform->position = mat44_mult_vec3(transform->matrix, transform->position);
-    }
-    // <<< FIXME
+    mat44_decompose(transform->matrix, &transform->position, &transform->rotation_euler, &transform->scale);
 
     transform->is_dirty = false;
 
@@ -181,6 +177,7 @@ struct vec3 transform_local_to_world(struct transform *transform, struct vec3 p)
     check_ptr(transform);
 
     // FIXME
+    clog_warn("not implemented yet :(");
 
 error:
     return p;
@@ -191,6 +188,7 @@ struct vec3 transform_world_to_local(struct transform *transform, struct vec3 p)
     check_ptr(transform);
 
     // FIXME
+    clog_warn("not implemented yet :(");
 
 error:
     return p;
@@ -203,8 +201,8 @@ struct mat44 transform_get_matrix(struct transform *transform)
     if (transform->is_dirty)
     {
         transform->matrix = mat44_compose(transform->position, transform->rotation_euler, transform->scale);
-        transform->is_dirty = false;
 
+        transform->is_dirty = false;
     }
 
     return transform->matrix;
