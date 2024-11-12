@@ -5,7 +5,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void ui_widget_mat4x4(string_cstr name, const struct mat44* matrix);
-void ui_widget_transform(struct transform *transform, bool* show_matrix, f64 dt);
+void ui_widget_transform(struct transform *transform, bool* show_matrix, bool invert_matrix, f64 dt);
 
 static void _draw_info_view(struct camera *camera)
 {
@@ -29,6 +29,15 @@ static void _draw_camera_ctl_orbital(struct camera_ctl_orbital *data)
 
     struct orbit *orbit = &data->orbit_dst;
 
+    enum orbit_orientation orientation = orbit->orientation;
+
+    string_cstr items[] = {"None", "Top", "Bottom", "Front", "Rear", "Left", "Right", "Left Side", "Right Side"};
+    u32 items_count = COUNT_OF(items);
+
+    if (igCombo_Str_arr("Orientation##camera_ctl_orbital", (u32*)&orientation, items, items_count, items_count)) {
+        orbit_set_orientation(orbit, orientation);
+    }
+
     igNewLine();
 
     igDragFloat3("Origin##camera_ctl_orbital", (f32*)&orbit->origin, update_speed, -100.0f, 100.0f, "%.2f", 0);
@@ -41,12 +50,11 @@ static void _draw_camera_ctl_orbital(struct camera_ctl_orbital *data)
 
     igNewLine();
 
-    igDragFloat("Animate##camera_ctl_orbital", &data->animate, update_speed, -50.0f, 50.0f, "%.3f", 0);
+    igDragFloat("Animate##camera_ctl_orbital", &data->animate, update_speed * (1.0 / 30), -1.0f, 1.0f, "%.3f", 0);
 
     igNewLine();
 
     igCheckbox("Interpolate##camera_ctl_orbital", &data->interpolate);
-    // igDragFloat("Interpolation Scale##camera_ctl_orbital", &data->interpolation_scale, update_speed, 1.0f, 10.0f, "%.3f", 1.0f);
 
 error:
     return;
@@ -97,7 +105,7 @@ static void _draw_transform_view(struct camera *camera)
 {
     struct transform *transform = camera_get_transform(camera);
 
-    static bool show_view_matrix = false;
+    static bool show_view_matrix = true;
     ui_widget_transform(transform, &show_view_matrix, aio_time_elapsed_delta());
 }
 
@@ -155,13 +163,6 @@ void ui_draw_camera_view()
     {
         igNewLine();
         _draw_transform_view(camera);
-        igNewLine();
-    }
-
-    if (igCollapsingHeader_TreeNodeFlags("Projection", header_flags))
-    {
-        igNewLine();
-        _draw_projection_view(camera);
         igNewLine();
     }
 }

@@ -75,7 +75,7 @@ static void _camera_ctl_orbital_update_cb(struct camera *camera, struct camera_c
 
     struct orbit *orbit = &data->orbit_src;
 
-    data->orbit_dst.azimuth = data->orbit_dst.azimuth + data->animate;
+    orbit_set_azimuth(&data->orbit_dst, data->orbit_dst.azimuth + data->animate);
 
     if (data->interpolate)
     {
@@ -85,6 +85,7 @@ static void _camera_ctl_orbital_update_cb(struct camera *camera, struct camera_c
         struct orbit *src = &data->orbit_src;
         struct orbit *dst = &data->orbit_dst;
 
+        src->origin = vec3_lerp(src->origin, dst->origin, value);
         src->azimuth = lerp(value, src->azimuth, dst->azimuth);
         src->polar = lerp(value, src->polar, dst->polar);
         src->radius = lerp(value, src->radius, dst->radius);
