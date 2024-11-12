@@ -108,7 +108,7 @@ bool screen_begin(struct screen* screen, enum screen_surface_type surface_type)
     // weak surface type validation
     check_expr(screen_surface_get_type(screen->surface) == surface_type);
 
-    if(screen_surface_begin(screen->surface))
+    if(!screen->is_suspended && screen_surface_begin(screen->surface))
     {
         stopwatch_start(&screen->stopwatch);
 
@@ -142,6 +142,36 @@ void screen_end()
 
 error:
     return;
+}
+
+void screen_suspend(struct screen *screen, bool state)
+{
+    check_ptr(screen);
+
+    screen->is_suspended = state;
+
+error:
+    return;
+}
+
+void screen_toggle_suspend(struct screen *screen)
+{
+    check_ptr(screen);
+
+    screen->is_suspended ^= 1;
+
+error:
+    return;
+}
+
+bool screen_is_suspended(struct screen *screen)
+{
+    check_ptr(screen);
+
+    return screen->is_suspended;
+
+error:
+    return true;
 }
 
 struct string screen_get_name(struct screen* screen)

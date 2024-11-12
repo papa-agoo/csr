@@ -67,6 +67,10 @@ void screen_destroy(struct screen* screen);
 bool screen_begin(struct screen* screen, enum screen_surface_type surface_type);
 void screen_end();
 
+void screen_suspend(struct screen *screen, bool state);
+void screen_toggle_suspend(struct screen *screen);
+bool screen_is_suspended(struct screen *screen);
+
 struct string screen_get_name(struct screen* screen);
 
 string_cstr screen_get_surface_type_cstr(struct screen* screen);

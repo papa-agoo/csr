@@ -22,4 +22,6 @@ struct screen
     struct stopwatch stopwatch;
 
     struct screen_surface *surface;
+
+    bool is_suspended;
 };

@@ -227,6 +227,9 @@ static void _draw_view(struct ui_view* view, struct ui_style *style)
     struct ui_window *window = view->parent;
     struct screen* screen = view->user_data;
 
+    // suspend the screen if the window is closed
+    screen_suspend(screen, !window->is_opened);
+
     ////////////////////////////////////////
 
     if (window->hint.fit_window_to_content_size) {
