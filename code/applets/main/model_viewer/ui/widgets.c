@@ -6,15 +6,19 @@
 #include <csr/core/math/transform.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+// remove the jittering of -0.000 values which are actually extremely small negative numbers.
+#define F(n) f32_precision(n, 1000)
+
 void ui_widget_mat4x4(string_cstr name, const struct mat44* matrix)
 {
     f32* m = (f32*)matrix;
 
     igText(name);
-    igText("%7.3f %7.3f %7.3f %7.3f ", m[0], m[4], m[8], m[12]);
-    igText("%7.3f %7.3f %7.3f %7.3f ", m[1], m[5], m[9], m[13]);
-    igText("%7.3f %7.3f %7.3f %7.3f ", m[2], m[6], m[10], m[14]);
-    igText("%7.3f %7.3f %7.3f %7.3f ", m[3], m[7], m[11], m[15]);
+    igText("%9.3f %9.3f %9.3f %9.3f", F(m[0]), F(m[4]),  F(m[8]), F(m[12]));
+    igText("%9.3f %9.3f %9.3f %9.3f", F(m[1]), F(m[5]),  F(m[9]), F(m[13]));
+    igText("%9.3f %9.3f %9.3f %9.3f", F(m[2]), F(m[6]), F(m[10]), F(m[14]));
+    igText("%9.3f %9.3f %9.3f %9.3f", F(m[3]), F(m[7]), F(m[11]), F(m[15]));
 }
 
 void ui_widget_mat4x4_debug(struct mat44 matrix)
@@ -48,7 +52,7 @@ void ui_widget_mat4x4_debug(struct mat44 matrix)
     ui_widget_mat4x4("Result", &m[idx]);
 }
 
-void ui_widget_transform(struct transform *transform, bool* show_matrix, f64 dt)
+void ui_widget_transform(struct transform *transform, bool* show_matrix, bool invert_matrix, f64 dt)
 {
     // position
     {
@@ -60,7 +64,7 @@ void ui_widget_transform(struct transform *transform, bool* show_matrix, f64 dt)
 
         struct vec3 position = transform_get_position(transform);
 
-        if (igDragFloat3("Position##model", (f32 *)(&position), 2.0f * dt, -100.0f, 100.0f, "%.3f", 1.0f)) {
+        if (igDragFloat3("Position##transform", (f32 *)(&position), 2.0f * dt, -100.0f, 100.0f, "%.3f", 1.0f)) {
             transform_set_position(transform, position);
         }
     }
@@ -75,7 +79,7 @@ void ui_widget_transform(struct transform *transform, bool* show_matrix, f64 dt)
 
         struct vec3 rotation = transform_get_rotation_euler(transform);
 
-        if (igDragFloat3("Rotation##model", (f32 *)(&rotation), 90.0f * dt, -360.0f, 360.0f, "%.3f", 1.0f)) {
+        if (igDragFloat3("Rotation##transform", (f32 *)(&rotation), 90.0f * dt, -360.0f, 360.0f, "%.3f", 1.0f)) {
             transform_set_rotation_euler(transform, rotation);
         }
     }
@@ -90,7 +94,7 @@ void ui_widget_transform(struct transform *transform, bool* show_matrix, f64 dt)
 
         struct vec3 scale = transform_get_scale(transform);
 
-        if (igDragFloat("Scale##model", &scale.x, 2.0f * dt, -1.0f, 100.0f, "%.3f", 0)) {
+        if (igDragFloat("Scale##transform", &scale.x, 2.0f * dt, -1.0f, 100.0f, "%.3f", 0)) {
             scale.z = scale.y = scale.x;
             transform_set_scale(transform, scale);
         }
@@ -105,6 +109,6 @@ void ui_widget_transform(struct transform *transform, bool* show_matrix, f64 dt)
         struct mat44 matrix = transform_get_matrix(transform);
 
         igNewLine();
-        ui_widget_mat4x4_debug(matrix);
+        ui_widget_mat4x4_debug(invert_matrix ? mat44_inverse(matrix) : matrix);
     }
 }

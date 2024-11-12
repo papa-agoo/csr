@@ -106,7 +106,7 @@ static void _draw_transform_view(struct camera *camera)
     struct transform *transform = camera_get_transform(camera);
 
     static bool show_view_matrix = true;
-    ui_widget_transform(transform, &show_view_matrix, aio_time_elapsed_delta());
+    ui_widget_transform(transform, &show_view_matrix, true, aio_time_elapsed_delta());
 }
 
 static void _draw_projection_view(struct camera *camera)
