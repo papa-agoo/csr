@@ -76,16 +76,21 @@ struct string screen_get_name(struct screen* screen);
 string_cstr screen_get_surface_type_cstr(struct screen* screen);
 enum screen_surface_type screen_get_surface_type(struct screen* screen);
 
-f32 screen_get_aspect_ratio(struct screen* screen);
 struct xgl_viewport screen_get_viewport(struct screen* screen);
 xgl_texture screen_get_texture(struct screen* screen);
 struct pixelbuffer* screen_get_pixelbuffer(struct screen* screen);
 
 const struct screen_stats* screen_get_stats(struct screen *screen);
 
+
+// aspect ratio api
+f32 screen_get_aspect_ratio(struct screen* screen);
+void screen_set_aspect_ratio(struct screen* screen, f32 aspect);
+
 bool screen_get_keep_aspect_ratio(struct screen* screen);
 void screen_set_keep_aspect_ratio(struct screen* screen, bool keep);
 void screen_toggle_keep_aspect_ratio(struct screen* screen);
+
 
 // resize api
 enum screen_resize_policy screen_get_resize_policy(struct screen* screen);

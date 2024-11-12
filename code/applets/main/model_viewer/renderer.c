@@ -30,7 +30,6 @@ result_e renderer_init(struct renderer *renderer)
     {
         struct screen_create_info create_info = {0};
         create_info.name = make_string("GPU Renderer");
-        create_info.keep_aspect_ratio = true;
 
         create_info.surface.type = SCREEN_SURFACE_TYPE_GPU;
         create_info.surface.viewport.width = 1280;
@@ -98,13 +97,8 @@ void renderer_tick(struct renderer *renderer)
         // ...
     }
 
-    // gpu renderer
-    if (screen_begin(renderer->screen.rgpu, SCREEN_SURFACE_TYPE_GPU))
-    {
-        rgpu_tick(renderer, screen_get_viewport(renderer->screen.rgpu));
-
-        screen_end();
-    }
+    // update cpu screen aspect ratio
+    screen_set_aspect_ratio(renderer->screen.rcpu, screen_get_aspect_ratio(renderer->screen.rgpu));
 
     // cpu renderer
     if (screen_begin(renderer->screen.rcpu, SCREEN_SURFACE_TYPE_CPU))
@@ -119,6 +113,14 @@ void renderer_tick(struct renderer *renderer)
         vp.max_depth = vp_src.max_depth;
 
         rcpu_tick(renderer, pb, vp);
+
+        screen_end();
+    }
+
+    // gpu renderer
+    if (screen_begin(renderer->screen.rgpu, SCREEN_SURFACE_TYPE_GPU))
+    {
+        rgpu_tick(renderer, screen_get_viewport(renderer->screen.rgpu));
 
         screen_end();
     }

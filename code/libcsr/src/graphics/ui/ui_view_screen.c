@@ -142,8 +142,8 @@ static void draw_surface_info(struct screen *screen)
     // FIXME make_string("", ...)
     char str_buf[128];
 
-    snprintf(str_buf, 128, "%s Surface : %.0fx%.0f @ %.2fx (%.0fx%.0f), %05.2fms (%02.0ffps)",
-        surface_type_str, size.w, size.h, scale_factor, size_scaled.w, size_scaled.h,
+    snprintf(str_buf, 128, "%s Surface : %.0fx%.0f @ %.2fx (%.0fx%.0f, aspect: %.2f), %05.2fms (%02.0ffps)",
+        surface_type_str, size.w, size.h, scale_factor, size_scaled.w, size_scaled.h, screen_get_aspect_ratio(screen),
         stats->avg_frametime_ms, stats->avg_fps);
 
     // poor mans text shadows :)

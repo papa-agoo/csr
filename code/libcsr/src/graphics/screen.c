@@ -208,18 +208,6 @@ error:
     return SCREEN_SURFACE_TYPE_UNKNOWN;
 }
 
-f32 screen_get_aspect_ratio(struct screen* screen)
-{
-    check_ptr(screen);
-
-    struct vec2 size = screen_get_size(screen);
-
-    return size.w / size.h;
-
-error:
-    return 1.0;
-}
-
 struct xgl_viewport screen_get_viewport(struct screen* screen)
 {
     check_ptr(screen);
@@ -262,6 +250,35 @@ const struct screen_stats* screen_get_stats(struct screen *screen)
 
 error:
     return NULL;
+}
+
+f32 screen_get_aspect_ratio(struct screen* screen)
+{
+    check_ptr(screen);
+
+    struct vec2 size = screen_get_size(screen);
+
+    return f32_precision(size.w / size.h, 100);
+
+error:
+    return 1.0;
+}
+
+void screen_set_aspect_ratio(struct screen* screen, f32 aspect)
+{
+    check_ptr(screen);
+    check_expr(aspect > 0);
+
+    check_quiet(screen_get_aspect_ratio(screen) != aspect);
+
+    struct vec2 size = screen_get_size(screen);
+    size.w = (u32)(size.h * aspect);
+
+    screen_set_size(screen, size);
+
+error:
+    return;
+
 }
 
 bool screen_get_keep_aspect_ratio(struct screen* screen)

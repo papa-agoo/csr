@@ -242,8 +242,8 @@ void screen_surface_set_size(struct screen_surface *surface, struct vec2 size)
     check_expr(size.w > 0);
     check_expr(size.h > 0);
 
-    surface->viewport.width = size.w;
-    surface->viewport.height = size.h;
+    surface->viewport.width = (u32)size.w;
+    surface->viewport.height = (u32)size.h;
 
     _destroy_buffers(surface);
     _create_buffers(surface);
@@ -289,7 +289,7 @@ struct pixelbuffer* screen_surface_get_pixelbuffer(struct screen_surface *surfac
     check_expr(surface->type == SCREEN_SURFACE_TYPE_CPU);
     // FIXME check_expr( PIXELBUFFER_VALID );
 
-    check_quiet(surface->pb.pixels != NULL); // FIXME
+    check_expr(surface->pb.pixels != NULL); // FIXME
 
     return &surface->pb;
 
