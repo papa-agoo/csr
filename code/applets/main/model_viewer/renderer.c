@@ -14,6 +14,10 @@ static void _destroy_shader_data(struct renderer *renderer);
 static result_e _create_gizmos(struct renderer *renderer);
 static void _destroy_gizmos(struct renderer *renderer);
 
+static result_e _create_debug_primitives(struct renderer *renderer);
+static void _reset_debug_primitives(struct renderer *renderer);
+static void _destroy_debug_primitives(struct renderer *renderer);
+
 result_e renderer_init(struct renderer *renderer)
 {
     check_ptr(renderer);
@@ -67,6 +71,7 @@ result_e renderer_init(struct renderer *renderer)
 
     check_result(_create_shader_data(renderer));
     check_result(_create_gizmos(renderer));
+    check_result(_create_debug_primitives(renderer));
 
     return RC_SUCCESS;
 
@@ -78,6 +83,7 @@ void renderer_quit(struct renderer *renderer)
 {
     check_ptr(renderer);
 
+    _destroy_debug_primitives(renderer);
     _destroy_gizmos(renderer);
     _destroy_shader_data(renderer);
 
@@ -120,7 +126,7 @@ void renderer_tick(struct renderer *renderer)
     }
 
     // clear frame resources
-    // ... clear debug primitives ...
+    _reset_debug_primitives(renderer);
 
 error:
     return;
@@ -132,14 +138,20 @@ void renderer_calc_axes_viewport(f32 *x, f32 *y, f32 *width, f32 *height)
     check_expr(*width > 0 && *height > 0);
 
     // FIXME move factors to renderer config
-    f32 size_wh = *width * 0.04;
-    f32 margin_xy = *height * 0.02;
+    f32 scale_vp = 0.05;
+    f32 scale_margin = 0.20;
 
-    *x = *width - size_wh - margin_xy;
-    *y = *height - size_wh - margin_xy;
+    struct vec2 size = {.w = *width * scale_vp, .h = *height * scale_vp};
 
-    *width = size_wh;
-    *height = size_wh;
+    f32 size_xy = size.h;
+    f32 size_xy_offset = (size.w - size.h) * 0.5;
+    f32 margin_xy = size.h * scale_margin;
+
+    *x = *width - size_xy - margin_xy - size_xy_offset;
+    *y = *height - size_xy - margin_xy;
+
+    *width = size.w;
+    *height = size.h;
 
 error:
     return;
@@ -454,7 +466,196 @@ error:
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-// debug draw
+// debug primitives
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+static result_e _create_debug_primitives_buffer(struct renderer *renderer, struct mesh_buffer *buffer, u32 capacity)
+{
+    buffer->vertex_format = VERTEX_FORMAT_POSITION_BIT | VERTEX_FORMAT_COLOR_BIT;
+    buffer->vertex_stride = sizeof(struct vertex_1p1c);
 
-// ...
+    // cpu storage
+    buffer->cpu.vertices = vector_create(capacity, buffer->vertex_stride);
+
+    // gpu storage
+    struct xgl_buffer_create_info info = {0};
+    info.byte_length = vector_capacity_byte_length(buffer->cpu.vertices);
+    info.usage_flags = XGL_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+
+    return xgl_create_buffer(&info, &buffer->gpu.vertices);
+
+error:
+    return RC_FAILURE;
+}
+
+static void _destroy_debug_primitives_buffer(struct mesh_buffer *buffer)
+{
+    vector_destroy(buffer->cpu.vertices);
+    xgl_destroy_buffer(buffer->gpu.vertices);
+}
+
+static result_e _create_debug_primitives(struct renderer *renderer)
+{
+    check_ptr(renderer);
+
+    u32 max_points = 1024;
+    u32 max_lines = max_points * 2;
+
+    for (u32 i = 0; i < PRIMITIVE_SIZE_MAX; i++)
+    {
+        check_result(_create_debug_primitives_buffer(renderer, &renderer->debug_draw.points[i], max_points));
+        check_result(_create_debug_primitives_buffer(renderer, &renderer->debug_draw.points_no_depth[i], max_points));
+
+        check_result(_create_debug_primitives_buffer(renderer, &renderer->debug_draw.lines[i], max_lines));
+        check_result(_create_debug_primitives_buffer(renderer, &renderer->debug_draw.lines_no_depth[i], max_lines));
+    }
+
+    return RC_SUCCESS;
+
+error:
+    return RC_FAILURE;
+}
+
+static void _reset_debug_primitives(struct renderer *renderer)
+{
+    check_ptr(renderer);
+
+    for (u32 i = 0; i < PRIMITIVE_SIZE_MAX; i++)
+    {
+        vector_clear(renderer->debug_draw.points[i].cpu.vertices);
+        vector_clear(renderer->debug_draw.points_no_depth[i].cpu.vertices);
+
+        vector_clear(renderer->debug_draw.lines[i].cpu.vertices);
+        vector_clear(renderer->debug_draw.lines_no_depth[i].cpu.vertices);
+    }
+
+error:
+    return;
+}
+
+static void _destroy_debug_primitives(struct renderer *renderer)
+{
+    check_ptr(renderer);
+
+    for (u32 i = 0; i < PRIMITIVE_SIZE_MAX; i++)
+    {
+        _destroy_debug_primitives_buffer(&renderer->debug_draw.points[i]);
+        _destroy_debug_primitives_buffer(&renderer->debug_draw.points_no_depth[i]);
+
+        _destroy_debug_primitives_buffer(&renderer->debug_draw.lines[i]);
+        _destroy_debug_primitives_buffer(&renderer->debug_draw.lines_no_depth[i]);
+    }
+
+error:
+    return;
+}
+
+void renderer_add_point(struct renderer *renderer, struct vec3 p, struct vec3 color, f32 size, f32 lifetime, bool depth)
+{
+    check_ptr(renderer);
+
+    // FIXME lifetime
+
+    struct vertex_1p1c v = {.position = p, .color = color};
+
+    u32 size_idx = clamp(size, 1, PRIMITIVE_SIZE_MAX) - 1;
+
+    struct mesh_buffer *buffer = (depth) ? &renderer->debug_draw.points[size_idx] : &renderer->debug_draw.points_no_depth[size_idx];
+
+    vector_push_back(buffer->cpu.vertices, v);
+
+error:
+    return;
+}
+
+void renderer_add_line(struct renderer *renderer, struct vec3 a, struct vec3 b, struct vec3 color, f32 width, f32 lifetime, bool depth)
+{
+    check_ptr(renderer);
+
+    // FIXME lifetime
+
+    struct vertex_1p1c va = {.position = a, .color = color};
+    struct vertex_1p1c vb = {.position = b, .color = color};
+
+    u32 size_idx = clamp(width, 1, PRIMITIVE_SIZE_MAX) - 1;
+
+    struct mesh_buffer *buffer = (depth) ? &renderer->debug_draw.lines[size_idx] : &renderer->debug_draw.lines_no_depth[size_idx];
+
+    vector_push_back(buffer->cpu.vertices, va);
+    vector_push_back(buffer->cpu.vertices, vb);
+
+error:
+    return;
+}
+
+void renderer_add_axes(struct renderer *renderer, struct mat44 transform, bool depth)
+{
+    check_ptr(renderer);
+
+    ////////////////////////////////////////
+
+    struct vec3 origin  = mat44_mult_vec3(transform, make_vec3_zero());
+    struct vec3 basis_x = mat44_mult_vec3(transform, make_vec3_x_axis());
+    struct vec3 basis_y = mat44_mult_vec3(transform, make_vec3_y_axis());
+    struct vec3 basis_z = mat44_mult_vec3(transform, make_vec3_z_axis());
+
+    ////////////////////////////////////////
+
+    f32 width = 2.0f;
+    f32 lifetime = 0.0f;
+
+    struct renderer_conf *conf = &renderer->conf;
+
+    renderer_add_line(renderer, origin, basis_x, conf->color.axis_x, width, lifetime, depth);
+    renderer_add_line(renderer, origin, basis_y, conf->color.axis_y, width, lifetime, depth);
+    renderer_add_line(renderer, origin, basis_z, conf->color.axis_z, width, lifetime, depth);
+
+error:
+    return;
+}
+
+void renderer_add_aabb(struct renderer *renderer, struct mat44 transform, struct aabb aabb, bool depth)
+{
+    check_ptr(renderer);
+
+    ////////////////////////////////////////
+
+    // top points
+    struct vec3 ta = mat44_mult_vec3(transform, make_vec3(aabb.min.x, aabb.min.z, aabb.max.y));
+    struct vec3 tb = mat44_mult_vec3(transform, make_vec3(aabb.max.x, aabb.min.z, aabb.max.y));
+    struct vec3 tc = mat44_mult_vec3(transform, make_vec3(aabb.max.x, aabb.max.z, aabb.max.y));
+    struct vec3 td = mat44_mult_vec3(transform, make_vec3(aabb.min.x, aabb.max.z, aabb.max.y));
+
+    // bottom points
+    struct vec3 ba = mat44_mult_vec3(transform, make_vec3(aabb.min.x, aabb.min.z, aabb.min.y));
+    struct vec3 bb = mat44_mult_vec3(transform, make_vec3(aabb.max.x, aabb.min.z, aabb.min.y));
+    struct vec3 bc = mat44_mult_vec3(transform, make_vec3(aabb.max.x, aabb.max.z, aabb.min.y));
+    struct vec3 bd = mat44_mult_vec3(transform, make_vec3(aabb.min.x, aabb.max.z, aabb.min.y));
+
+    ////////////////////////////////////////
+
+    f32 width = 1.0f;
+    f32 lifetime = 0.0f;
+
+    struct vec3 color = renderer->conf.color.aabb;
+
+    // top lines
+    renderer_add_line(renderer, ta, tb, color, width, lifetime, depth);
+    renderer_add_line(renderer, tb, tc, color, width, lifetime, depth);
+    renderer_add_line(renderer, tc, td, color, width, lifetime, depth);
+    renderer_add_line(renderer, td, ta, color, width, lifetime, depth);
+
+    // bottom lines
+    renderer_add_line(renderer, ba, bb, color, width, lifetime, depth);
+    renderer_add_line(renderer, bb, bc, color, width, lifetime, depth);
+    renderer_add_line(renderer, bc, bd, color, width, lifetime, depth);
+    renderer_add_line(renderer, bd, ba, color, width, lifetime, depth);
+
+    // connection lines
+    renderer_add_line(renderer, ba, ta, color, width, lifetime, depth);
+    renderer_add_line(renderer, bb, tb, color, width, lifetime, depth);
+    renderer_add_line(renderer, bc, tc, color, width, lifetime, depth);
+    renderer_add_line(renderer, bd, td, color, width, lifetime, depth);
+
+error:
+    return;
+}

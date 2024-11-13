@@ -61,9 +61,15 @@ void rgpu_destroy_cache(struct rgpu_cache *cache)
     // xgl_destroy_shader(cache->shader.vertex_texture);
 
     // pipelines
-    xgl_destroy_pipeline(cache->pipeline.lines);
-    xgl_destroy_pipeline(cache->pipeline.lines_thick);
-    xgl_destroy_pipeline(cache->pipeline.lines_fat);
+    for (u32 i = 0; i < PRIMITIVE_SIZE_MAX; i++)
+    {
+        xgl_destroy_pipeline(cache->pipeline.points[i]);
+        xgl_destroy_pipeline(cache->pipeline.points_no_depth[i]);
+
+        xgl_destroy_pipeline(cache->pipeline.lines[i]);
+        xgl_destroy_pipeline(cache->pipeline.lines_no_depth[i]);
+    }
+
     // xgl_destroy_pipeline(cache->pipeline.debug_uvs);
     // xgl_destroy_pipeline(cache->pipeline.debug_normals);
 
@@ -75,7 +81,20 @@ static result_e _create_depth_stencil_states(struct rgpu_cache *cache)
 {
     check_ptr(cache);
 
-    // ...
+    // depth off, stencil off
+    {
+        static struct xgl_depth_stencil_state state = {0};
+
+        cache->depth_stencil_state.off_off = state;
+    }
+
+    // depth r/w, stencil off
+    {
+        static struct xgl_depth_stencil_state state = {0};
+        state.depth.enable_test = true;
+
+        cache->depth_stencil_state.rw_off = state;
+    }
 
     return RC_SUCCESS;
 
@@ -87,7 +106,14 @@ static result_e _create_rasterizer_states(struct rgpu_cache *cache)
 {
     check_ptr(cache);
 
-    // ...
+    // debug draw
+    {
+        static struct xgl_rasterizer_state state = {0};
+
+        // FIXME enable smooth points + lines ...
+
+        cache->rasterizer_state.debug_draw = state;
+    }
 
     return RC_SUCCESS;
 
@@ -99,7 +125,12 @@ static result_e _create_color_blend_states(struct rgpu_cache *cache)
 {
     check_ptr(cache);
 
-    // ...
+    // opaque
+    {
+        static struct xgl_color_blend_state state = {0};
+
+        cache->color_blend_state.opaque = state;
+    }
 
     return RC_SUCCESS;
 
@@ -328,6 +359,64 @@ error:
     return RC_FAILURE;
 }
 
+static result_e _create_pso_points(struct rgpu_cache *cache)
+{
+    check_ptr(cache);
+
+    ////////////////////////////////////////
+
+    struct xgl_ia_state ia_state = {0};
+    ia_state.topology = XGL_TOPOLOGY_POINT_LIST;
+
+    struct xgl_shader_state shader_state = {0};
+    shader_state.shader = cache->shader.vertex_color;
+
+    struct xgl_pipeline_create_info info = {0};
+    info.type = XGL_PIPELINE_TYPE_GRAPHICS;
+    info.ia_state = &ia_state;
+    info.shader_state = &shader_state;
+    info.rasterizer_state = &cache->rasterizer_state.debug_draw;
+    info.input_layout = &cache->input_layout.position_color;
+    info.pipeline_layout = cache->pipeline_layout.main;
+
+    ////////////////////////////////////////
+
+    struct string pso_names[] = {
+        make_string("pso.points"),
+        make_string("pso.points.no_depth"),
+
+        make_string("pso.points_thick"),
+        make_string("pso.points_thick.no_depth"),
+
+        make_string("pso.points_fat"),
+        make_string("pso.points_fat.no_depth"),
+    };
+
+    for (u32 i = 0; i < PRIMITIVE_SIZE_MAX; i++)
+    {
+        info.rasterizer_state->point_size = (i + 1) * (i + 1);
+
+        // with depth
+        info.name = pso_names[i];
+        info.depth_stencil_state = &cache->depth_stencil_state.rw_off;
+
+        check_result(xgl_create_pipeline(&info, &cache->pipeline.points[i]));
+
+        // without depth
+        info.name = pso_names[i + 1];
+        info.depth_stencil_state = &cache->depth_stencil_state.off_off;
+
+        check_result(xgl_create_pipeline(&info, &cache->pipeline.points_no_depth[i]));
+    }
+
+    ////////////////////////////////////////
+
+    return RC_SUCCESS;
+
+error:
+    return RC_FAILURE;
+}
+
 static result_e _create_pso_lines(struct rgpu_cache *cache)
 {
     check_ptr(cache);
@@ -340,39 +429,43 @@ static result_e _create_pso_lines(struct rgpu_cache *cache)
     struct xgl_shader_state shader_state = {0};
     shader_state.shader = cache->shader.vertex_color;
 
-    struct xgl_depth_stencil_state ds = {0};
-    ds.depth.enable_test = true;
-
-    struct xgl_rasterizer_state rs = {0};
-
     struct xgl_pipeline_create_info info = {0};
     info.type = XGL_PIPELINE_TYPE_GRAPHICS;
     info.ia_state = &ia_state;
     info.shader_state = &shader_state;
-    info.depth_stencil_state = &ds;
-    info.rasterizer_state = &rs;
+    info.rasterizer_state = &cache->rasterizer_state.debug_draw;
     info.input_layout = &cache->input_layout.position_color;
     info.pipeline_layout = cache->pipeline_layout.main;
 
     ////////////////////////////////////////
 
-    // lines
-    info.name = make_string("pso.lines");
-    info.rasterizer_state->line_width = 1;
+    struct string pso_names[] = {
+        make_string("pso.lines"),
+        make_string("pso.lines.no_depth"),
 
-    check_result(xgl_create_pipeline(&info, &cache->pipeline.lines));
+        make_string("pso.lines_thick"),
+        make_string("pso.lines_thick.no_depth"),
 
-    // lines thick
-    info.name = make_string("pso.lines_thick");
-    info.rasterizer_state->line_width = 2;
+        make_string("pso.lines_fat"),
+        make_string("pso.lines_fat.no_depth"),
+    };
 
-    check_result(xgl_create_pipeline(&info, &cache->pipeline.lines_thick));
+    for (u32 i = 0; i < PRIMITIVE_SIZE_MAX; i++)
+    {
+        info.rasterizer_state->line_width = (i + 1) * (i + 1);
 
-    // lines fat
-    info.name = make_string("pso.lines_fat");
-    info.rasterizer_state->line_width = 3;
+        // with depth
+        info.name = pso_names[i];
+        info.depth_stencil_state = &cache->depth_stencil_state.rw_off;
 
-    check_result(xgl_create_pipeline(&info, &cache->pipeline.lines_fat));
+        check_result(xgl_create_pipeline(&info, &cache->pipeline.lines[i]));
+
+        // without depth
+        info.name = pso_names[i + 1];
+        info.depth_stencil_state = &cache->depth_stencil_state.off_off;
+
+        check_result(xgl_create_pipeline(&info, &cache->pipeline.lines_no_depth[i]));
+    }
 
     ////////////////////////////////////////
 
@@ -386,7 +479,7 @@ static result_e _create_pipelines(struct rgpu_cache *cache)
 {
     check_ptr(cache);
 
-    // check_result(_create_pso_points(cache));
+    check_result(_create_pso_points(cache));
     check_result(_create_pso_lines(cache));
 
     return RC_SUCCESS;

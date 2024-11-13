@@ -17,4 +17,4 @@ void rcpu_draw_mesh_primitive(struct mesh_primitive *primitive);
 
 void rcpu_pass_meshes(struct renderer *renderer, struct vector *meshes);
 void rcpu_pass_gizmos(struct renderer *renderer);
-void rcpu_pass_debug_draw(struct renderer *renderer);
+void rcpu_pass_debug_primitives(struct renderer *renderer);

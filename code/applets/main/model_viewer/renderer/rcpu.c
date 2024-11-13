@@ -50,6 +50,7 @@ void rcpu_tick(struct renderer *renderer, struct pixelbuffer *pb, struct softgl_
 
     rcpu_pass_meshes(renderer, NULL);
     rcpu_pass_gizmos(renderer);
+    rcpu_pass_debug_primitives(renderer);
 
 error:
     return;
@@ -137,12 +138,38 @@ error:
     return;
 }
 
-void rcpu_pass_debug_draw(struct renderer *renderer)
+static void _draw_primitives(struct renderer *renderer, struct mesh_buffer *buffer, softgl_pipeline pso)
+{
+    check_ptr(renderer);
+    check_ptr(buffer);
+
+    check_quiet(vector_size(buffer->cpu.vertices) > 0);
+
+    struct mesh_primitive mesh = {0};
+    mesh.buffer = buffer;
+    mesh.vertices.count = vector_size(buffer->cpu.vertices);
+
+    softgl_bind_pipeline(pso);
+    rcpu_draw_mesh_primitive(&mesh);
+
+error:
+    return;
+}
+
+void rcpu_pass_debug_primitives(struct renderer *renderer)
 {
     struct rcpu_cache *cache = &renderer->rcpu->cache;
     struct renderer_shader_data *shader_data = &renderer->shader_data;
 
-    // ...
+    // draw primitives
+    for (u32 i = 0; i < PRIMITIVE_SIZE_MAX; i++)
+    {
+        _draw_primitives(renderer, &renderer->debug_draw.lines[i], cache->pipeline.lines);
+        _draw_primitives(renderer, &renderer->debug_draw.points[i], cache->pipeline.points);
+
+        _draw_primitives(renderer, &renderer->debug_draw.lines_no_depth[i], cache->pipeline.lines_no_depth);
+        _draw_primitives(renderer, &renderer->debug_draw.points_no_depth[i], cache->pipeline.points_no_depth);
+    }
 
 error:
     return;

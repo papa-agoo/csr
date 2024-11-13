@@ -20,7 +20,7 @@ struct aabb
     make_aabb(make_vec3_zero(), make_vec3_zero());
 
 #define make_aabb_unit_cube() \
-    make_aabb(make_vec3(-1, -1, -1), make_vec3_one());
+    make_aabb(make_vec3(-1, -1, -1), make_vec3_one())
 
 ////////////////////////////////////////////////////////////////////////////////
 

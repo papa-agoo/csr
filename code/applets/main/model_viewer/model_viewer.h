@@ -53,3 +53,4 @@ void model_viewer_set_camera_ctl_type(enum camera_ctl_type type);
 struct mv_conf* model_viewer_get_conf();
 
 #define mv_renderer_conf_ptr() (model_viewer_get_conf()->renderer)
+struct renderer* model_viewer_get_renderer();

@@ -82,7 +82,7 @@ void rgpu_tick(struct renderer *renderer, struct xgl_viewport vp)
 
     rgpu_pass_meshes(renderer, NULL);
     rgpu_pass_gizmos(renderer);
-    rgpu_pass_debug_draw(renderer);
+    rgpu_pass_debug_primitives(renderer);
 
 error:
     return;
@@ -183,7 +183,7 @@ void rgpu_pass_gizmos(struct renderer *renderer)
     // grid
     struct mesh_gizmo *grid = &renderer->gizmo.grid;
     {
-        xgl_bind_pipeline(XGL_PIPELINE_TYPE_GRAPHICS, cache->pipeline.lines);
+        xgl_bind_pipeline(XGL_PIPELINE_TYPE_GRAPHICS, cache->pipeline.lines[PRIMITIVE_SIZE_NORMAL]);
         rgpu_draw_mesh_primitive(&grid->primitive);
     }
 
@@ -197,7 +197,7 @@ void rgpu_pass_gizmos(struct renderer *renderer)
 
             xgl_set_viewports(1, &vp);
 
-            xgl_bind_pipeline(XGL_PIPELINE_TYPE_GRAPHICS, cache->pipeline.lines_fat);
+            xgl_bind_pipeline(XGL_PIPELINE_TYPE_GRAPHICS, cache->pipeline.lines_no_depth[PRIMITIVE_SIZE_THICK]);
             rgpu_draw_mesh_primitive(&axes->primitive);
         }
 
@@ -210,7 +210,40 @@ error:
     return;
 }
 
-void rgpu_pass_debug_draw(struct renderer *renderer)
+static void _draw_primitives(struct renderer *renderer, struct mesh_buffer *buffer, xgl_pipeline pso)
 {
-    // ...
+    check_ptr(renderer);
+    check_ptr(buffer);
+
+    check_quiet(vector_size(buffer->cpu.vertices) > 0);
+
+    // update gpu buffer
+    check_result(xgl_update_buffer(buffer->gpu.vertices, 0, vector_byte_length(buffer->cpu.vertices), vector_data(buffer->cpu.vertices)));
+
+    // draw primitives
+    struct mesh_primitive mesh = {0};
+    mesh.buffer = buffer;
+    mesh.vertices.count = vector_size(buffer->cpu.vertices);
+
+    xgl_bind_pipeline(XGL_PIPELINE_TYPE_GRAPHICS, pso);
+    rgpu_draw_mesh_primitive(&mesh);
+
+error:
+    return;
+}
+
+void rgpu_pass_debug_primitives(struct renderer *renderer)
+{
+    struct rgpu_cache *cache = rgpu_cache_ptr();
+    struct renderer_shader_data *shader_data = &renderer->shader_data;
+
+    // draw primitives
+    for (u32 i = 0; i < PRIMITIVE_SIZE_MAX; i++)
+    {
+        _draw_primitives(renderer, &renderer->debug_draw.lines[i], cache->pipeline.lines[i]);
+        _draw_primitives(renderer, &renderer->debug_draw.points[i], cache->pipeline.points[i]);
+
+        _draw_primitives(renderer, &renderer->debug_draw.lines_no_depth[i], cache->pipeline.lines_no_depth[i]);
+        _draw_primitives(renderer, &renderer->debug_draw.points_no_depth[i], cache->pipeline.points_no_depth[i]);
+    }
 }

@@ -72,6 +72,16 @@ static void _remove_element(struct vector* vector, u32 idx)
     vector->element_count--;
 }
 
+void vector_clear(struct vector* vector)
+{
+    check_ptr(vector);
+
+    vector->element_count = 0;
+
+error:
+    return;
+}
+
 void vector_reset(struct vector* vector)
 {
     check_ptr(vector);

@@ -6,6 +6,15 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+enum primitive_size
+{
+    PRIMITIVE_SIZE_NORMAL = 0,
+    PRIMITIVE_SIZE_THICK,
+    PRIMITIVE_SIZE_FAT,
+
+    PRIMITIVE_SIZE_MAX,
+};
+
 struct material
 {
     struct string name;

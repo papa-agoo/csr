@@ -18,4 +18,4 @@ void rgpu_draw_mesh_primitive(struct mesh_primitive *primitive);
 void rgpu_pass_meshes(struct renderer *renderer, struct vector *meshes);
 void rgpu_pass_environment(struct renderer *renderer);
 void rgpu_pass_gizmos(struct renderer *renderer);
-void rgpu_pass_debug_draw(struct renderer *renderer);
+void rgpu_pass_debug_primitives(struct renderer *renderer);

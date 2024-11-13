@@ -10,17 +10,18 @@ struct rgpu_cache
 {
     // depth stencil states
     struct {
-        struct xgl_depth_stencil_state foo;
+        struct xgl_depth_stencil_state off_off;
+        struct xgl_depth_stencil_state rw_off;
     } depth_stencil_state;
 
     // rasterizer states
     struct {
-        struct xgl_rasterizer_state foo;
+        struct xgl_rasterizer_state debug_draw;
     } rasterizer_state;
 
     // color blend states
     struct {
-        struct xgl_color_blend_state foo;
+        struct xgl_color_blend_state opaque;
     } color_blend_state;
 
     // input layouts
@@ -52,9 +53,13 @@ struct rgpu_cache
 
     // pipelines
     struct {
-        xgl_pipeline lines;
-        xgl_pipeline lines_thick;
-        xgl_pipeline lines_fat;
+        // points
+        xgl_pipeline points[PRIMITIVE_SIZE_MAX];
+        xgl_pipeline points_no_depth[PRIMITIVE_SIZE_MAX];
+
+        // lines
+        xgl_pipeline lines[PRIMITIVE_SIZE_MAX];
+        xgl_pipeline lines_no_depth[PRIMITIVE_SIZE_MAX];
 
         xgl_pipeline debug_uvs;
         xgl_pipeline debug_normals;

@@ -11,6 +11,7 @@ struct vector;
 struct vector* vector_create(size_t capacity, size_t element_size); // FIXME fixed size vector
 void vector_destroy(struct vector* vector);
 
+void vector_clear(struct vector* vector);
 void vector_reset(struct vector* vector);
 s32 vector_resize(struct vector* vector, size_t capacity);
 

@@ -57,37 +57,28 @@ struct renderer;
 
 // meshes
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-
-// void renderer_mesh_create();
-// void renderer_mesh_destroy();
 // ...
 
 
 // materials
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-
-// void renderer_material_create();
-// void renderer_material_destroy();
-
-// void renderer_effect_create();
-// void renderer_effect_destroy();
-
-// void renderer_shader_create();
-// void renderer_shader_destroy();
-
-// void renderer_texture_create();
-// void renderer_texture_destroy();
-
 // ...
 
 
-// debug draw
+// debug primitives
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// void renderer_debug_draw_point(struct vec3 p, struct vec3 color, f32 size, bool depth_tested);
-// void renderer_debug_draw_line(struct vec3 p1, struct vec3 p2, struct vec3 color, f32 width, bool depth_tested);
+// screen space
+// void renderer_add_point_2d();
+// void renderer_add_line_2d();
+// void renderer_add_box_2d();
+// void renderer_add_text();
 
-// void renderer_debug_draw_quad(struct vec3 min, struct vec3 max, const struct mat44 *transform, struct vec3 color, bool depth_tested);
 
-// void renderer_debug_draw_aabb(const struct aabb *aabb, const struct mat44 *transform, bool depth_tested);
-// void renderer_debug_draw_axes(const struct mat44 *transform, bool depth_tested);
+// world space
+void renderer_add_point(struct renderer *renderer, struct vec3 p, struct vec3 color, f32 size, f32 lifetime, bool depth);
+void renderer_add_line(struct renderer *renderer, struct vec3 a, struct vec3 b, struct vec3 color, f32 width, f32 lifetime, bool depth);
+
+// object space
+void renderer_add_axes(struct renderer *renderer, struct mat44 transform, bool depth);
+void renderer_add_aabb(struct renderer *renderer, struct mat44 transform, struct aabb aabb, bool depth);

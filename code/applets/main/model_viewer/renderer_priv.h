@@ -57,8 +57,11 @@ struct renderer
     } gizmo;
 
     struct {
-        struct mesh_buffer points;
-        struct mesh_buffer lines;
+        struct mesh_buffer points[PRIMITIVE_SIZE_MAX];
+        struct mesh_buffer points_no_depth[PRIMITIVE_SIZE_MAX];
+
+        struct mesh_buffer lines[PRIMITIVE_SIZE_MAX];
+        struct mesh_buffer lines_no_depth[PRIMITIVE_SIZE_MAX];
     } debug_draw;
 
     struct {

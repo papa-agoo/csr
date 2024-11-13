@@ -9,6 +9,7 @@ add_library(${MY_TARGET}
     SHARED
         main.c
         model_viewer.c
+        model_viewer_input.c
 
         ui/widgets.c
         ui/register.c
