@@ -28,19 +28,22 @@ void gp_process_fragment(struct softgl_fragment* fragment)
     ////////////////////////////////////////
 
     // early depth test
-    // struct softgl_depth_state *ds = &softgl_pso_ptr()->depth_stencil_state.depth;
+    struct softgl_depth_state *ds = &softgl_pso_ptr()->depth_stencil_state.depth;
 
-    // if (ds->enable_test)
-    // {
-    //     f32 *depth_stencil_buffer = pb->user_data;
+    if (ds->enable_test)
+    {
+        // u32 p_y = fragment->frag_coords.y;
+        // u32 p_x = fragment->frag_coords.x;
 
-    //     f32* z_new = &fragment->frag_coords.z;
-    //     f32* z_old = depth_stencil_buffer + offset;
+        // u32 offset = (pb->width * p_y) + p_x;
 
-    //     if (*z_new > *z_old) return;
+        // f32* z_new = &fragment->frag_coords.z;
+        // f32* z_old = pb->user_data + offset;
 
-    //     *z_old = *z_new;
-    // }
+        // if (*z_new < *z_old) return;
+
+        // *z_old = *z_new;
+    }
 
     ////////////////////////////////////////
 
@@ -84,9 +87,10 @@ void gp_rasterize_line(struct softgl_vertex* a, struct softgl_vertex* b)
 
     ////////////////////////////////////////
 
-    // FIXME bresenham for now, will do edge equations next
+    // FIXME bresenham for now, will do edge equations next (no interpolation of depth or vertex attributes)
     struct softgl_fragment fragment = {0};
-    fragment.attribs_in = b->attribs_out;
+    fragment.frag_coords = a->position;
+    fragment.attribs_in = a->attribs_out;
 
     while (1)
     {

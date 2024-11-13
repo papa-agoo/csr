@@ -79,7 +79,9 @@ struct softgl_pipeline
 
     struct softgl_shader* shader;
 
-    // ...
+    struct softgl_depth_stencil_state depth_stencil_state;
+    // struct softgl_rasterizer_state rasterizer_state;
+    // struct softgl_color_blend_state color_blend_state;
 
     struct vector *attrib_inputs; // FIXME?
 };
@@ -108,9 +110,15 @@ struct softgl_state
     } binding;
 };
 
+struct mem_arena;
+
 struct softgl_driver
 {
     bool is_initialized;
+
+    struct {
+        struct mem_arena* arena;
+    } allocator;
 
     struct softgl_state state;
     struct softgl_storage storage;
@@ -123,6 +131,7 @@ struct softgl_driver* softgl_driver_ptr();
 
 #define softgl_state_ptr() (&softgl_driver_ptr()->state)
 #define softgl_storage_ptr() (&softgl_driver_ptr()->storage)
+#define softgl_allocator_ptr() (&softgl_driver_ptr()->allocator)
 
 #define softgl_binding_ptr() (softgl_state_ptr()->binding)
 #define softgl_pso_ptr() (softgl_binding_ptr().pipeline)

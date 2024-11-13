@@ -75,7 +75,10 @@ result_e softgl_create_pipeline(struct softgl_pipeline_create_info* info, softgl
     pipeline.topology = info->ia_state->topology;
     pipeline.shader = shader;
 
-    // .. depth stencil state
+    if (info->depth_stencil_state) {
+        pipeline.depth_stencil_state = *info->depth_stencil_state;
+    }
+
     // .. rasterizer state
     // .. color blend state
 

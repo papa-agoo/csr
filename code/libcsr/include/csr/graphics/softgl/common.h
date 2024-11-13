@@ -223,6 +223,27 @@ struct softgl_shader_state
     softgl_shader shader;
 };
 
+struct softgl_depth_state
+{
+    bool enable_test;
+    bool disable_write;
+
+    // FIXME compare op
+};
+
+struct softgl_stencil_state
+{
+    bool enable;
+
+    // FIXME stencil ops (front + back)
+};
+
+struct softgl_depth_stencil_state
+{
+    struct softgl_depth_state depth;
+    struct softgl_stencil_state stencil;
+};
+
 struct softgl_pipeline_create_info
 {
     struct string name;
@@ -231,7 +252,7 @@ struct softgl_pipeline_create_info
     struct softgl_shader_state *shader_state;
 
     // struct softgl_rasterizer_state *rasterizer_state;
-    // struct softgl_depth_stencil_state *depth_stencil_state;
+    struct softgl_depth_stencil_state *depth_stencil_state;
     // struct softgl_color_blend_state *color_blend_state;
 
     struct softgl_input_layout *input_layout;
