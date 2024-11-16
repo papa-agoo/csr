@@ -15,7 +15,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #define ENV_APP_NAME                "CSR"
-#define ENV_APP_VERSION             "0.0.4"
+#define ENV_APP_VERSION             "0.0.5"
 
 #define ENV_APPLET_DIR              "./applets"
 #define ENV_RESOURCE_DIR            "./resources"

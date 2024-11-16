@@ -112,30 +112,44 @@ The main focus lies on the Model Viewer Applet (model_viewer.so) which will be a
   - [x] Application
     - [x] Reload current applet
     - [x] Remember last loaded applet
-  - [ ] Library
-    - [ ] SoftGL Rasterizer
-  - [ ] Applets
+  - [x] Library
+    - [x] SoftGL #1
+      - [x] Vertex Pipeline
+      - [x] Fragment Pipeline
+  - [x] Applets
     - [x] ecs_hello_world.so (some tests with Flecs)
     - [x] xgl_hello_cube.so (textured)
-    - [ ] model_viewer.so
-      - [ ] 3D scene (Base Grid, Orbit Camera, Orientantion Gizmo, Unit Cube AABB)
-      - [ ] User Interface (Model, Camera, Renderers, Debug Info)
-      - [ ] GPU + CPU renderers (XGL + SoftGL)
+    - [x] model_viewer.so #1
+      - [x] 3D scene (Base Grid, Orbit Camera, Orientantion Gizmo, Unit Cube AABB)
+      - [x] User Interface (Model, Camera, Renderers, Debug Info)
+      - [x] GPU + CPU renderers (XGL + SoftGL)
 
 <br/>
 
 * **Milestone 3 (Mesh Loading + Debug Materials)**
+  - [ ] Application
+    - [ ] User Help Window (Key Mappings for Application + Applet)
   - [ ] Library
-    - [ ] SoftGL Texture Mapping
-  - [ ] model_viewer.so
-    - [ ] Builtin procedural meshes (Cube, Sphere, Torus, ...)
+    - [ ] SoftGL #2
+      - [ ] Depth / Stencil States
+      - [ ] Proper Culling
+      - [ ] Proper Clipping
+  - [ ] model_viewer.so #1
+    - [ ] Builtin procedural meshes #1 (Cube, Sphere, Torus, ...)
     - [ ] Loaders for Wavefront OBJ / glTF files
-    - [ ] Debug materials (Point Cloud, Wireframe, Normals, UVs, Solid, Textured)
+    - [ ] Debug materials (Point Cloud, Wireframe, Normals, UVs, Solid)
     - [ ] Integration of the ImGuizmo Library
+    - [ ] FPS Camera
+    - [ ] Orthographic Rendering
 
 <br/>
 
 * **Milestone 4 (Lighting + Environment)**
+  - [ ] Library
+    - [ ] SoftGL #3
+      - [ ] Proper Line Rasterizer (with attrib. interpolation)
+      - [ ] Texture Mapping
+      - [ ] OPTIMIZATION
   - [ ] model_viewer.so
     - [ ] Legacy Lighting
     - [ ] Soft Shadows
@@ -151,6 +165,14 @@ The main focus lies on the Model Viewer Applet (model_viewer.so) which will be a
   - ...
 
 ## Media
+
+Release v0.0.5
+
+GPU + CPU Renderers | CPU Renderer | CPU Renderer (fullscreen)
+:-------------------------:|:-------------------------:|:-------------------------:
+| ![v0.0.5](files/005_1.png) | ![v0.0.5](files/005_2.png) | ![v0.0.5](files/005_3.png) |
+
+<br/>
 
 Very early version. This little project ignited my passion for graphics programming a few years ago. :)
 

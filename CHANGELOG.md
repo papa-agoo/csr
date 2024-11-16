@@ -4,6 +4,27 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [0.0.5] - 2024-11-16
+### Added
+- Application
+  - Reload current applet
+  - Remember last loaded applet
+- Library
+  - Migrate Codebase to new String impl. (+ custom printf specifier)
+  - Initial migration to the Arena allocator
+  - Initial SoftGL Rasterizer
+  - Many math related problems solved
+  - Add colors to check() / log() macros for better readabilty
+  - Add suspend / resume support to screens
+- Applets
+  - ecs_hello_world.so
+  - xgl_hello_cube.so
+  - softgl_hello_triangle.so
+  - model_viewer.so
+    - 3D scene (Base Grid, Orbit Camera, Orientantion Gizmo, Unit Cube AABB)
+    - User Interface (Model, Camera, Renderers, Debug Info)
+    - GPU + CPU renderers (XGL + SoftGL)
+
 ## [0.0.4] - 2024-09-10
 ### Added
 - Application
@@ -56,6 +77,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [0.0.0] - 2022-10-10
 - Big Bang ;)
 
+[0.0.5]: https://github.com/papa-agoo/csr/compare/v0.0.4...v0.0.5
 [0.0.4]: https://github.com/papa-agoo/csr/compare/v0.0.3...v0.0.4
 [0.0.3]: https://github.com/papa-agoo/csr/compare/v0.0.2...v0.0.3
 [0.0.2]: https://github.com/papa-agoo/csr/compare/v0.0.1...v0.0.2
