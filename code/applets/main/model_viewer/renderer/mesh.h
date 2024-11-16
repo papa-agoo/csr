@@ -24,20 +24,6 @@ struct mesh_buffer
     } gpu;
 };
 
-struct mesh
-{
-    struct vector *primitives;
-
-    struct mesh_shader_data {
-        struct {
-            struct shader_data_object cpu;
-            xgl_buffer gpu;
-        } buffer;
-
-        xgl_descriptor_set ds;
-    } shader_data;
-};
-
 struct mesh_primitive
 {
     struct {
@@ -52,6 +38,20 @@ struct mesh_primitive
 
     struct material *material;
     struct mesh_buffer *buffer;
+};
+
+struct mesh
+{
+    struct vector *primitives;
+
+    struct mesh_shader_data {
+        struct {
+            struct shader_data_object cpu;
+            xgl_buffer gpu;
+        } buffer;
+
+        xgl_descriptor_set ds;
+    } shader_data;
 };
 
 struct mesh_node

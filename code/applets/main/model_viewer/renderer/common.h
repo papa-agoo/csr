@@ -88,5 +88,6 @@ struct shader_data_object
     struct mat44 mat_model;
     struct mat44 mat_mvp;
 
+    bool use_object_mvp;
     // ...
 };

@@ -112,25 +112,44 @@ void model_viewer_tick()
             frame_data->mat_projection_ortho = camera_get_ortho_projection_matrix(camera, aspect_ratio);
         }
 
-        {
-            struct mat44 transform = mat44_translate(make_vec3(0, 1, 0));
-
-            renderer_add_axes(mv_renderer_ptr(), transform, false);
-            renderer_add_aabb(mv_renderer_ptr(), transform, make_aabb_unit_cube(), false);
-
-            if (camera_ctl->type == CAMERA_CTL_ORBITAL)
-            {
-                struct camera_ctl_orbital *data = camera_ctl->data;
-                struct orbit *orbit = &data->orbit_src;
-
-                renderer_add_point(mv_renderer_ptr(), orbit->origin, make_vec3(1, 1, 1), 3, 0, false);
-            }
-        }
-
         // update model
         {
             // update model transform (model_ctl)
+            // ...
+
             // update mesh_node hierarchy (compute mesh matrices)
+            // ...
+        }
+
+        // FIXME streamline when model / mesh building is properly impl.
+        {
+            // temp debug primitives
+            struct vec3 origin = {0};
+            {
+                if (camera_ctl->type == CAMERA_CTL_ORBITAL)
+                {
+                    struct camera_ctl_orbital *data = camera_ctl->data;
+                    struct orbit *orbit = &data->orbit_src;
+
+                    renderer_add_point(mv_renderer_ptr(), orbit->origin, make_vec3(1, 1, 1), 3, 0, false);
+
+                    origin = orbit->origin;
+                }
+
+                struct mat44 m = mat44_translate(make_vec3(0, 1, 0));
+                renderer_add_axes(mv_renderer_ptr(), m, false);
+                renderer_add_aabb(mv_renderer_ptr(), m, make_aabb_unit_cube(), false);
+            }
+
+            // update gizmo shader data
+            {
+                struct mesh_gizmo *axes = &mv_renderer_ptr()->gizmo.axes;
+                axes->data.mat_mvp = mat44_mult(mat44_mult(frame_data->mat_projection_ortho, frame_data->mat_view), mat44_translate(origin));
+                axes->data.use_object_mvp = true;
+
+                struct mesh_gizmo *grid = &mv_renderer_ptr()->gizmo.grid;
+                grid->data = mv_renderer_ptr()->shader_data.object.buffer.cpu;
+            }
         }
     }
 

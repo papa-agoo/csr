@@ -112,6 +112,8 @@ void rcpu_pass_gizmos(struct renderer *renderer)
     // grid
     struct mesh_gizmo *grid = &renderer->gizmo.grid;
     {
+        softgl_bind_descriptor_set(SOFTGL_DESCRIPTOR_SET_TYPE_OBJECT, &grid->data);
+
         softgl_bind_pipeline(cache->pipeline.lines);
         rcpu_draw_mesh_primitive(&grid->primitive);
     }
@@ -119,6 +121,8 @@ void rcpu_pass_gizmos(struct renderer *renderer)
     // axes
     struct mesh_gizmo *axes = &renderer->gizmo.axes;
     {
+        softgl_bind_descriptor_set(SOFTGL_DESCRIPTOR_SET_TYPE_OBJECT, &axes->data);
+
         // draw the axes gizmo (top right corner)
         {
             struct softgl_viewport vp = rcpu_ptr()->vp;
@@ -160,6 +164,9 @@ void rcpu_pass_debug_primitives(struct renderer *renderer)
 {
     struct rcpu_cache *cache = &renderer->rcpu->cache;
     struct renderer_shader_data *shader_data = &renderer->shader_data;
+
+    // FIXME
+    softgl_bind_descriptor_set(SOFTGL_DESCRIPTOR_SET_TYPE_OBJECT, &shader_data->object.buffer.cpu);
 
     // draw primitives
     for (u32 i = 0; i < PRIMITIVE_SIZE_MAX; i++)

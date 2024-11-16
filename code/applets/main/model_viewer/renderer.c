@@ -219,6 +219,37 @@ static result_e _create_shader_data(struct renderer *renderer)
         // ...
     }
 
+    // object
+    {
+        // create buffer
+        struct xgl_buffer_create_info info = {0};
+        info.usage_flags = XGL_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+        info.byte_length = sizeof(struct shader_data_object);
+        info.data = &shader_data->object.buffer.cpu;
+
+        check_result(xgl_create_buffer(&info, &shader_data->object.buffer.gpu));
+
+        // create descriptor set
+        check_result(xgl_create_descriptor_set(cache->ds_layout.object, &shader_data->object.ds));
+
+        // update descriptor set
+        struct xgl_buffer_descriptor descriptor = {0};
+        descriptor.binding = 0;
+        descriptor.buffer = shader_data->object.buffer.gpu;
+
+        struct xgl_descriptor_set_update_info update_info = {0};
+        update_info.buffer_descriptors = &descriptor;
+        update_info.buffer_descriptor_count = 1;
+
+        check_result(xgl_update_descriptor_set(shader_data->object.ds, &update_info));
+
+        // set default values
+        struct shader_data_object *data = info.data;
+        data->mat_model = mat44_identity();
+        data->mat_mvp = mat44_identity();
+        data->use_object_mvp = false;
+    }
+
     return RC_SUCCESS;
 
 error:
@@ -236,6 +267,9 @@ static void _destroy_shader_data(struct renderer *renderer)
 
     xgl_destroy_buffer(shader_data->pass_main.buffer.gpu);
     xgl_destroy_descriptor_set(shader_data->pass_main.ds);
+
+    xgl_destroy_buffer(shader_data->object.buffer.gpu);
+    xgl_destroy_descriptor_set(shader_data->object.ds);
 
 error:
     return;

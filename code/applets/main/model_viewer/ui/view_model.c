@@ -4,7 +4,7 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void ui_widget_transform(struct transform *transform, bool* show_matrix, f64 dt);
+void ui_widget_transform(struct transform *transform, bool* show_matrix, bool invert_matrix, f64 dt);
 
 static void _os_open_file_dialog()
 {
@@ -75,8 +75,8 @@ static void _draw_transform_view(struct model* model)
 
     ////////////////////////////////////////
 
-    static bool show_model_matrix = false;
-    ui_widget_transform(transform, &show_model_matrix, aio_time_elapsed_delta());
+    // static bool show_model_matrix = true;
+    // ui_widget_transform(transform, &show_model_matrix, false, aio_time_elapsed_delta());
 }
 
 void ui_draw_model_view()

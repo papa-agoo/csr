@@ -6,13 +6,17 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+// FIXME >>> use mesh_node
 struct mesh_gizmo
 {
     struct string name;
 
     struct mesh_buffer buffer;
     struct mesh_primitive primitive;
+
+    struct shader_data_object data;
 };
+// FIXME <<< use mesh_node
 
 struct renderer_shader_data
 {
@@ -40,6 +44,16 @@ struct renderer_shader_data
     struct {
         xgl_descriptor_set ds;
     } pass_environment;
+
+    // object (fallback)
+    struct {
+        struct {
+            struct shader_data_object cpu;
+            xgl_buffer gpu;
+        } buffer;
+
+        xgl_descriptor_set ds;
+    } object;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -51,7 +65,6 @@ struct renderer
     struct renderer_shader_data shader_data;
 
     struct {
-        struct mesh_gizmo aabb;
         struct mesh_gizmo axes;
         struct mesh_gizmo grid;
     } gizmo;

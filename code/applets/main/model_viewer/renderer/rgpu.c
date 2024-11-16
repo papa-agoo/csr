@@ -180,9 +180,21 @@ void rgpu_pass_gizmos(struct renderer *renderer)
     // bind pass data
     xgl_bind_descriptor_set(XGL_DESCRIPTOR_SET_TYPE_PASS, cache->pipeline_layout.main, shader_data->pass_main.ds);
 
+    // bind object data
+    xgl_bind_descriptor_set(XGL_DESCRIPTOR_SET_TYPE_OBJECT, cache->pipeline_layout.main, shader_data->object.ds);
+
     // grid
     struct mesh_gizmo *grid = &renderer->gizmo.grid;
     {
+        // FIXME streamline
+        struct shader_data_object *cpu = &grid->data;
+        {
+            struct shader_data_object *gpu = xgl_map_buffer(shader_data->object.buffer.gpu);
+
+            memcpy(gpu, cpu, sizeof(struct shader_data_object));
+            xgl_unmap_buffer(shader_data->object.buffer.gpu);
+        }
+
         xgl_bind_pipeline(XGL_PIPELINE_TYPE_GRAPHICS, cache->pipeline.lines[PRIMITIVE_SIZE_NORMAL]);
         rgpu_draw_mesh_primitive(&grid->primitive);
     }
@@ -190,6 +202,15 @@ void rgpu_pass_gizmos(struct renderer *renderer)
     // axes
     struct mesh_gizmo *axes = &renderer->gizmo.axes;
     {
+        // FIXME streamline
+        struct shader_data_object *cpu = &axes->data;
+        {
+            struct shader_data_object *gpu = xgl_map_buffer(shader_data->object.buffer.gpu);
+
+            memcpy(gpu, cpu, sizeof(struct shader_data_object));
+            xgl_unmap_buffer(shader_data->object.buffer.gpu);
+        }
+
         // draw the axes gizmo (top right corner)
         {
             struct xgl_viewport vp = rgpu_ptr()->vp;
@@ -203,7 +224,6 @@ void rgpu_pass_gizmos(struct renderer *renderer)
 
         // restore viewport
         xgl_set_viewports(1, &rgpu_ptr()->vp);
-
     }
 
 error:
@@ -236,6 +256,17 @@ void rgpu_pass_debug_primitives(struct renderer *renderer)
 {
     struct rgpu_cache *cache = rgpu_cache_ptr();
     struct renderer_shader_data *shader_data = &renderer->shader_data;
+
+    xgl_bind_descriptor_set(XGL_DESCRIPTOR_SET_TYPE_OBJECT, cache->pipeline_layout.main, shader_data->object.ds);
+
+    // FIXME streamline
+    struct shader_data_object *cpu = &shader_data->object.buffer.cpu;
+    {
+        struct shader_data_object *gpu = xgl_map_buffer(shader_data->object.buffer.gpu);
+
+        memcpy(gpu, cpu, sizeof(struct shader_data_object));
+        xgl_unmap_buffer(shader_data->object.buffer.gpu);
+    }
 
     // draw primitives
     for (u32 i = 0; i < PRIMITIVE_SIZE_MAX; i++)
