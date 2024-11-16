@@ -87,6 +87,7 @@ void mv_on_kbd_key_press(struct keyboard_event *e)
 
 void mv_on_mouse_move(struct mouse_event *e)
 {
+    struct camera *camera = model_viewer_get_camera();
     struct camera_ctl *ctl = model_viewer_get_camera_ctl();
 
     if (ctl->type == CAMERA_CTL_ORBITAL)
@@ -112,12 +113,16 @@ void mv_on_mouse_move(struct mouse_event *e)
         // camera panning
         if (aio_hid_mouse_button_down(MOUSE_BUTTON_RIGHT))
         {
+            // FIXME add option for interpolated grid point snapping (configurable distances: 0.5, 1.0, ...)
             f32 speed = aio_time_elapsed_delta() * orbit->radius * 0.1;
 
-            // FIXME add option for interpolated grid point snapping
-            // FIXME move along camera near plane
-            orbit->origin.x -= dx * speed;
-            orbit->origin.y += dy * speed;
+            struct mat44 m = mat44_rotate(camera_get_transform(camera)->rotation_euler);
+
+            struct vec3 basis_x = mat44_mult_vec3(m, make_vec3_right());
+            struct vec3 basis_y = mat44_mult_vec3(m, make_vec3_up());
+
+            orbit->origin = vec3_add(orbit->origin, vec3_scale(basis_x, -dx * speed));
+            orbit->origin = vec3_add(orbit->origin, vec3_scale(basis_y,  dy * speed));
         }
     }
 }
