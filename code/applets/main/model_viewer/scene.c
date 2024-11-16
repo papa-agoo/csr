@@ -132,9 +132,10 @@ static result_e _build_camera_cache(struct scene_cache *cache)
 
     // create orbital controller
     {
+        // FIXME mv_conf
         f32 azimuth = 75.0;
         f32 polar = 15.0;
-        f32 radius = 100.0;
+        f32 radius = 10.0;
 
         static struct camera_ctl_orbital data = {0};
         data.orbit_dst.azimuth = azimuth;

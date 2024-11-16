@@ -27,18 +27,21 @@ void gp_process_fragment(struct softgl_fragment* fragment)
 
     ////////////////////////////////////////
 
+    u32 p_y = fragment->frag_coords.y;
+    u32 p_x = fragment->frag_coords.x;
+
+    // early fragment discard
+    if (p_x < 0 || p_x >= pb->width || p_y < 0 || p_y >= pb->height) return;
+
     // early depth test
     struct softgl_depth_state *ds = &softgl_pso_ptr()->depth_stencil_state.depth;
 
     if (ds->enable_test)
     {
-        // u32 p_y = fragment->frag_coords.y;
-        // u32 p_x = fragment->frag_coords.x;
-
-        // u32 offset = (pb->width * p_y) + p_x;
+        // u32 frag_idx = (pb->width * p_y) + p_x;
 
         // f32* z_new = &fragment->frag_coords.z;
-        // f32* z_old = pb->user_data + offset;
+        // f32* z_old = pb->user_data + frag_idx;
 
         // if (*z_new < *z_old) return;
 

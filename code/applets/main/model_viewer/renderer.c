@@ -425,7 +425,7 @@ static result_e _create_gizmos(struct renderer *renderer)
     check_ptr(renderer);
 
     check_result(_create_axes_gizmo(renderer));
-    check_result(_create_grid_gizmo(renderer, 100));
+    check_result(_create_grid_gizmo(renderer, 10));
 
     return RC_SUCCESS;
 

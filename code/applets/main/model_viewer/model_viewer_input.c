@@ -17,7 +17,7 @@ void mv_on_kbd_key_press(struct keyboard_event *e)
         {
             // reset view
             case KBD_KEY_KP_0:
-                orbit_set(orbit, make_vec3_zero(), 15, 75, 100);
+                orbit_set(orbit, make_vec3_zero(), 15, 75, 10); // FIXME mv_conf
             return;
 
             // azimuth / polar controls
