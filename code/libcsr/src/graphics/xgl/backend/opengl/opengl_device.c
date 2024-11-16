@@ -1309,7 +1309,10 @@ result_e xgl_set_pipeline_rasterizer_state_impl(guid p_pipeline, struct xgl_rast
     check_expr(rs->polygon_mode != GL_INVALID_ENUM);
 
     rs->point_size = p_rs->point_size;
+    rs->smooth_points = p_rs->smooth_points;
+
     rs->line_width = p_rs->line_width;
+    rs->smooth_lines = p_rs->smooth_lines;
 
     ////////////////////////////////////////
 

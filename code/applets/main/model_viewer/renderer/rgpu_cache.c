@@ -109,8 +109,7 @@ static result_e _create_rasterizer_states(struct rgpu_cache *cache)
     // debug draw
     {
         static struct xgl_rasterizer_state state = {0};
-
-        // FIXME enable smooth points + lines ...
+        state.smooth_points = true;
 
         cache->rasterizer_state.debug_draw = state;
     }
@@ -394,6 +393,7 @@ static result_e _create_pso_points(struct rgpu_cache *cache)
 
     for (u32 i = 0; i < PRIMITIVE_SIZE_MAX; i++)
     {
+        // FIXME calc relative size in the shader (dpi aware)
         info.rasterizer_state->point_size = (i + 1) * (i + 1);
 
         // with depth
@@ -452,6 +452,7 @@ static result_e _create_pso_lines(struct rgpu_cache *cache)
 
     for (u32 i = 0; i < PRIMITIVE_SIZE_MAX; i++)
     {
+        // FIXME calc relative size in the shader (dpi aware)
         info.rasterizer_state->line_width = (i + 1) * (i + 1);
 
         // with depth

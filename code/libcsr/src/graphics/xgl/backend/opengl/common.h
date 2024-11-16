@@ -133,7 +133,10 @@ struct gl_rasterizer_state
     // f32 polygon_offset_units;
 
     f32 point_size;
+    bool smooth_points;
+
     f32 line_width;
+    bool smooth_lines;
 };
 
 struct gl_pipeline

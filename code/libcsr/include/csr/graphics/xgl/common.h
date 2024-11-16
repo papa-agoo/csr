@@ -405,7 +405,6 @@ enum xgl_polygon_mode
 struct xgl_rasterizer_state
 {
     // FIXME depth clamping / bias
-    // FIXME smooth line / polygon
 
     bool discard_primitives;
 
@@ -417,7 +416,10 @@ struct xgl_rasterizer_state
     enum xgl_polygon_mode polygon_mode;
 
     f32 point_size;
+    bool smooth_points;
+
     f32 line_width;
+    bool smooth_lines;
 };
 
 // color blend state
