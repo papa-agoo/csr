@@ -3,34 +3,8 @@
 #pragma once
 
 #include "scene.h"
-#include "scene/model_priv.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-
-struct scene_cache
-{
-    // cameras
-    struct {
-        struct camera *main;
-
-        struct {
-            struct camera_ctl none;
-            struct camera_ctl orbital;
-            struct camera_ctl first_person;
-        } controller;
-    } camera;
-
-    // models
-    struct {
-        struct model *dummy;
-
-        struct {
-            struct model plane;
-            struct model cube;
-            // ...
-        } builtin;
-    } model;
-};
 
 struct scene
 {
@@ -42,8 +16,15 @@ struct scene
     struct camera *camera;
     struct camera_ctl *camera_ctl;
 
-    struct scene_cache cache;
+    struct scene_conf *conf;
 };
 
-result_e scene_init(struct scene *scene);
+struct scene_init_info
+{
+    struct scene_conf *conf;
+
+    struct camera_create_info *camera_info;
+};
+
+result_e scene_init(struct scene_init_info *info, struct scene *scene);
 void scene_quit(struct scene *scene);

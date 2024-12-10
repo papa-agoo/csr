@@ -6,7 +6,10 @@
 
 void mv_on_kbd_key_press(struct keyboard_event *e)
 {
-    struct camera_ctl *ctl = model_viewer_get_camera_ctl();
+    struct scene *scene = model_viewer_get_scene();
+
+    struct camera_ctl *ctl = scene_get_camera_ctl(scene);
+    check_quiet(ctl);
 
     if (ctl->type == CAMERA_CTL_ORBITAL)
     {
@@ -16,9 +19,15 @@ void mv_on_kbd_key_press(struct keyboard_event *e)
         switch (e->key)
         {
             // reset view
-            case KBD_KEY_KP_0:
-                orbit_set(orbit, make_vec3_zero(), 15, 75, 10); // FIXME mv_conf
-            return;
+            case KBD_KEY_R:
+            case KBD_KEY_KP_0: {
+
+                const struct scene_camera_conf *conf = &scene_get_conf(scene)->camera;
+
+                orbit_set(orbit, make_vec3_zero(), conf->orbital.polar, conf->orbital.azimuth, conf->orbital.radius);
+
+                return;
+            }
 
             // azimuth / polar controls
             case KBD_KEY_LEFT:
@@ -83,12 +92,17 @@ void mv_on_kbd_key_press(struct keyboard_event *e)
             return;
         }
     }
+
+error:
+    return;
 }
 
 void mv_on_mouse_move(struct mouse_event *e)
 {
-    struct camera *camera = model_viewer_get_camera();
-    struct camera_ctl *ctl = model_viewer_get_camera_ctl();
+    struct scene *scene = model_viewer_get_scene();
+
+    struct camera_ctl *ctl = scene_get_camera_ctl(scene);
+    check_quiet(ctl);
 
     if (ctl->type == CAMERA_CTL_ORBITAL)
     {
@@ -101,7 +115,7 @@ void mv_on_mouse_move(struct mouse_event *e)
         // camera orientation (orbital)
         if (aio_hid_mouse_button_down(MOUSE_BUTTON_MIDDLE))
         {
-            f32 sensitiviy = 0.20f;
+            f32 sensitiviy = 0.20f; // FIXME camera_conf
 
             f32 polar = clamp(orbit->polar + dy * sensitiviy, -90 - FLT_EPSILON, 90 - FLT_EPSILON);
             f32 azimuth = orbit->azimuth + dx * sensitiviy;
@@ -116,6 +130,7 @@ void mv_on_mouse_move(struct mouse_event *e)
             // FIXME add option for interpolated grid point snapping (configurable distances: 0.5, 1.0, ...)
             f32 speed = aio_time_elapsed_delta() * orbit->radius * 0.1;
 
+            struct camera *camera = scene_get_camera(scene);
             struct mat44 m = mat44_rotate(camera_get_transform(camera)->rotation_euler);
 
             struct vec3 basis_x = mat44_mult_vec3(m, make_vec3_right());
@@ -125,11 +140,15 @@ void mv_on_mouse_move(struct mouse_event *e)
             orbit->origin = vec3_add(orbit->origin, vec3_scale(basis_y,  dy * speed));
         }
     }
+
+error:
+    return;
 }
 
 void mv_on_mouse_wheel_spin(struct mouse_event *e)
 {
-    struct camera_ctl *ctl = model_viewer_get_camera_ctl();
+    struct camera_ctl *ctl = scene_get_camera_ctl(model_viewer_get_scene());
+    check_quiet(ctl);
 
     if (ctl->type == CAMERA_CTL_ORBITAL)
     {
@@ -140,4 +159,7 @@ void mv_on_mouse_wheel_spin(struct mouse_event *e)
 
         orbit_set_radius(orbit, orbit->radius - (f32)e->wy * speed);
     }
+
+error:
+    return;
 }

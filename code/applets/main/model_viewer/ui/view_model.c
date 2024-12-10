@@ -92,22 +92,22 @@ void ui_draw_model_view()
         igNewLine();
     }
 
-    struct model *model = model_viewer_get_model();
-    check_quiet(model);
+    // struct model *model = model_viewer_get_model();
+    // check_quiet(model);
 
-    if (igCollapsingHeader_TreeNodeFlags("Details", header_flags))
-    {
-        igNewLine();
-        _draw_detail_view(model);
-        igNewLine();
-    }
+    // if (igCollapsingHeader_TreeNodeFlags("Details", header_flags))
+    // {
+    //     igNewLine();
+    //     _draw_detail_view(model);
+    //     igNewLine();
+    // }
 
-    if (igCollapsingHeader_TreeNodeFlags("Transform", header_flags))
-    {
-        igNewLine();
-        _draw_transform_view(model);
-        igNewLine();
-    }
+    // if (igCollapsingHeader_TreeNodeFlags("Transform", header_flags))
+    // {
+    //     igNewLine();
+    //     _draw_transform_view(model);
+    //     igNewLine();
+    // }
 
 
 error:

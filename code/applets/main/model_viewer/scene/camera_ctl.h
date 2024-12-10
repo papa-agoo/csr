@@ -10,7 +10,7 @@
 struct camera;
 struct camera_ctl;
 
-typedef void (*camera_ctl_update_cb)(struct camera *camera, struct camera_ctl *ctl);
+typedef void (*camera_ctl_update_cb)(struct camera *camera, struct camera_ctl *ctl, f64 dt);
 
 enum camera_ctl_type
 {
