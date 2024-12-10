@@ -22,6 +22,7 @@ enum primitive_size
     PRIMITIVE_SIZE_MAX,
 };
 
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // vertices
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -34,6 +35,11 @@ enum vertex_format
     VERTEX_FORMAT_TEX_COORD1_BIT    = BIT(4),
     VERTEX_FORMAT_TANGENT_BIT       = BIT(5),
     VERTEX_FORMAT_BITANGENT_BIT     = BIT(6),
+
+    VERTEX_FORMAT_1P                = VERTEX_FORMAT_POSITION_BIT,
+    VERTEX_FORMAT_1P_1C             = VERTEX_FORMAT_POSITION_BIT | VERTEX_FORMAT_COLOR_BIT,
+    VERTEX_FORMAT_1P_1N             = VERTEX_FORMAT_POSITION_BIT | VERTEX_FORMAT_NORMAL_BIT,
+    VERTEX_FORMAT_1P_1N_1UV         = VERTEX_FORMAT_POSITION_BIT | VERTEX_FORMAT_NORMAL_BIT | VERTEX_FORMAT_TEX_COORD0_BIT,
 };
 
 CSR_INLINE u32 vertex_format_get_stride(u32 vertex_format)
@@ -80,12 +86,14 @@ struct vertex_1p1n1uv
 // shader resources
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
 // low frequency, updates once per frame
 struct shader_data_frame
 {
-    struct mat44 mat_view;
-    struct mat44 mat_projection;
-    struct mat44 mat_projection_ortho;
+    struct mat44 mtx_view;
+    struct mat44 mtx_projection;
+    struct mat44 mtx_projection_ortho;
 
     // ...
 };
@@ -109,8 +117,8 @@ struct shader_data_material
 // high frequency, updates arbitrary
 struct shader_data_object
 {
-    struct mat44 mat_model;
-    struct mat44 mat_mvp;
+    struct mat44 mtx_model;
+    struct mat44 mtx_mvp;
 
     bool use_object_mvp;
     // ...

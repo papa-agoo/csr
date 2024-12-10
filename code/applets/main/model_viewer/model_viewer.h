@@ -5,14 +5,14 @@
 #include <csr/applet.h>
 
 #include "scene.h"
-#include "renderer.h"
+#include "rsx.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 struct model_viewer_conf
 {
     struct scene_conf scene;
-    struct renderer_conf renderer;
+    struct rsx_conf renderer;
 };
 
 struct model_viewer;

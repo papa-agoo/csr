@@ -6,12 +6,12 @@
 
 static void _draw_flags_view()
 {
-    struct renderer_conf *conf = mv_renderer_conf_ptr();
+    struct rsx_conf *conf = mv_renderer_conf_ptr();
 
     // igCheckbox("Draw Grid", &conf->draw_grid);
     // igCheckbox("Draw AABB", &conf->draw_aabb);
 
-    igNewLine();
+    // igNewLine();
 
     if (igCheckbox("Enable GPU Renderer", &conf->enable_rgpu)) {
         aio_get_ui_window("rgpu")->is_opened = conf->enable_rgpu;
@@ -65,7 +65,7 @@ void ui_draw_renderer_view()
     igNewLine();
     _draw_flags_view();
 
-    struct renderer_conf *conf = mv_renderer_conf_ptr();
+    struct rsx_conf *conf = mv_renderer_conf_ptr();
 
     if (conf->enable_rgpu && igCollapsingHeader_TreeNodeFlags("GPU Renderer", header_flags))
     {

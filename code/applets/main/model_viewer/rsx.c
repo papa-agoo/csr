@@ -2,9 +2,9 @@
 
 #include <csr/applet/aio.h>
 
-#include "renderer_priv.h"
-#include "renderer/rgpu_priv.h"
-#include "renderer/rcpu_priv.h"
+#include "rsx_priv.h"
+#include "rsx/rgpu_priv.h"
+#include "rsx/rcpu_priv.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -18,7 +18,7 @@ static result_e _create_debug_primitives(struct renderer *renderer);
 static void _reset_debug_primitives(struct renderer *renderer);
 static void _destroy_debug_primitives(struct renderer *renderer);
 
-result_e renderer_init(struct renderer_init_info *info, struct renderer *renderer)
+result_e rsx_init(struct rsx_init_info *info, struct renderer *renderer)
 {
     check_ptr(info);
     check_ptr(info->conf);
@@ -49,7 +49,7 @@ error:
     return RC_FAILURE;
 }
 
-void renderer_quit(struct renderer *renderer)
+void rsx_quit(struct renderer *renderer)
 {
     check_ptr(renderer);
 
@@ -64,7 +64,7 @@ error:
     return;
 }
 
-void renderer_tick(struct renderer *renderer)
+void rsx_tick(struct renderer *renderer)
 {
     check_ptr(renderer);
 
@@ -102,7 +102,7 @@ error:
     return;
 }
 
-const struct renderer_conf* renderer_get_conf(struct renderer *renderer)
+const struct rsx_conf* rsx_get_conf(struct renderer *renderer)
 {
     check_ptr(renderer);
 
@@ -112,7 +112,7 @@ error:
     return NULL;
 }
 
-void renderer_calc_axes_viewport(f32 *x, f32 *y, f32 *width, f32 *height)
+void rsx_calc_axes_viewport(f32 *x, f32 *y, f32 *width, f32 *height)
 {
     check_expr(x && y && width && height);
     check_expr(*width > 0 && *height > 0);
@@ -142,7 +142,7 @@ static result_e _create_shader_data(struct renderer *renderer)
     check_ptr(renderer);
 
     struct rgpu_cache *cache = &renderer->rgpu->cache;
-    struct renderer_shader_data *shader_data = &renderer->shader_data;
+    struct rsx_shader_data *shader_data = &renderer->shader_data;
 
     // frame
     {
@@ -225,8 +225,8 @@ static result_e _create_shader_data(struct renderer *renderer)
 
         // set default values
         struct shader_data_object *data = info.data;
-        data->mat_model = mat44_identity();
-        data->mat_mvp = mat44_identity();
+        data->mtx_model = mat44_identity();
+        data->mtx_mvp = mat44_identity();
         data->use_object_mvp = false;
     }
 
@@ -240,7 +240,7 @@ static void _destroy_shader_data(struct renderer *renderer)
 {
     check_ptr(renderer);
 
-    struct renderer_shader_data *shader_data = &renderer->shader_data;
+    struct rsx_shader_data *shader_data = &renderer->shader_data;
 
     xgl_destroy_buffer(shader_data->frame.buffer.gpu);
     xgl_destroy_descriptor_set(shader_data->frame.ds);
@@ -263,7 +263,7 @@ static result_e _create_axes_gizmo(struct renderer *renderer)
 {
     check_ptr(renderer);
 
-    const struct renderer_conf *conf = renderer_get_conf(renderer);
+    const struct rsx_conf *conf = rsx_get_conf(renderer);
 
     ////////////////////////////////////////
 
@@ -348,7 +348,7 @@ static result_e _create_grid_gizmo(struct renderer *renderer, f32 size_qm)
     check_ptr(renderer);
     check_expr(size_qm >= 1);
 
-    const struct renderer_conf *conf = renderer_get_conf(renderer);
+    const struct rsx_conf *conf = rsx_get_conf(renderer);
 
     ////////////////////////////////////////
 
@@ -580,7 +580,7 @@ error:
     return;
 }
 
-void renderer_add_point(struct renderer *renderer, struct vec3 p, struct vec3 color, f32 size, f32 lifetime, bool depth)
+void rsx_add_point(struct renderer *renderer, struct vec3 p, struct vec3 color, f32 size, f32 lifetime, bool depth)
 {
     check_ptr(renderer);
 
@@ -598,7 +598,7 @@ error:
     return;
 }
 
-void renderer_add_line(struct renderer *renderer, struct vec3 a, struct vec3 b, struct vec3 color, f32 width, f32 lifetime, bool depth)
+void rsx_add_line(struct renderer *renderer, struct vec3 a, struct vec3 b, struct vec3 color, f32 width, f32 lifetime, bool depth)
 {
     check_ptr(renderer);
 
@@ -618,7 +618,7 @@ error:
     return;
 }
 
-void renderer_add_axes(struct renderer *renderer, struct mat44 transform, bool depth)
+void rsx_add_axes(struct renderer *renderer, struct mat44 transform, bool depth)
 {
     check_ptr(renderer);
 
@@ -634,17 +634,17 @@ void renderer_add_axes(struct renderer *renderer, struct mat44 transform, bool d
     f32 width = 2.0f;
     f32 lifetime = 0.0f;
 
-    struct renderer_conf *conf = renderer->conf;
+    struct rsx_conf *conf = renderer->conf;
 
-    renderer_add_line(renderer, origin, basis_x, conf->color.axis_x, width, lifetime, depth);
-    renderer_add_line(renderer, origin, basis_y, conf->color.axis_y, width, lifetime, depth);
-    renderer_add_line(renderer, origin, basis_z, conf->color.axis_z, width, lifetime, depth);
+    rsx_add_line(renderer, origin, basis_x, conf->color.axis_x, width, lifetime, depth);
+    rsx_add_line(renderer, origin, basis_y, conf->color.axis_y, width, lifetime, depth);
+    rsx_add_line(renderer, origin, basis_z, conf->color.axis_z, width, lifetime, depth);
 
 error:
     return;
 }
 
-void renderer_add_aabb(struct renderer *renderer, struct mat44 transform, struct aabb aabb, bool depth)
+void rsx_add_aabb(struct renderer *renderer, struct mat44 transform, struct aabb aabb, bool depth)
 {
     check_ptr(renderer);
 
@@ -670,22 +670,22 @@ void renderer_add_aabb(struct renderer *renderer, struct mat44 transform, struct
     struct vec3 color = renderer->conf->color.aabb;
 
     // top lines
-    renderer_add_line(renderer, ta, tb, color, width, lifetime, depth);
-    renderer_add_line(renderer, tb, tc, color, width, lifetime, depth);
-    renderer_add_line(renderer, tc, td, color, width, lifetime, depth);
-    renderer_add_line(renderer, td, ta, color, width, lifetime, depth);
+    rsx_add_line(renderer, ta, tb, color, width, lifetime, depth);
+    rsx_add_line(renderer, tb, tc, color, width, lifetime, depth);
+    rsx_add_line(renderer, tc, td, color, width, lifetime, depth);
+    rsx_add_line(renderer, td, ta, color, width, lifetime, depth);
 
     // bottom lines
-    renderer_add_line(renderer, ba, bb, color, width, lifetime, depth);
-    renderer_add_line(renderer, bb, bc, color, width, lifetime, depth);
-    renderer_add_line(renderer, bc, bd, color, width, lifetime, depth);
-    renderer_add_line(renderer, bd, ba, color, width, lifetime, depth);
+    rsx_add_line(renderer, ba, bb, color, width, lifetime, depth);
+    rsx_add_line(renderer, bb, bc, color, width, lifetime, depth);
+    rsx_add_line(renderer, bc, bd, color, width, lifetime, depth);
+    rsx_add_line(renderer, bd, ba, color, width, lifetime, depth);
 
     // connection lines
-    renderer_add_line(renderer, ba, ta, color, width, lifetime, depth);
-    renderer_add_line(renderer, bb, tb, color, width, lifetime, depth);
-    renderer_add_line(renderer, bc, tc, color, width, lifetime, depth);
-    renderer_add_line(renderer, bd, td, color, width, lifetime, depth);
+    rsx_add_line(renderer, ba, ta, color, width, lifetime, depth);
+    rsx_add_line(renderer, bb, tb, color, width, lifetime, depth);
+    rsx_add_line(renderer, bc, tc, color, width, lifetime, depth);
+    rsx_add_line(renderer, bd, td, color, width, lifetime, depth);
 
 error:
     return;

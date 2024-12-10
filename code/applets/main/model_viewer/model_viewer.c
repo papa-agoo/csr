@@ -3,7 +3,7 @@
 #include "model_viewer.h"
 
 #include "scene_priv.h"
-#include "renderer_priv.h"
+#include "rsx_priv.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -56,9 +56,9 @@ result_e model_viewer_init()
         // ...
 
         // renderer
-        struct renderer_conf *renderer = &conf->renderer;
+        struct rsx_conf *renderer = &conf->renderer;
         {
-            renderer_conf_defaults(renderer);
+            rsx_conf_defaults(renderer);
 
             // config override
             renderer->enable_rcpu = false;
@@ -88,7 +88,6 @@ result_e model_viewer_init()
 
     ////////////////////////////////////////
 
-
     mv_ptr()->is_initialized = true;
 
     return RC_SUCCESS;
@@ -102,11 +101,13 @@ void model_viewer_quit()
     csr_assert(mv_ptr()->is_initialized);
 
     scene_quit(mv_scene_ptr());
-    renderer_quit(mv_renderer_ptr());
+    rsx_quit(mv_renderer_ptr());
 }
 
 void model_viewer_tick()
 {
+    csr_assert(mv_ptr()->is_initialized);
+
     // process scene
     {
         struct shader_data_frame *frame_data = &mv_renderer_ptr()->shader_data.frame.buffer.cpu;
@@ -122,9 +123,9 @@ void model_viewer_tick()
 
             f32 aspect_ratio = screen_get_aspect_ratio(mv_renderer_ptr()->screen.rgpu);
 
-            frame_data->mat_view = camera_get_view_matrix(camera);
-            frame_data->mat_projection = camera_get_persp_projection_matrix(camera, aspect_ratio);
-            frame_data->mat_projection_ortho = camera_get_ortho_projection_matrix(camera, aspect_ratio);
+            frame_data->mtx_view = camera_get_view_matrix(camera);
+            frame_data->mtx_projection = camera_get_persp_projection_matrix(camera, aspect_ratio);
+            frame_data->mtx_projection_ortho = camera_get_ortho_projection_matrix(camera, aspect_ratio);
         }
 
         // update model
@@ -146,20 +147,20 @@ void model_viewer_tick()
                     struct camera_ctl_orbital *data = camera_ctl->data;
                     struct orbit *orbit = &data->orbit_src;
 
-                    renderer_add_point(mv_renderer_ptr(), orbit->origin, make_vec3(1, 1, 1), 3, 0, false);
+                    rsx_add_point(mv_renderer_ptr(), orbit->origin, make_vec3(1, 1, 1), 3, 0, false);
 
                     origin = orbit->origin;
                 }
 
                 struct mat44 m = mat44_translate(make_vec3(0, 1, 0));
-                renderer_add_axes(mv_renderer_ptr(), m, false);
-                renderer_add_aabb(mv_renderer_ptr(), m, make_aabb_unit_cube(), false);
+                rsx_add_axes(mv_renderer_ptr(), m, false);
+                rsx_add_aabb(mv_renderer_ptr(), m, make_aabb_unit_cube(), false);
             }
 
             // update gizmo shader data
             {
                 struct mesh_gizmo *axes = &mv_renderer_ptr()->gizmo.axes;
-                axes->data.mat_mvp = mat44_mult(mat44_mult(frame_data->mat_projection_ortho, frame_data->mat_view), mat44_translate(origin));
+                axes->data.mtx_mvp = mat44_mult(mat44_mult(frame_data->mtx_projection_ortho, frame_data->mtx_view), mat44_translate(origin));
                 axes->data.use_object_mvp = true;
 
                 struct mesh_gizmo *grid = &mv_renderer_ptr()->gizmo.grid;
@@ -169,7 +170,7 @@ void model_viewer_tick()
     }
 
     // draw frame
-    renderer_tick(mv_renderer_ptr());
+    rsx_tick(mv_renderer_ptr());
 }
 
 struct model_viewer_conf* model_viewer_get_conf()
@@ -201,14 +202,22 @@ void model_viewer_set_camera_controller(enum camera_ctl_type type)
 
 result_e model_viewer_load_model(struct string path)
 {
-    clog_warn("not impl. yet");
+    check_expr(string_is_valid(path));
 
+    clog_notice("not impl. yet");
+
+    return RC_SUCCESS;
+
+error:
     return RC_FAILURE;
 }
 
 void model_viewer_unload_model()
 {
-    clog_warn("not impl. yet");
+    clog_notice("not impl. yet");
+
+error:
+    return;
 }
 
 struct renderer* model_viewer_get_renderer()
@@ -347,7 +356,7 @@ error:
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 static result_e _create_renderer()
 {
-    struct renderer_conf *conf = mv_renderer_conf_ptr();
+    struct rsx_conf *conf = mv_renderer_conf_ptr();
 
     struct xgl_clear_values clear_values = {0};
     clear_values.color = make_vec4_3_1(conf->color.background, 1.0);
@@ -386,12 +395,12 @@ static result_e _create_renderer()
     // create renderer
     struct renderer *renderer = mv_renderer_ptr();
     {
-        struct renderer_init_info init_info = {0};
+        struct rsx_init_info init_info = {0};
         init_info.conf = conf;
         init_info.screen_rgpu = screen_rgpu;
         init_info.screen_rcpu = screen_rcpu;
 
-        return renderer_init(&init_info, renderer);
+        return rsx_init(&init_info, renderer);
     }
 
 error:

@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "renderer.h"
+#include "rsx.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -18,7 +18,7 @@ struct mesh_gizmo
 };
 // FIXME <<< use mesh_node
 
-struct renderer_shader_data
+struct rsx_shader_data
 {
     // frame
     struct {
@@ -60,9 +60,9 @@ struct renderer_shader_data
 
 struct renderer
 {
-    struct renderer_conf *conf;
+    struct rsx_conf *conf;
 
-    struct renderer_shader_data shader_data;
+    struct rsx_shader_data shader_data;
 
     struct {
         struct mesh_gizmo axes;
@@ -86,20 +86,20 @@ struct renderer
     struct rcpu* rcpu;
 };
 
-struct renderer_init_info
+struct rsx_init_info
 {
-    struct renderer_conf *conf;
+    struct rsx_conf *conf;
 
     struct screen *screen_rgpu;
     struct screen *screen_rcpu;
 };
 
-result_e renderer_init(struct renderer_init_info *info, struct renderer *renderer);
-void renderer_quit(struct renderer *renderer);
+result_e rsx_init(struct rsx_init_info *info, struct renderer *renderer);
+void rsx_quit(struct renderer *renderer);
 
-void renderer_tick(struct renderer *renderer);
+void rsx_tick(struct renderer *renderer);
 
 
 // misc helper functions
-void renderer_calc_axes_viewport(f32 *x, f32 *y, f32 *width, f32 *height);
+void rsx_calc_axes_viewport(f32 *x, f32 *y, f32 *width, f32 *height);
 // struct material* renderer_find_suitable_material(struct renderer *renderer, u32 vertex_format);

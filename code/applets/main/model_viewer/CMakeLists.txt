@@ -21,12 +21,12 @@ add_library(${MY_TARGET}
         scene/model.c
         scene/camera.c
 
-        renderer.c
-        renderer/rgpu.c
-        renderer/rgpu_cache.c
-        renderer/rcpu.c
-        renderer/rcpu_cache.c
-        renderer/rcpu_cache_shaders.c
+        rsx.c
+        rsx/rgpu.c
+        rsx/rgpu_cache.c
+        rsx/rcpu.c
+        rsx/rcpu_cache.c
+        rsx/rcpu_cache_shaders.c
 )
 
 target_include_directories(${MY_TARGET}

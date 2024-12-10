@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "rgpu_priv.h"
-#include "renderer_priv.h"
+#include "rsx_priv.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -56,7 +56,7 @@ void rgpu_tick(struct renderer *renderer, struct xgl_viewport vp)
     check_ptr(renderer);
 
     struct rgpu_cache *cache = rgpu_cache_ptr();
-    struct renderer_shader_data *shader_data = &renderer->shader_data;
+    struct rsx_shader_data *shader_data = &renderer->shader_data;
 
     // set the viewport for this frame
     rgpu_ptr()->vp = vp;
@@ -116,7 +116,7 @@ void rgpu_pass_environment(struct renderer *renderer)
     check_ptr(renderer);
 
     struct rgpu_cache *cache = rgpu_cache_ptr();
-    struct renderer_shader_data *shader_data = &renderer->shader_data;
+    struct rsx_shader_data *shader_data = &renderer->shader_data;
 
     // bind pass data
     xgl_bind_descriptor_set(XGL_DESCRIPTOR_SET_TYPE_PASS, cache->pipeline_layout.environment, shader_data->pass_environment.ds);
@@ -133,7 +133,7 @@ void rgpu_pass_meshes(struct renderer *renderer, struct vector *meshes)
     check_quiet(meshes);
 
     struct rgpu_cache *cache = rgpu_cache_ptr();
-    struct renderer_shader_data *shader_data = &renderer->shader_data;
+    struct rsx_shader_data *shader_data = &renderer->shader_data;
 
     // bind pass data
     xgl_bind_descriptor_set(XGL_DESCRIPTOR_SET_TYPE_PASS, cache->pipeline_layout.main, shader_data->pass_main.ds);
@@ -175,7 +175,7 @@ error:
 void rgpu_pass_gizmos(struct renderer *renderer)
 {
     struct rgpu_cache *cache = rgpu_cache_ptr();
-    struct renderer_shader_data *shader_data = &renderer->shader_data;
+    struct rsx_shader_data *shader_data = &renderer->shader_data;
 
     // bind pass data
     xgl_bind_descriptor_set(XGL_DESCRIPTOR_SET_TYPE_PASS, cache->pipeline_layout.main, shader_data->pass_main.ds);
@@ -214,7 +214,7 @@ void rgpu_pass_gizmos(struct renderer *renderer)
         // draw the axes gizmo (top right corner)
         {
             struct xgl_viewport vp = rgpu_ptr()->vp;
-            renderer_calc_axes_viewport(&vp.x, &vp.y, &vp.width, &vp.height);
+            rsx_calc_axes_viewport(&vp.x, &vp.y, &vp.width, &vp.height);
 
             xgl_set_viewports(1, &vp);
 
@@ -260,7 +260,7 @@ error:
 void rgpu_pass_debug_primitives(struct renderer *renderer)
 {
     struct rgpu_cache *cache = rgpu_cache_ptr();
-    struct renderer_shader_data *shader_data = &renderer->shader_data;
+    struct rsx_shader_data *shader_data = &renderer->shader_data;
 
     xgl_bind_descriptor_set(XGL_DESCRIPTOR_SET_TYPE_OBJECT, cache->pipeline_layout.main, shader_data->object.ds);
 

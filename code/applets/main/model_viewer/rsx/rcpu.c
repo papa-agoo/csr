@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "rcpu_priv.h"
-#include "renderer_priv.h"
+#include "rsx_priv.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -37,7 +37,7 @@ void rcpu_tick(struct renderer *renderer, struct pixelbuffer *pb, struct softgl_
     check_ptr(pb);
 
     struct rcpu_cache *cache = rcpu_cache_ptr();
-    struct renderer_shader_data *shader_data = &renderer->shader_data;
+    struct rsx_shader_data *shader_data = &renderer->shader_data;
 
     // set the viewport for this frame
     rcpu_ptr()->vp = vp;
@@ -93,7 +93,7 @@ void rcpu_pass_meshes(struct renderer *renderer, struct vector *meshes)
     check_quiet(meshes);
 
     struct rcpu_cache *cache = rcpu_cache_ptr();
-    struct renderer_shader_data *shader_data = &renderer->shader_data;
+    struct rsx_shader_data *shader_data = &renderer->shader_data;
 
     // ...
 
@@ -104,7 +104,7 @@ error:
 void rcpu_pass_gizmos(struct renderer *renderer)
 {
     struct rcpu_cache *cache = rcpu_cache_ptr();
-    struct renderer_shader_data *shader_data = &renderer->shader_data;
+    struct rsx_shader_data *shader_data = &renderer->shader_data;
 
     // bind pass data
     softgl_bind_descriptor_set(SOFTGL_DESCRIPTOR_SET_TYPE_PASS, &shader_data->pass_main.buffer.cpu);
@@ -126,7 +126,7 @@ void rcpu_pass_gizmos(struct renderer *renderer)
         // draw the axes gizmo (top right corner)
         {
             struct softgl_viewport vp = rcpu_ptr()->vp;
-            renderer_calc_axes_viewport(&vp.x, &vp.y, &vp.width, &vp.height);
+            rsx_calc_axes_viewport(&vp.x, &vp.y, &vp.width, &vp.height);
 
             softgl_set_viewport(vp);
 
@@ -168,7 +168,7 @@ error:
 void rcpu_pass_debug_primitives(struct renderer *renderer)
 {
     struct rcpu_cache *cache = &renderer->rcpu->cache;
-    struct renderer_shader_data *shader_data = &renderer->shader_data;
+    struct rsx_shader_data *shader_data = &renderer->shader_data;
 
     // FIXME
     softgl_bind_descriptor_set(SOFTGL_DESCRIPTOR_SET_TYPE_OBJECT, &shader_data->object.buffer.cpu);
