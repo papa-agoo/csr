@@ -28,6 +28,13 @@ void _test_string_checks()
     contains = string_contains(str, make_string("xoo.so/"));            // false
     contains = string_contains(str, make_string("o.s"));                // true
     contains = string_contains(str, make_string("fo"));                 // true
+
+    bool has_suffix = string_has_suffix(str, make_string("so"));        // true
+    has_suffix = string_has_suffix(str, make_string(".so"));            // true
+    has_suffix = string_has_suffix_cstr(str, "so");                     // true
+    has_suffix = string_has_suffix_cstr(str, ".so");                    // true
+    has_suffix = string_has_suffix_cstr(str, ".s");                     // false
+    has_suffix = string_has_suffix_cstr(str, ".soo");                   // false
 }
 
 void _test_string_find()
@@ -65,15 +72,17 @@ void _test_string_find()
 
 void _test_string_trim_chop()
 {
-    // trim
+    // trim + strip
     {
-        struct string str = make_string(" whitespace string   ");
+        struct string str = make_string(" \n\r dirty string  \r\r\n  ");
         clog_info(">> [" string_fmt "]", string_fmt_arg(str));
 
         clog_info("trim() => [" string_fmt "]", string_fmt_arg(string_trim(str)));
         clog_info("rtrim() => [" string_fmt "]", string_fmt_arg(string_rtrim(str)));
         clog_info("rtrim(trim()) => [" string_fmt "]", string_fmt_arg(string_rtrim(string_trim(str))));
         clog_info("trim(rtrim()) => [" string_fmt "]", string_fmt_arg(string_trim(string_rtrim(str))));
+
+        clog_info("strip() => [" string_fmt "]", string_fmt_arg(string_strip(str)));
     }
 
     // chop
@@ -82,16 +91,16 @@ void _test_string_trim_chop()
         clog_info(">> [" string_fmt "]", string_fmt_arg(str));
 
         clog_info("chop(1) => [" string_fmt "]", string_fmt_arg(string_chop(str, 1)));      // foo/bar.png
-        clog_info("chop(-1) => [" string_fmt "]", string_fmt_arg(string_chop(str, -1)));      // g
+        clog_info("chop(-1) => [" string_fmt "]", string_fmt_arg(string_chop(str, -1)));    // g
 
         clog_info("chop(4) => [" string_fmt "]", string_fmt_arg(string_chop(str, 4)));      // /bar.png
-        clog_info("chop(-4) => [" string_fmt "]", string_fmt_arg(string_chop(str, -4)));      // .png
+        clog_info("chop(-4) => [" string_fmt "]", string_fmt_arg(string_chop(str, -4)));    // .png
 
         clog_info("rchop(1) => [" string_fmt "]", string_fmt_arg(string_rchop(str, 1)));    // /
-        clog_info("rchop(-1) => [" string_fmt "]", string_fmt_arg(string_rchop(str, -1)));    // /foo/bar.pn
+        clog_info("rchop(-1) => [" string_fmt "]", string_fmt_arg(string_rchop(str, -1)));  // /foo/bar.pn
 
         clog_info("rchop(4) => [" string_fmt "]", string_fmt_arg(string_rchop(str, 4)));    // /foo
-        clog_info("rchop(-4) => [" string_fmt "]", string_fmt_arg(string_rchop(str, -4)));    // /foo/bar
+        clog_info("rchop(-4) => [" string_fmt "]", string_fmt_arg(string_rchop(str, -4)));  // /foo/bar
     }
 
     // find + chop
@@ -123,13 +132,14 @@ void _test_string_trim_chop()
         clog_info("rchop(find('}') + 1) => [" string_fmt "]", string_fmt_arg(string_rchop(str, string_find(str, '}') + 1)));    // {FOO}
     }
 
-    // find + cut
+    // find + cut + cut_dir_file
     {
         struct string path = make_string("{FOO}/applets/model_viewer.so");
         clog_info(">> [" string_fmt "] (length: %ld chars)", string_fmt_arg(path), path.length);
 
         struct string_pair parts = {0};
 
+        // find + cut
         parts = string_cut(path, string_find(path, '/'));
         clog_info("cut(find('/')) => ["string_fmt"], ["string_fmt"]", string_fmt_arg(parts.left), string_fmt_arg(parts.right)); // [{FOO}], [applets/model_viewer.so]
 
@@ -138,6 +148,10 @@ void _test_string_trim_chop()
 
         parts = string_cut(path, string_rfind(path, '.'));
         clog_info("cut(rfind('.')) => ["string_fmt"], ["string_fmt"]", string_fmt_arg(parts.left), string_fmt_arg(parts.right));// [{FOO}/applets/model_viewer], [so]
+
+        // cut_dir_file
+        parts = string_cut_dir_file(path);
+        clog_info("cut_dir_file() => dir : [%S], file : [%S]", &parts.directory, &parts.filename);
     }
 }
 

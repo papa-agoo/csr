@@ -20,8 +20,18 @@ struct string
 
 struct string_pair
 {
-    struct string left;
-    struct string right;
+    union
+    {
+        struct {
+            struct string left;
+            struct string right;
+        };
+
+        struct {
+            struct string directory;
+            struct string filename;
+        };
+    };
 };
 
 typedef const char* string_cstr;
@@ -73,6 +83,13 @@ struct string_pair string_cut(struct string str, u32 position);
 // void string_split();
 
 ////////////////////////////////////////////////////////////////////////////////
+
+#define string_strip(s) string_trim(string_rtrim(s))
+
+#define string_has_suffix(s, p) string_ends_with(s, p)
+#define string_has_suffix_cstr(s, p) string_has_suffix(s, make_string(p))
+
+#define string_cut_dir_file(s) string_cut(s, string_rfind(s, '/'))
 
 // printf helpers (strings as rvalue args)
 #define string_fmt "%.*s"
