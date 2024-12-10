@@ -12,7 +12,7 @@
 struct model_viewer_conf
 {
     struct scene_conf scene;
-    struct rsx_conf renderer;
+    struct rsx_conf rsx;
 };
 
 struct model_viewer;
@@ -30,9 +30,7 @@ void model_viewer_set_camera_controller(enum camera_ctl_type type);
 result_e model_viewer_load_model(struct string path);
 void model_viewer_unload_model();
 
-struct renderer* model_viewer_get_renderer();
-
 ////////////////////////////////////////////////////////////
 
 #define mv_scene_conf_ptr() (&model_viewer_get_conf()->scene)
-#define mv_renderer_conf_ptr() (&model_viewer_get_conf()->renderer)
+#define mv_rsx_conf_ptr() (&model_viewer_get_conf()->rsx)

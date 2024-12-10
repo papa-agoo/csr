@@ -6,7 +6,7 @@
 
 void ui_draw_model_view();
 void ui_draw_camera_view();
-void ui_draw_renderer_view();
+void ui_draw_rsx_view();
 
 static void _draw_settings_view_cb(struct ui_view *view, struct ui_style *style)
 {
@@ -26,9 +26,9 @@ static void _draw_settings_view_cb(struct ui_view *view, struct ui_style *style)
             igEndTabItem();
         }
 
-        if (igBeginTabItem("Renderer", NULL, 0))
+        if (igBeginTabItem("RSX", NULL, 0))
         {
-            ui_draw_renderer_view();
+            ui_draw_rsx_view();
 
             igEndTabItem();
         }

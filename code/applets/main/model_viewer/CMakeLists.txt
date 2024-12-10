@@ -15,7 +15,7 @@ add_library(${MY_TARGET}
         ui/register.c
         ui/view_model.c
         ui/view_camera.c
-        ui/view_renderer.c
+        ui/view_rsx.c
 
         scene.c
         scene/model.c

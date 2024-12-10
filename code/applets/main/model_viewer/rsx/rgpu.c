@@ -51,12 +51,10 @@ void rgpu_destroy()
 //          bind_ds_object
 //
 
-void rgpu_tick(struct renderer *renderer, struct xgl_viewport vp)
+void rgpu_tick(struct xgl_viewport vp)
 {
-    check_ptr(renderer);
-
     struct rgpu_cache *cache = rgpu_cache_ptr();
-    struct rsx_shader_data *shader_data = &renderer->shader_data;
+    struct rsx_shader_data *shader_data = &rsx_ptr()->shader_data;
 
     // set the viewport for this frame
     rgpu_ptr()->vp = vp;
@@ -80,9 +78,9 @@ void rgpu_tick(struct renderer *renderer, struct xgl_viewport vp)
     //     rgpu_pass_main(renderer, model->resources.mesh.meshes);
     // }
 
-    rgpu_pass_meshes(renderer, NULL);
-    rgpu_pass_gizmos(renderer);
-    rgpu_pass_debug_primitives(renderer);
+    rgpu_pass_meshes(NULL);
+    rgpu_pass_gizmos();
+    rgpu_pass_debug_primitives();
 
 error:
     return;
@@ -111,12 +109,10 @@ void rgpu_draw_mesh_primitive(struct mesh_primitive *primitive)
     }
 }
 
-void rgpu_pass_environment(struct renderer *renderer)
+void rgpu_pass_environment()
 {
-    check_ptr(renderer);
-
     struct rgpu_cache *cache = rgpu_cache_ptr();
-    struct rsx_shader_data *shader_data = &renderer->shader_data;
+    struct rsx_shader_data *shader_data = &rsx_ptr()->shader_data;
 
     // bind pass data
     xgl_bind_descriptor_set(XGL_DESCRIPTOR_SET_TYPE_PASS, cache->pipeline_layout.environment, shader_data->pass_environment.ds);
@@ -127,13 +123,12 @@ error:
     return;
 }
 
-void rgpu_pass_meshes(struct renderer *renderer, struct vector *meshes)
+void rgpu_pass_meshes(struct vector *meshes)
 {
-    check_ptr(renderer);
     check_quiet(meshes);
 
     struct rgpu_cache *cache = rgpu_cache_ptr();
-    struct rsx_shader_data *shader_data = &renderer->shader_data;
+    struct rsx_shader_data *shader_data = &rsx_ptr()->shader_data;
 
     // bind pass data
     xgl_bind_descriptor_set(XGL_DESCRIPTOR_SET_TYPE_PASS, cache->pipeline_layout.main, shader_data->pass_main.ds);
@@ -172,10 +167,12 @@ error:
     return;
 }
 
-void rgpu_pass_gizmos(struct renderer *renderer)
+void rgpu_pass_gizmos()
 {
+    struct rsx *rsx = rsx_ptr();
+
     struct rgpu_cache *cache = rgpu_cache_ptr();
-    struct rsx_shader_data *shader_data = &renderer->shader_data;
+    struct rsx_shader_data *shader_data = &rsx->shader_data;
 
     // bind pass data
     xgl_bind_descriptor_set(XGL_DESCRIPTOR_SET_TYPE_PASS, cache->pipeline_layout.main, shader_data->pass_main.ds);
@@ -184,7 +181,7 @@ void rgpu_pass_gizmos(struct renderer *renderer)
     xgl_bind_descriptor_set(XGL_DESCRIPTOR_SET_TYPE_OBJECT, cache->pipeline_layout.main, shader_data->object.ds);
 
     // grid
-    struct mesh_gizmo *grid = &renderer->gizmo.grid;
+    struct mesh_gizmo *grid = &rsx->gizmo.grid;
     {
         // FIXME streamline
         struct shader_data_object *cpu = &grid->data;
@@ -200,7 +197,7 @@ void rgpu_pass_gizmos(struct renderer *renderer)
     }
 
     // axes
-    struct mesh_gizmo *axes = &renderer->gizmo.axes;
+    struct mesh_gizmo *axes = &rsx->gizmo.axes;
     {
         // FIXME streamline
         struct shader_data_object *cpu = &axes->data;
@@ -230,9 +227,8 @@ error:
     return;
 }
 
-static void _draw_primitives(struct renderer *renderer, struct mesh_buffer *buffer, xgl_pipeline pso)
+static void _draw_primitives(struct mesh_buffer *buffer, xgl_pipeline pso)
 {
-    check_ptr(renderer);
     check_ptr(buffer);
 
     check_quiet(vector_size(buffer->vertices.cpu) > 0);
@@ -257,10 +253,12 @@ error:
     return;
 }
 
-void rgpu_pass_debug_primitives(struct renderer *renderer)
+void rgpu_pass_debug_primitives()
 {
+    struct rsx *rsx = rsx_ptr();
+
     struct rgpu_cache *cache = rgpu_cache_ptr();
-    struct rsx_shader_data *shader_data = &renderer->shader_data;
+    struct rsx_shader_data *shader_data = &rsx->shader_data;
 
     xgl_bind_descriptor_set(XGL_DESCRIPTOR_SET_TYPE_OBJECT, cache->pipeline_layout.main, shader_data->object.ds);
 
@@ -276,10 +274,10 @@ void rgpu_pass_debug_primitives(struct renderer *renderer)
     // draw primitives
     for (u32 i = 0; i < PRIMITIVE_SIZE_MAX; i++)
     {
-        _draw_primitives(renderer, &renderer->debug_draw.lines[i], cache->pipeline.lines[i]);
-        _draw_primitives(renderer, &renderer->debug_draw.points[i], cache->pipeline.points[i]);
+        _draw_primitives(&rsx->debug_draw.lines[i], cache->pipeline.lines[i]);
+        _draw_primitives(&rsx->debug_draw.points[i], cache->pipeline.points[i]);
 
-        _draw_primitives(renderer, &renderer->debug_draw.lines_no_depth[i], cache->pipeline.lines_no_depth[i]);
-        _draw_primitives(renderer, &renderer->debug_draw.points_no_depth[i], cache->pipeline.points_no_depth[i]);
+        _draw_primitives(&rsx->debug_draw.lines_no_depth[i], cache->pipeline.lines_no_depth[i]);
+        _draw_primitives(&rsx->debug_draw.points_no_depth[i], cache->pipeline.points_no_depth[i]);
     }
 }

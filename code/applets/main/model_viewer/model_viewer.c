@@ -13,7 +13,7 @@ extern void mv_on_mouse_move(struct mouse_event *e);
 extern void mv_on_mouse_wheel_spin(struct mouse_event *e);
 
 // forward declarations
-static result_e _create_renderer();
+static result_e _create_rsx();
 static result_e _create_scene();
 
 static struct camera_ctl* _camera_ctl_none_ptr();
@@ -27,7 +27,6 @@ struct model_viewer
     bool is_initialized;
 
     struct scene scene;
-    struct renderer renderer;
 
     struct model_viewer_conf conf;
 };
@@ -40,7 +39,6 @@ static struct model_viewer g_mv = {0};
 
 #define mv_conf_ptr() (&mv_ptr()->conf)
 #define mv_scene_ptr() (&mv_ptr()->scene)
-#define mv_renderer_ptr() (&mv_ptr()->renderer)
 
 ////////////////////////////////////////////////////////////
 
@@ -56,12 +54,12 @@ result_e model_viewer_init()
         // ...
 
         // renderer
-        struct rsx_conf *renderer = &conf->renderer;
+        struct rsx_conf *rsx = &conf->rsx;
         {
-            rsx_conf_defaults(renderer);
+            rsx_conf_defaults(rsx);
 
             // config override
-            renderer->enable_rcpu = false;
+            rsx->enable_rcpu = false;
         }
 
         // scene
@@ -74,7 +72,7 @@ result_e model_viewer_init()
         }
     }
 
-    check_result(_create_renderer());
+    check_result(_create_rsx());
     check_result(_create_scene());
 
     ////////////////////////////////////////
@@ -101,16 +99,18 @@ void model_viewer_quit()
     csr_assert(mv_ptr()->is_initialized);
 
     scene_quit(mv_scene_ptr());
-    rsx_quit(mv_renderer_ptr());
+    rsx_quit();
 }
 
 void model_viewer_tick()
 {
     csr_assert(mv_ptr()->is_initialized);
 
+    struct rsx *rsx = rsx_ptr();
+
     // process scene
     {
-        struct shader_data_frame *frame_data = &mv_renderer_ptr()->shader_data.frame.buffer.cpu;
+        struct shader_data_frame *frame_data = &rsx->shader_data.frame.buffer.cpu;
 
         struct camera *camera = mv_scene_ptr()->camera;
         struct camera_ctl *camera_ctl = mv_scene_ptr()->camera_ctl;
@@ -121,7 +121,7 @@ void model_viewer_tick()
                 camera_ctl->update_cb(camera, camera_ctl, aio_time_elapsed_delta());
             }
 
-            f32 aspect_ratio = screen_get_aspect_ratio(mv_renderer_ptr()->screen.rgpu);
+            f32 aspect_ratio = screen_get_aspect_ratio(rsx->screen.rgpu);
 
             frame_data->mtx_view = camera_get_view_matrix(camera);
             frame_data->mtx_projection = camera_get_persp_projection_matrix(camera, aspect_ratio);
@@ -147,30 +147,30 @@ void model_viewer_tick()
                     struct camera_ctl_orbital *data = camera_ctl->data;
                     struct orbit *orbit = &data->orbit_src;
 
-                    rsx_add_point(mv_renderer_ptr(), orbit->origin, make_vec3(1, 1, 1), 3, 0, false);
+                    rsx_add_point(orbit->origin, make_vec3(1, 1, 1), 3, 0, false);
 
                     origin = orbit->origin;
                 }
 
                 struct mat44 m = mat44_translate(make_vec3(0, 1, 0));
-                rsx_add_axes(mv_renderer_ptr(), m, false);
-                rsx_add_aabb(mv_renderer_ptr(), m, make_aabb_unit_cube(), false);
+                rsx_add_axes(m, false);
+                rsx_add_aabb(m, make_aabb_unit_cube(), false);
             }
 
             // update gizmo shader data
             {
-                struct mesh_gizmo *axes = &mv_renderer_ptr()->gizmo.axes;
+                struct mesh_gizmo *axes = &rsx->gizmo.axes;
                 axes->data.mtx_mvp = mat44_mult(mat44_mult(frame_data->mtx_projection_ortho, frame_data->mtx_view), mat44_translate(origin));
                 axes->data.use_object_mvp = true;
 
-                struct mesh_gizmo *grid = &mv_renderer_ptr()->gizmo.grid;
-                grid->data = mv_renderer_ptr()->shader_data.object.buffer.cpu;
+                struct mesh_gizmo *grid = &rsx->gizmo.grid;
+                grid->data = rsx->shader_data.object.buffer.cpu;
             }
         }
     }
 
     // draw frame
-    rsx_tick(mv_renderer_ptr());
+    rsx_tick();
 }
 
 struct model_viewer_conf* model_viewer_get_conf()
@@ -218,11 +218,6 @@ void model_viewer_unload_model()
 
 error:
     return;
-}
-
-struct renderer* model_viewer_get_renderer()
-{
-    return &mv_ptr()->renderer;
 }
 
 
@@ -354,9 +349,9 @@ error:
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // renderer
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-static result_e _create_renderer()
+static result_e _create_rsx()
 {
-    struct rsx_conf *conf = mv_renderer_conf_ptr();
+    struct rsx_conf *conf = mv_rsx_conf_ptr();
 
     struct xgl_clear_values clear_values = {0};
     clear_values.color = make_vec4_3_1(conf->color.background, 1.0);
@@ -393,14 +388,13 @@ static result_e _create_renderer()
     }
 
     // create renderer
-    struct renderer *renderer = mv_renderer_ptr();
     {
         struct rsx_init_info init_info = {0};
         init_info.conf = conf;
         init_info.screen_rgpu = screen_rgpu;
         init_info.screen_rcpu = screen_rcpu;
 
-        return rsx_init(&init_info, renderer);
+        return rsx_init(&init_info);
     }
 
 error:

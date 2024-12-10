@@ -4,7 +4,7 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-static struct application g_application;
+static struct application g_application = {0};
 
 struct application* application_ptr()
 {

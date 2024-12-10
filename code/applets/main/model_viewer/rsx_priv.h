@@ -58,7 +58,7 @@ struct rsx_shader_data
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-struct renderer
+struct rsx
 {
     struct rsx_conf *conf;
 
@@ -86,6 +86,8 @@ struct renderer
     struct rcpu* rcpu;
 };
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
 struct rsx_init_info
 {
     struct rsx_conf *conf;
@@ -94,12 +96,12 @@ struct rsx_init_info
     struct screen *screen_rcpu;
 };
 
-result_e rsx_init(struct rsx_init_info *info, struct renderer *renderer);
-void rsx_quit(struct renderer *renderer);
+struct rsx* rsx_ptr();
 
-void rsx_tick(struct renderer *renderer);
+result_e rsx_init(struct rsx_init_info *info);
+void rsx_quit();
 
+void rsx_tick();
 
-// misc helper functions
 void rsx_calc_axes_viewport(f32 *x, f32 *y, f32 *width, f32 *height);
 // struct material* renderer_find_suitable_material(struct renderer *renderer, u32 vertex_format);

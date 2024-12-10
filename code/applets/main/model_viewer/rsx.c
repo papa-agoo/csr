@@ -8,40 +8,51 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-static result_e _create_shader_data(struct renderer *renderer);
-static void _destroy_shader_data(struct renderer *renderer);
+static result_e _create_shader_data();
+static void _destroy_shader_data();
 
-static result_e _create_gizmos(struct renderer *renderer);
-static void _destroy_gizmos(struct renderer *renderer);
+static result_e _create_gizmos();
+static void _destroy_gizmos();
 
-static result_e _create_debug_primitives(struct renderer *renderer);
-static void _reset_debug_primitives(struct renderer *renderer);
-static void _destroy_debug_primitives(struct renderer *renderer);
+static result_e _create_debug_primitives();
+static void _reset_debug_primitives();
+static void _destroy_debug_primitives();
 
-result_e rsx_init(struct rsx_init_info *info, struct renderer *renderer)
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+static struct rsx g_rsx = {0};
+
+struct rsx* rsx_ptr()
+{
+    return &g_rsx;
+}
+
+struct application* application_ptr();
+
+result_e rsx_init(struct rsx_init_info *info)
 {
     check_ptr(info);
     check_ptr(info->conf);
     check_ptr(info->screen_rgpu);
     check_ptr(info->screen_rcpu);
 
-    check_ptr(renderer);
+    struct rsx *rsx = rsx_ptr();
 
-    renderer->conf = info->conf;
+    rsx->conf = info->conf;
 
-    renderer->screen.rgpu = info->screen_rgpu;
-    renderer->rgpu = rgpu_create();
-    check_ptr(renderer->rgpu);
+    rsx->screen.rgpu = info->screen_rgpu;
+    rsx->rgpu = rgpu_create();
+    check_ptr(rsx->rgpu);
 
-    renderer->screen.rcpu = info->screen_rcpu;
-    renderer->rcpu = rcpu_create();
-    check_ptr(renderer->rcpu);
+    rsx->screen.rcpu = info->screen_rcpu;
+    rsx->rcpu = rcpu_create();
+    check_ptr(rsx->rcpu);
 
     ////////////////////////////////////////
 
-    check_result(_create_shader_data(renderer));
-    check_result(_create_gizmos(renderer));
-    check_result(_create_debug_primitives(renderer));
+    check_result(_create_shader_data());
+    check_result(_create_gizmos());
+    check_result(_create_debug_primitives());
 
     return RC_SUCCESS;
 
@@ -49,13 +60,11 @@ error:
     return RC_FAILURE;
 }
 
-void rsx_quit(struct renderer *renderer)
+void rsx_quit()
 {
-    check_ptr(renderer);
-
-    _destroy_debug_primitives(renderer);
-    _destroy_gizmos(renderer);
-    _destroy_shader_data(renderer);
+    _destroy_debug_primitives();
+    _destroy_gizmos();
+    _destroy_shader_data();
 
     rcpu_destroy();
     rgpu_destroy();
@@ -64,9 +73,9 @@ error:
     return;
 }
 
-void rsx_tick(struct renderer *renderer)
+void rsx_tick()
 {
-    check_ptr(renderer);
+    struct rsx *rsx = rsx_ptr();
 
     // build render structures (suitable for gpu/cpu renderers)
     {
@@ -74,42 +83,37 @@ void rsx_tick(struct renderer *renderer)
     }
 
     // update cpu screen aspect ratio
-    screen_set_aspect_ratio(renderer->screen.rcpu, screen_get_aspect_ratio(renderer->screen.rgpu));
+    screen_set_aspect_ratio(rsx->screen.rcpu, screen_get_aspect_ratio(rsx->screen.rgpu));
 
     // tick cpu renderer
-    if (screen_begin(renderer->screen.rcpu, SCREEN_SURFACE_TYPE_CPU))
+    if (screen_begin(rsx->screen.rcpu, SCREEN_SURFACE_TYPE_CPU))
     {
-        struct pixelbuffer *pb = screen_get_pixelbuffer(renderer->screen.rcpu);
-        struct xgl_viewport vp = screen_get_viewport(renderer->screen.rcpu);
+        struct pixelbuffer *pb = screen_get_pixelbuffer(rsx->screen.rcpu);
+        struct xgl_viewport vp = screen_get_viewport(rsx->screen.rcpu);
 
-        rcpu_tick(renderer, pb, *(struct softgl_viewport*) &vp);
+        rcpu_tick(pb, *(struct softgl_viewport*) &vp);
 
         screen_end();
     }
 
     // tick gpu renderer
-    if (screen_begin(renderer->screen.rgpu, SCREEN_SURFACE_TYPE_GPU))
+    if (screen_begin(rsx->screen.rgpu, SCREEN_SURFACE_TYPE_GPU))
     {
-        rgpu_tick(renderer, screen_get_viewport(renderer->screen.rgpu));
+        rgpu_tick(screen_get_viewport(rsx->screen.rgpu));
 
         screen_end();
     }
 
     // clear frame resources
-    _reset_debug_primitives(renderer);
+    _reset_debug_primitives();
 
 error:
     return;
 }
 
-const struct rsx_conf* rsx_get_conf(struct renderer *renderer)
+const struct rsx_conf* rsx_get_conf()
 {
-    check_ptr(renderer);
-
-    return renderer->conf;
-
-error:
-    return NULL;
+    return rsx_ptr()->conf;
 }
 
 void rsx_calc_axes_viewport(f32 *x, f32 *y, f32 *width, f32 *height)
@@ -137,12 +141,12 @@ error:
     return;
 }
 
-static result_e _create_shader_data(struct renderer *renderer)
+static result_e _create_shader_data()
 {
-    check_ptr(renderer);
+    struct rsx *rsx = rsx_ptr();
 
-    struct rgpu_cache *cache = &renderer->rgpu->cache;
-    struct rsx_shader_data *shader_data = &renderer->shader_data;
+    struct rgpu_cache *cache = &rsx->rgpu->cache;
+    struct rsx_shader_data *shader_data = &rsx->shader_data;
 
     // frame
     {
@@ -236,11 +240,11 @@ error:
     return RC_FAILURE;
 }
 
-static void _destroy_shader_data(struct renderer *renderer)
+static void _destroy_shader_data()
 {
-    check_ptr(renderer);
+    struct rsx *rsx = rsx_ptr();
 
-    struct rsx_shader_data *shader_data = &renderer->shader_data;
+    struct rsx_shader_data *shader_data = &rsx->shader_data;
 
     xgl_destroy_buffer(shader_data->frame.buffer.gpu);
     xgl_destroy_descriptor_set(shader_data->frame.ds);
@@ -259,11 +263,9 @@ error:
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // gizmos
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-static result_e _create_axes_gizmo(struct renderer *renderer)
+static result_e _create_axes_gizmo()
 {
-    check_ptr(renderer);
-
-    const struct rsx_conf *conf = rsx_get_conf(renderer);
+    const struct rsx_conf *conf = rsx_get_conf();
 
     ////////////////////////////////////////
 
@@ -306,7 +308,7 @@ static result_e _create_axes_gizmo(struct renderer *renderer)
 
     ////////////////////////////////////////
 
-    struct mesh_gizmo *gizmo = &renderer->gizmo.axes;
+    struct mesh_gizmo *gizmo = &rsx_ptr()->gizmo.axes;
     gizmo->name = make_string("gizmo.axes");
 
     gizmo->primitive.vertex_format = VERTEX_FORMAT_POSITION_BIT | VERTEX_FORMAT_COLOR_BIT;
@@ -343,12 +345,11 @@ error:
     return RC_FAILURE;
 }
 
-static result_e _create_grid_gizmo(struct renderer *renderer, f32 size_qm)
+static result_e _create_grid_gizmo(f32 size_qm)
 {
-    check_ptr(renderer);
     check_expr(size_qm >= 1);
 
-    const struct rsx_conf *conf = rsx_get_conf(renderer);
+    const struct rsx_conf *conf = rsx_get_conf();
 
     ////////////////////////////////////////
 
@@ -419,7 +420,7 @@ static result_e _create_grid_gizmo(struct renderer *renderer, f32 size_qm)
 
     // struct aabb aabb = make_aabb(make_vec3(-e, 0, -e), make_vec3(e, 0, e));
 
-    struct mesh_gizmo *gizmo = &renderer->gizmo.grid;
+    struct mesh_gizmo *gizmo = &rsx_ptr()->gizmo.grid;
     gizmo->name = make_string("gizmo.grid");
 
     gizmo->primitive.vertex_format = VERTEX_FORMAT_POSITION_BIT | VERTEX_FORMAT_COLOR_BIT;
@@ -448,12 +449,10 @@ error:
     return RC_FAILURE;
 }
 
-static result_e _create_gizmos(struct renderer *renderer)
+static result_e _create_gizmos()
 {
-    check_ptr(renderer);
-
-    check_result(_create_axes_gizmo(renderer));
-    check_result(_create_grid_gizmo(renderer, 10));
+    check_result(_create_axes_gizmo());
+    check_result(_create_grid_gizmo(10));
 
     return RC_SUCCESS;
 
@@ -461,13 +460,13 @@ error:
     return RC_FAILURE;
 }
 
-static void _destroy_gizmos(struct renderer *renderer)
+static void _destroy_gizmos()
 {
-    check_ptr(renderer);
+    struct rsx *rsx = rsx_ptr();
 
     // axes
     {
-        struct mesh_gizmo *gizmo = &renderer->gizmo.axes;
+        struct mesh_gizmo *gizmo = &rsx->gizmo.axes;
 
         vector_destroy(gizmo->buffer.vertices.cpu);
         xgl_destroy_buffer(gizmo->buffer.vertices.gpu);
@@ -475,7 +474,7 @@ static void _destroy_gizmos(struct renderer *renderer)
 
     // grid
     {
-        struct mesh_gizmo *gizmo = &renderer->gizmo.grid;
+        struct mesh_gizmo *gizmo = &rsx->gizmo.grid;
 
         vector_destroy(gizmo->buffer.vertices.cpu);
         xgl_destroy_buffer(gizmo->buffer.vertices.gpu);
@@ -496,7 +495,7 @@ error:
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // debug primitives
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-static result_e _create_debug_primitives_buffer(struct renderer *renderer, struct mesh_buffer *buffer, u32 capacity, u64 element_size)
+static result_e _create_debug_primitives_buffer(struct mesh_buffer *buffer, u32 capacity, u64 element_size)
 {
     // buffer->vertex_format = VERTEX_FORMAT_POSITION_BIT | VERTEX_FORMAT_COLOR_BIT;
     // buffer->vertex_stride = sizeof(struct vertex_1p1c);
@@ -521,9 +520,9 @@ static void _destroy_debug_primitives_buffer(struct mesh_buffer *buffer)
     xgl_destroy_buffer(buffer->vertices.gpu);
 }
 
-static result_e _create_debug_primitives(struct renderer *renderer)
+static result_e _create_debug_primitives()
 {
-    check_ptr(renderer);
+    struct rsx *rsx = rsx_ptr();
 
     u32 vertex_format = VERTEX_FORMAT_POSITION_BIT | VERTEX_FORMAT_COLOR_BIT;
     u32 vertex_stride = sizeof(struct vertex_1p1c);
@@ -533,11 +532,11 @@ static result_e _create_debug_primitives(struct renderer *renderer)
 
     for (u32 i = 0; i < PRIMITIVE_SIZE_MAX; i++)
     {
-        check_result(_create_debug_primitives_buffer(renderer, &renderer->debug_draw.points[i], max_points, vertex_stride));
-        check_result(_create_debug_primitives_buffer(renderer, &renderer->debug_draw.points_no_depth[i], max_points, vertex_stride));
+        check_result(_create_debug_primitives_buffer(&rsx->debug_draw.points[i], max_points, vertex_stride));
+        check_result(_create_debug_primitives_buffer(&rsx->debug_draw.points_no_depth[i], max_points, vertex_stride));
 
-        check_result(_create_debug_primitives_buffer(renderer, &renderer->debug_draw.lines[i], max_lines, vertex_stride));
-        check_result(_create_debug_primitives_buffer(renderer, &renderer->debug_draw.lines_no_depth[i], max_lines, vertex_stride));
+        check_result(_create_debug_primitives_buffer(&rsx->debug_draw.lines[i], max_lines, vertex_stride));
+        check_result(_create_debug_primitives_buffer(&rsx->debug_draw.lines_no_depth[i], max_lines, vertex_stride));
     }
 
     return RC_SUCCESS;
@@ -546,43 +545,43 @@ error:
     return RC_FAILURE;
 }
 
-static void _reset_debug_primitives(struct renderer *renderer)
+static void _reset_debug_primitives()
 {
-    check_ptr(renderer);
+    struct rsx *rsx = rsx_ptr();
 
     for (u32 i = 0; i < PRIMITIVE_SIZE_MAX; i++)
     {
-        vector_clear(renderer->debug_draw.points[i].vertices.cpu);
-        vector_clear(renderer->debug_draw.points_no_depth[i].vertices.cpu);
+        vector_clear(rsx->debug_draw.points[i].vertices.cpu);
+        vector_clear(rsx->debug_draw.points_no_depth[i].vertices.cpu);
 
-        vector_clear(renderer->debug_draw.lines[i].vertices.cpu);
-        vector_clear(renderer->debug_draw.lines_no_depth[i].vertices.cpu);
+        vector_clear(rsx->debug_draw.lines[i].vertices.cpu);
+        vector_clear(rsx->debug_draw.lines_no_depth[i].vertices.cpu);
     }
 
 error:
     return;
 }
 
-static void _destroy_debug_primitives(struct renderer *renderer)
+static void _destroy_debug_primitives()
 {
-    check_ptr(renderer);
+    struct rsx *rsx = rsx_ptr();
 
     for (u32 i = 0; i < PRIMITIVE_SIZE_MAX; i++)
     {
-        _destroy_debug_primitives_buffer(&renderer->debug_draw.points[i]);
-        _destroy_debug_primitives_buffer(&renderer->debug_draw.points_no_depth[i]);
+        _destroy_debug_primitives_buffer(&rsx->debug_draw.points[i]);
+        _destroy_debug_primitives_buffer(&rsx->debug_draw.points_no_depth[i]);
 
-        _destroy_debug_primitives_buffer(&renderer->debug_draw.lines[i]);
-        _destroy_debug_primitives_buffer(&renderer->debug_draw.lines_no_depth[i]);
+        _destroy_debug_primitives_buffer(&rsx->debug_draw.lines[i]);
+        _destroy_debug_primitives_buffer(&rsx->debug_draw.lines_no_depth[i]);
     }
 
 error:
     return;
 }
 
-void rsx_add_point(struct renderer *renderer, struct vec3 p, struct vec3 color, f32 size, f32 lifetime, bool depth)
+void rsx_add_point(struct vec3 p, struct vec3 color, f32 size, f32 lifetime, bool depth)
 {
-    check_ptr(renderer);
+    struct rsx *rsx = rsx_ptr();
 
     // FIXME lifetime
 
@@ -590,7 +589,7 @@ void rsx_add_point(struct renderer *renderer, struct vec3 p, struct vec3 color, 
 
     u32 size_idx = clamp(size, 1, PRIMITIVE_SIZE_MAX) - 1;
 
-    struct mesh_buffer *buffer = (depth) ? &renderer->debug_draw.points[size_idx] : &renderer->debug_draw.points_no_depth[size_idx];
+    struct mesh_buffer *buffer = (depth) ? &rsx->debug_draw.points[size_idx] : &rsx->debug_draw.points_no_depth[size_idx];
 
     vector_push_back(buffer->vertices.cpu, v);
 
@@ -598,9 +597,9 @@ error:
     return;
 }
 
-void rsx_add_line(struct renderer *renderer, struct vec3 a, struct vec3 b, struct vec3 color, f32 width, f32 lifetime, bool depth)
+void rsx_add_line(struct vec3 a, struct vec3 b, struct vec3 color, f32 width, f32 lifetime, bool depth)
 {
-    check_ptr(renderer);
+    struct rsx *rsx = rsx_ptr();
 
     // FIXME lifetime
 
@@ -609,7 +608,7 @@ void rsx_add_line(struct renderer *renderer, struct vec3 a, struct vec3 b, struc
 
     u32 size_idx = clamp(width, 1, PRIMITIVE_SIZE_MAX) - 1;
 
-    struct mesh_buffer *buffer = (depth) ? &renderer->debug_draw.lines[size_idx] : &renderer->debug_draw.lines_no_depth[size_idx];
+    struct mesh_buffer *buffer = (depth) ? &rsx->debug_draw.lines[size_idx] : &rsx->debug_draw.lines_no_depth[size_idx];
 
     vector_push_back(buffer->vertices.cpu, va);
     vector_push_back(buffer->vertices.cpu, vb);
@@ -618,9 +617,9 @@ error:
     return;
 }
 
-void rsx_add_axes(struct renderer *renderer, struct mat44 transform, bool depth)
+void rsx_add_axes(struct mat44 transform, bool depth)
 {
-    check_ptr(renderer);
+    struct rsx *rsx = rsx_ptr();
 
     ////////////////////////////////////////
 
@@ -634,19 +633,19 @@ void rsx_add_axes(struct renderer *renderer, struct mat44 transform, bool depth)
     f32 width = 2.0f;
     f32 lifetime = 0.0f;
 
-    struct rsx_conf *conf = renderer->conf;
+    const struct rsx_conf *conf = rsx_get_conf();
 
-    rsx_add_line(renderer, origin, basis_x, conf->color.axis_x, width, lifetime, depth);
-    rsx_add_line(renderer, origin, basis_y, conf->color.axis_y, width, lifetime, depth);
-    rsx_add_line(renderer, origin, basis_z, conf->color.axis_z, width, lifetime, depth);
+    rsx_add_line(origin, basis_x, conf->color.axis_x, width, lifetime, depth);
+    rsx_add_line(origin, basis_y, conf->color.axis_y, width, lifetime, depth);
+    rsx_add_line(origin, basis_z, conf->color.axis_z, width, lifetime, depth);
 
 error:
     return;
 }
 
-void rsx_add_aabb(struct renderer *renderer, struct mat44 transform, struct aabb aabb, bool depth)
+void rsx_add_aabb(struct mat44 transform, struct aabb aabb, bool depth)
 {
-    check_ptr(renderer);
+    struct rsx *rsx = rsx_ptr();
 
     ////////////////////////////////////////
 
@@ -667,25 +666,25 @@ void rsx_add_aabb(struct renderer *renderer, struct mat44 transform, struct aabb
     f32 width = 1.0f;
     f32 lifetime = 0.0f;
 
-    struct vec3 color = renderer->conf->color.aabb;
+    struct vec3 color = rsx_get_conf()->color.aabb;
 
     // top lines
-    rsx_add_line(renderer, ta, tb, color, width, lifetime, depth);
-    rsx_add_line(renderer, tb, tc, color, width, lifetime, depth);
-    rsx_add_line(renderer, tc, td, color, width, lifetime, depth);
-    rsx_add_line(renderer, td, ta, color, width, lifetime, depth);
+    rsx_add_line(ta, tb, color, width, lifetime, depth);
+    rsx_add_line(tb, tc, color, width, lifetime, depth);
+    rsx_add_line(tc, td, color, width, lifetime, depth);
+    rsx_add_line(td, ta, color, width, lifetime, depth);
 
     // bottom lines
-    rsx_add_line(renderer, ba, bb, color, width, lifetime, depth);
-    rsx_add_line(renderer, bb, bc, color, width, lifetime, depth);
-    rsx_add_line(renderer, bc, bd, color, width, lifetime, depth);
-    rsx_add_line(renderer, bd, ba, color, width, lifetime, depth);
+    rsx_add_line(ba, bb, color, width, lifetime, depth);
+    rsx_add_line(bb, bc, color, width, lifetime, depth);
+    rsx_add_line(bc, bd, color, width, lifetime, depth);
+    rsx_add_line(bd, ba, color, width, lifetime, depth);
 
     // connection lines
-    rsx_add_line(renderer, ba, ta, color, width, lifetime, depth);
-    rsx_add_line(renderer, bb, tb, color, width, lifetime, depth);
-    rsx_add_line(renderer, bc, tc, color, width, lifetime, depth);
-    rsx_add_line(renderer, bd, td, color, width, lifetime, depth);
+    rsx_add_line(ba, ta, color, width, lifetime, depth);
+    rsx_add_line(bb, tb, color, width, lifetime, depth);
+    rsx_add_line(bc, tc, color, width, lifetime, depth);
+    rsx_add_line(bd, td, color, width, lifetime, depth);
 
 error:
     return;

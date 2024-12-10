@@ -31,13 +31,12 @@ error:
     return;
 }
 
-void rcpu_tick(struct renderer *renderer, struct pixelbuffer *pb, struct softgl_viewport vp)
+void rcpu_tick(struct pixelbuffer *pb, struct softgl_viewport vp)
 {
-    check_ptr(renderer);
     check_ptr(pb);
 
     struct rcpu_cache *cache = rcpu_cache_ptr();
-    struct rsx_shader_data *shader_data = &renderer->shader_data;
+    struct rsx_shader_data *shader_data = &rsx_ptr()->shader_data;
 
     // set the viewport for this frame
     rcpu_ptr()->vp = vp;
@@ -48,9 +47,9 @@ void rcpu_tick(struct renderer *renderer, struct pixelbuffer *pb, struct softgl_
     // bind frame data
     softgl_bind_descriptor_set(SOFTGL_DESCRIPTOR_SET_TYPE_FRAME, &shader_data->frame.buffer.cpu);
 
-    rcpu_pass_meshes(renderer, NULL);
-    rcpu_pass_gizmos(renderer);
-    rcpu_pass_debug_primitives(renderer);
+    rcpu_pass_meshes(NULL);
+    rcpu_pass_gizmos();
+    rcpu_pass_debug_primitives();
 
 error:
     return;
@@ -87,13 +86,12 @@ void rcpu_draw_mesh_primitive(struct mesh_primitive *primitive)
     }
 }
 
-void rcpu_pass_meshes(struct renderer *renderer, struct vector *meshes)
+void rcpu_pass_meshes(struct vector *meshes)
 {
-    check_ptr(renderer);
     check_quiet(meshes);
 
     struct rcpu_cache *cache = rcpu_cache_ptr();
-    struct rsx_shader_data *shader_data = &renderer->shader_data;
+    struct rsx_shader_data *shader_data = &rsx_ptr()->shader_data;
 
     // ...
 
@@ -101,16 +99,16 @@ error:
     return;
 }
 
-void rcpu_pass_gizmos(struct renderer *renderer)
+void rcpu_pass_gizmos()
 {
     struct rcpu_cache *cache = rcpu_cache_ptr();
-    struct rsx_shader_data *shader_data = &renderer->shader_data;
+    struct rsx_shader_data *shader_data = &rsx_ptr()->shader_data;
 
     // bind pass data
     softgl_bind_descriptor_set(SOFTGL_DESCRIPTOR_SET_TYPE_PASS, &shader_data->pass_main.buffer.cpu);
 
     // grid
-    struct mesh_gizmo *grid = &renderer->gizmo.grid;
+    struct mesh_gizmo *grid = &rsx_ptr()->gizmo.grid;
     {
         softgl_bind_descriptor_set(SOFTGL_DESCRIPTOR_SET_TYPE_OBJECT, &grid->data);
 
@@ -119,7 +117,7 @@ void rcpu_pass_gizmos(struct renderer *renderer)
     }
 
     // axes
-    struct mesh_gizmo *axes = &renderer->gizmo.axes;
+    struct mesh_gizmo *axes = &rsx_ptr()->gizmo.axes;
     {
         softgl_bind_descriptor_set(SOFTGL_DESCRIPTOR_SET_TYPE_OBJECT, &axes->data);
 
@@ -142,9 +140,8 @@ error:
     return;
 }
 
-static void _draw_primitives(struct renderer *renderer, struct mesh_buffer *buffer, softgl_pipeline pso)
+static void _draw_primitives(struct mesh_buffer *buffer, softgl_pipeline pso)
 {
-    check_ptr(renderer);
     check_ptr(buffer);
 
     check_quiet(vector_size(buffer->vertices.cpu) > 0);
@@ -165,10 +162,12 @@ error:
     return;
 }
 
-void rcpu_pass_debug_primitives(struct renderer *renderer)
+void rcpu_pass_debug_primitives()
 {
-    struct rcpu_cache *cache = &renderer->rcpu->cache;
-    struct rsx_shader_data *shader_data = &renderer->shader_data;
+    struct rsx *rsx = rsx_ptr();
+
+    struct rcpu_cache *cache = &rsx->rcpu->cache;
+    struct rsx_shader_data *shader_data = &rsx->shader_data;
 
     // FIXME
     softgl_bind_descriptor_set(SOFTGL_DESCRIPTOR_SET_TYPE_OBJECT, &shader_data->object.buffer.cpu);
@@ -176,11 +175,11 @@ void rcpu_pass_debug_primitives(struct renderer *renderer)
     // draw primitives
     for (u32 i = 0; i < PRIMITIVE_SIZE_MAX; i++)
     {
-        _draw_primitives(renderer, &renderer->debug_draw.lines[i], cache->pipeline.lines);
-        _draw_primitives(renderer, &renderer->debug_draw.points[i], cache->pipeline.points);
+        _draw_primitives(&rsx->debug_draw.lines[i], cache->pipeline.lines);
+        _draw_primitives(&rsx->debug_draw.points[i], cache->pipeline.points);
 
-        _draw_primitives(renderer, &renderer->debug_draw.lines_no_depth[i], cache->pipeline.lines_no_depth);
-        _draw_primitives(renderer, &renderer->debug_draw.points_no_depth[i], cache->pipeline.points_no_depth);
+        _draw_primitives(&rsx->debug_draw.lines_no_depth[i], cache->pipeline.lines_no_depth);
+        _draw_primitives(&rsx->debug_draw.points_no_depth[i], cache->pipeline.points_no_depth);
     }
 
 error:

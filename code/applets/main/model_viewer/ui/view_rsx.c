@@ -6,7 +6,7 @@
 
 static void _draw_flags_view()
 {
-    struct rsx_conf *conf = mv_renderer_conf_ptr();
+    struct rsx_conf *conf = mv_rsx_conf_ptr();
 
     // igCheckbox("Draw Grid", &conf->draw_grid);
     // igCheckbox("Draw AABB", &conf->draw_aabb);
@@ -58,14 +58,14 @@ static void _draw_settings_view()
     igText("...");
 }
 
-void ui_draw_renderer_view()
+void ui_draw_rsx_view()
 {
     ImGuiTreeNodeFlags header_flags = ImGuiTreeNodeFlags_DefaultOpen;
 
     igNewLine();
     _draw_flags_view();
 
-    struct rsx_conf *conf = mv_renderer_conf_ptr();
+    struct rsx_conf *conf = mv_rsx_conf_ptr();
 
     if (conf->enable_rgpu && igCollapsingHeader_TreeNodeFlags("GPU Renderer", header_flags))
     {
