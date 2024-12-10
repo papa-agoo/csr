@@ -174,8 +174,19 @@ CSR_INLINE void _pipeline_apply_rasterizer_state(struct gl_rasterizer_state *p_r
     GL_CALL( glPointSize(p_rs->point_size) );
     GL_CALL( glLineWidth(p_rs->line_width) );
 
-    (p_rs->smooth_points) ? GL_CALL( glEnable(GL_POINT_SMOOTH) ) : GL_CALL( glDisable(GL_POINT_SMOOTH) );
-    (p_rs->smooth_lines) ? GL_CALL( glEnable(GL_LINE_SMOOTH) ) : GL_CALL( glDisable(GL_LINE_SMOOTH) );
+    if (p_rs->smooth_points) {
+        GL_CALL( glEnable(GL_POINT_SMOOTH) );
+    }
+    else {
+        GL_CALL( glDisable(GL_POINT_SMOOTH) );
+    }
+
+    if (p_rs->smooth_lines) {
+        GL_CALL( glEnable(GL_LINE_SMOOTH) );
+    }
+    else {
+        GL_CALL( glDisable(GL_LINE_SMOOTH) );
+    }
 
     ////////////////////////////////////////
 
