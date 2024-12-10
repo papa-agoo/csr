@@ -102,6 +102,8 @@ void softgl_draw_indexed(u32 first, u32 count)
 
     softgl_draw(first, count);
 
+    softgl_binding_ptr().index_buffer = NULL;
+
 error:
     return;
 }
