@@ -12,7 +12,7 @@ struct event_handler
 };
 
 // message pool
-#define MAX_EVENT_MESSAGES 64
+#define MAX_EVENT_MESSAGES 2048
 
 struct message_pool
 {
