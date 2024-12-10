@@ -59,6 +59,8 @@ struct screen_create_info
     enum screen_resize_policy resize_policy;
 
     struct screen_surface_create_info surface;
+
+    bool is_suspended;
 };
 
 struct screen* screen_create(struct screen_create_info *ci);

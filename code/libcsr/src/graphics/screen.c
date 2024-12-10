@@ -64,6 +64,7 @@ struct screen* screen_create(struct screen_create_info *ci)
     screen->scale_policy = ci->scale_policy;
     screen->keep_aspect_ratio = ci->keep_aspect_ratio;
     screen->resize_policy = ci->resize_policy;
+    screen->is_suspended = ci->is_suspended;
 
     // create surface
     screen->surface = screen_surface_create(&ci->surface);

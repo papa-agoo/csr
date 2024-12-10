@@ -369,6 +369,9 @@ struct screen* aio_add_screen(string_cstr key, struct screen_create_info *ci)
     ui_window_init(window, string_get_cstr(arena, screen_name));
     ui_view_init(&window->view, UI_VIEW_TYPE_SCREEN, screen);
 
+    // close suspended screens by default
+    window->is_opened = !screen_is_suspended(screen);
+
     // window and screen ownership go to the ui ctx (will be freed there)
     aio_add_ui_window(key, window);
 

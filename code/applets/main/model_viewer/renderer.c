@@ -40,6 +40,7 @@ result_e renderer_init(struct renderer *renderer)
         create_info.surface.viewport.height = 720;
         create_info.surface.clear_values.color = screen_clear_color;
         create_info.surface.clear_values.depth = 1.0;
+        create_info.is_suspended = !conf->enable_rgpu;
 
         renderer->screen.rgpu = aio_add_screen("rgpu", &create_info);
         check_ptr(renderer->screen.rgpu);
@@ -59,6 +60,7 @@ result_e renderer_init(struct renderer *renderer)
         create_info.surface.clear_values.color = screen_clear_color;
         create_info.surface.clear_values.depth = 1.0;
         create_info.keep_aspect_ratio = true;
+        create_info.is_suspended = !conf->enable_rcpu;
 
         renderer->screen.rcpu = aio_add_screen("rcpu", &create_info);
         check_ptr(renderer->screen.rcpu);

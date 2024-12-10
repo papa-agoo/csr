@@ -11,6 +11,18 @@ static void _draw_flags_view()
     igCheckbox("Draw Grid", &conf->draw_grid);
     igCheckbox("Draw AABB", &conf->draw_aabb);
 
+    igNewLine();
+
+    if (igCheckbox("Enable GPU Renderer", &conf->enable_rgpu)) {
+        aio_get_ui_window("rgpu")->is_opened = conf->enable_rgpu;
+    }
+
+    if (igCheckbox("Enable CPU Renderer", &conf->enable_rcpu)) {
+        aio_get_ui_window("rcpu")->is_opened = conf->enable_rcpu;
+    }
+
+    igNewLine();
+
     // - draw mode
     //  - point cloud
     //  - wireframe
@@ -18,6 +30,8 @@ static void _draw_flags_view()
     //  - solid lit
     //  - textured
     //  - full
+error:
+    return;
 }
 
 static void _draw_gpu_renderer_view()
@@ -51,19 +65,21 @@ void ui_draw_renderer_view()
     igNewLine();
     _draw_flags_view();
 
-    // if (igCollapsingHeader_TreeNodeFlags("GPU Renderer", header_flags))
-    // {
-    //     igNewLine();
-    //     _draw_gpu_renderer_view();
-    //     igNewLine();
-    // }
+    struct renderer_conf *conf = mv_renderer_conf_ptr();
 
-    // if (igCollapsingHeader_TreeNodeFlags("CPU Renderer", header_flags))
-    // {
-    //     igNewLine();
-    //     _draw_cpu_renderer_view();
-    //     igNewLine();
-    // }
+    if (conf->enable_rgpu && igCollapsingHeader_TreeNodeFlags("GPU Renderer", header_flags))
+    {
+        igNewLine();
+        _draw_gpu_renderer_view();
+        igNewLine();
+    }
+
+    if (conf->enable_rcpu && igCollapsingHeader_TreeNodeFlags("CPU Renderer", header_flags))
+    {
+        igNewLine();
+        _draw_cpu_renderer_view();
+        igNewLine();
+    }
 
     // if (igCollapsingHeader_TreeNodeFlags("Settings", header_flags))
     // {

@@ -119,6 +119,7 @@ The main focus lies on the Model Viewer Applet (model_viewer.so) which will be a
   - [x] Applets
     - [x] ecs_hello_world.so (some tests with Flecs)
     - [x] xgl_hello_cube.so (textured)
+    - [x] softgl_hello_triangle.so
     - [x] model_viewer.so #1
       - [x] 3D scene (Base Grid, Orbit Camera, Orientantion Gizmo, Unit Cube AABB)
       - [x] User Interface (Model, Camera, Renderers, Debug Info)

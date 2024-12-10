@@ -12,12 +12,12 @@ static void _draw_settings_view_cb(struct ui_view *view, struct ui_style *style)
 {
     if (igBeginTabBar("applet.tabbar.settings", 0))
     {
-        // if (igBeginTabItem("Model", NULL, 0))
-        // {
-        //     ui_draw_model_view();
+        if (igBeginTabItem("Model", NULL, 0))
+        {
+            ui_draw_model_view();
 
-        //     igEndTabItem();
-        // }
+            igEndTabItem();
+        }
 
         if (igBeginTabItem("Camera", NULL, 0))
         {
@@ -26,12 +26,12 @@ static void _draw_settings_view_cb(struct ui_view *view, struct ui_style *style)
             igEndTabItem();
         }
 
-        // if (igBeginTabItem("Renderer", NULL, 0))
-        // {
-        //     ui_draw_renderer_view();
+        if (igBeginTabItem("Renderer", NULL, 0))
+        {
+            ui_draw_renderer_view();
 
-        //     igEndTabItem();
-        // }
+            igEndTabItem();
+        }
 
         igEndTabBar();
     }

@@ -44,7 +44,7 @@ static void renderer_conf_defaults(struct renderer_conf *conf)
     conf->draw_aabb = true;
 
     conf->enable_rgpu = true;
-    conf->enable_rcpu = true;
+    conf->enable_rcpu = false;
 
 error:
     return;
