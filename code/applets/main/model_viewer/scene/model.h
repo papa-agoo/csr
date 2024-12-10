@@ -7,7 +7,7 @@
 #include <csr/core/math/aabb.h>
 #include <csr/core/math/transform.h>
 
-#include "renderer/mesh.h"
+#include "renderer/common.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 

@@ -8,8 +8,8 @@ static void _draw_flags_view()
 {
     struct renderer_conf *conf = mv_renderer_conf_ptr();
 
-    igCheckbox("Draw Grid", &conf->draw_grid);
-    igCheckbox("Draw AABB", &conf->draw_aabb);
+    // igCheckbox("Draw Grid", &conf->draw_grid);
+    // igCheckbox("Draw AABB", &conf->draw_aabb);
 
     igNewLine();
 
