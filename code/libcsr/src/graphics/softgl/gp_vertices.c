@@ -100,7 +100,7 @@ void gp_process_vertices(struct softgl_index_buffer *index_buffer)
     // fill vertex / primitive cache
     struct input_assembler* ia = &gp->ia;
 
-    for (u32 i = ia->vs.start; i < ia->vs.stop; i++)
+    for (u32 i = ia->vs.head + ia->vs.start; i < ia->vs.stop; i++)
     {
         struct softgl_vertex* vertex = _create_vertex(_lookup_vertex_index(i));
 
