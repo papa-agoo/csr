@@ -60,7 +60,7 @@ struct renderer_shader_data
 
 struct renderer
 {
-    struct renderer_conf conf;
+    struct renderer_conf *conf;
 
     struct renderer_shader_data shader_data;
 
@@ -86,7 +86,15 @@ struct renderer
     struct rcpu* rcpu;
 };
 
-result_e renderer_init(struct renderer *renderer);
+struct renderer_init_info
+{
+    struct renderer_conf *conf;
+
+    struct screen *screen_rgpu;
+    struct screen *screen_rcpu;
+};
+
+result_e renderer_init(struct renderer_init_info *info, struct renderer *renderer);
 void renderer_quit(struct renderer *renderer);
 
 void renderer_tick(struct renderer *renderer);

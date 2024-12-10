@@ -18,56 +18,24 @@ static result_e _create_debug_primitives(struct renderer *renderer);
 static void _reset_debug_primitives(struct renderer *renderer);
 static void _destroy_debug_primitives(struct renderer *renderer);
 
-result_e renderer_init(struct renderer *renderer)
+result_e renderer_init(struct renderer_init_info *info, struct renderer *renderer)
 {
+    check_ptr(info);
+    check_ptr(info->conf);
+    check_ptr(info->screen_rgpu);
+    check_ptr(info->screen_rcpu);
+
     check_ptr(renderer);
 
-    // init config
-    struct renderer_conf *conf = &renderer->conf;
-    renderer_conf_defaults(conf);
+    renderer->conf = info->conf;
 
-    ////////////////////////////////////////
+    renderer->screen.rgpu = info->screen_rgpu;
+    renderer->rgpu = rgpu_create();
+    check_ptr(renderer->rgpu);
 
-    struct vec4 screen_clear_color = make_vec4_3_1(conf->color.background, 1.0);
-
-    // create rgpu
-    {
-        struct screen_create_info create_info = {0};
-        create_info.name = make_string("GPU Renderer");
-
-        create_info.surface.type = SCREEN_SURFACE_TYPE_GPU;
-        create_info.surface.viewport.width = 1280;
-        create_info.surface.viewport.height = 720;
-        create_info.surface.clear_values.color = screen_clear_color;
-        create_info.surface.clear_values.depth = 1.0;
-        create_info.is_suspended = !conf->enable_rgpu;
-
-        renderer->screen.rgpu = aio_add_screen("rgpu", &create_info);
-        check_ptr(renderer->screen.rgpu);
-
-        renderer->rgpu = rgpu_create();
-        check_ptr(renderer->rgpu);
-    }
-
-    // create rcpu
-    {
-        struct screen_create_info create_info = {0};
-        create_info.name = make_string("CPU Renderer");
-
-        create_info.surface.type = SCREEN_SURFACE_TYPE_CPU;
-        create_info.surface.viewport.width = 640;
-        create_info.surface.viewport.height = 360;
-        create_info.surface.clear_values.color = screen_clear_color;
-        create_info.surface.clear_values.depth = 1.0;
-        create_info.keep_aspect_ratio = true;
-        create_info.is_suspended = !conf->enable_rcpu;
-
-        renderer->screen.rcpu = aio_add_screen("rcpu", &create_info);
-        check_ptr(renderer->screen.rcpu);
-
-        renderer->rcpu = rcpu_create();
-        check_ptr(renderer->rcpu);
-    }
+    renderer->screen.rcpu = info->screen_rcpu;
+    renderer->rcpu = rcpu_create();
+    check_ptr(renderer->rcpu);
 
     ////////////////////////////////////////
 
@@ -132,6 +100,16 @@ void renderer_tick(struct renderer *renderer)
 
 error:
     return;
+}
+
+const struct renderer_conf* renderer_get_conf(struct renderer *renderer)
+{
+    check_ptr(renderer);
+
+    return renderer->conf;
+
+error:
+    return NULL;
 }
 
 void renderer_calc_axes_viewport(f32 *x, f32 *y, f32 *width, f32 *height)
@@ -285,39 +263,42 @@ static result_e _create_axes_gizmo(struct renderer *renderer)
 {
     check_ptr(renderer);
 
+    const struct renderer_conf *conf = renderer_get_conf(renderer);
+
     ////////////////////////////////////////
 
     struct vertex_1p1c vertex = {0};
 
     u32 num_lines = 3;
 
+    // FIXME scratch arena
     struct vector *vertices = vector_create(num_lines * 2, sizeof(struct vertex_1p1c));
     check_mem(vertices);
 
     ////////////////////////////////////////
 
     // x axis
-    vertex.color = renderer->conf.color.axis_x;
+    vertex.color = conf->color.axis_x;
 
-    vertex.position = make_vec3(0, 0, 0);
+    vertex.position = make_vec3_zero();
     vector_push_back(vertices, vertex);
 
     vertex.position = make_vec3_x_axis();
     vector_push_back(vertices, vertex);
 
     // y axis
-    vertex.color = renderer->conf.color.axis_y;
+    vertex.color = conf->color.axis_y;
 
-    vertex.position = make_vec3(0, 0, 0);
+    vertex.position = make_vec3_zero();
     vector_push_back(vertices, vertex);
 
     vertex.position = make_vec3_y_axis();
     vector_push_back(vertices, vertex);
 
     // z axis
-    vertex.color = renderer->conf.color.axis_z;
+    vertex.color = conf->color.axis_z;
 
-    vertex.position = make_vec3(0, 0, 0);
+    vertex.position = make_vec3_zero();
     vector_push_back(vertices, vertex);
 
     vertex.position = make_vec3_z_axis();
@@ -367,12 +348,15 @@ static result_e _create_grid_gizmo(struct renderer *renderer, f32 size_qm)
     check_ptr(renderer);
     check_expr(size_qm >= 1);
 
+    const struct renderer_conf *conf = renderer_get_conf(renderer);
+
     ////////////////////////////////////////
 
     struct vertex_1p1c vertex = {0};
 
     u32 num_lines = (2 * (size_qm + 1)) + 2;
 
+    // FIXME scratch arena
     struct vector *vertices = vector_create(num_lines * 2, sizeof(struct vertex_1p1c));
     check_mem(vertices);
 
@@ -384,7 +368,7 @@ static result_e _create_grid_gizmo(struct renderer *renderer, f32 size_qm)
     // generate grid lines
     for (f32 i = -e; i <= e; i += step_size)
     {
-        vertex.color = renderer->conf.color.grid;
+        vertex.color = conf->color.grid;
 
         // along x axis
         {
@@ -411,7 +395,7 @@ static result_e _create_grid_gizmo(struct renderer *renderer, f32 size_qm)
 
     // colored x axis from origin to e
     {
-        vertex.color = renderer->conf.color.axis_x;
+        vertex.color = conf->color.axis_x;
 
         vertex.position = make_vec3(0, 0, 0);
         vector_push_back(vertices, vertex);
@@ -422,7 +406,7 @@ static result_e _create_grid_gizmo(struct renderer *renderer, f32 size_qm)
 
     // colored z axis from origin to e
     {
-        vertex.color = renderer->conf.color.axis_z;
+        vertex.color = conf->color.axis_z;
 
         vertex.position = make_vec3(0, 0, 0);
         vector_push_back(vertices, vertex);
@@ -650,7 +634,7 @@ void renderer_add_axes(struct renderer *renderer, struct mat44 transform, bool d
     f32 width = 2.0f;
     f32 lifetime = 0.0f;
 
-    struct renderer_conf *conf = &renderer->conf;
+    struct renderer_conf *conf = renderer->conf;
 
     renderer_add_line(renderer, origin, basis_x, conf->color.axis_x, width, lifetime, depth);
     renderer_add_line(renderer, origin, basis_y, conf->color.axis_y, width, lifetime, depth);
@@ -683,7 +667,7 @@ void renderer_add_aabb(struct renderer *renderer, struct mat44 transform, struct
     f32 width = 1.0f;
     f32 lifetime = 0.0f;
 
-    struct vec3 color = renderer->conf.color.aabb;
+    struct vec3 color = renderer->conf->color.aabb;
 
     // top lines
     renderer_add_line(renderer, ta, tb, color, width, lifetime, depth);

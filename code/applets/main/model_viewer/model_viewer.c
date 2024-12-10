@@ -347,13 +347,52 @@ error:
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 static result_e _create_renderer()
 {
-    // init renderer
+    struct renderer_conf *conf = mv_renderer_conf_ptr();
+
+    struct xgl_clear_values clear_values = {0};
+    clear_values.color = make_vec4_3_1(conf->color.background, 1.0);
+    clear_values.depth = 1.0f;
+
+    // create rgpu screen
+    struct screen *screen_rgpu = NULL;
+    {
+        struct screen_create_info info = {0};
+        info.name = make_string("GPU Renderer");
+        info.is_suspended = !conf->enable_rgpu;
+
+        info.surface.type = SCREEN_SURFACE_TYPE_GPU;
+        info.surface.clear_values = clear_values;
+        info.surface.viewport.width = 1280;
+        info.surface.viewport.height = 720;
+
+        screen_rgpu = aio_add_screen("rgpu", &info);
+    }
+
+    // create rcpu screen
+    struct screen *screen_rcpu = NULL;
+    {
+        struct screen_create_info info = {0};
+        info.name = make_string("CPU Renderer");
+        info.is_suspended = !conf->enable_rcpu;
+
+        info.surface.type = SCREEN_SURFACE_TYPE_CPU;
+        info.surface.clear_values = clear_values;
+        info.surface.viewport.width = 640;
+        info.surface.viewport.height = 360;
+
+        screen_rcpu = aio_add_screen("rcpu", &info);
+    }
+
+    // create renderer
     struct renderer *renderer = mv_renderer_ptr();
-    renderer->conf = *mv_renderer_conf_ptr(); // FIXME
+    {
+        struct renderer_init_info init_info = {0};
+        init_info.conf = conf;
+        init_info.screen_rgpu = screen_rgpu;
+        init_info.screen_rcpu = screen_rcpu;
 
-    check_result(renderer_init(renderer));
-
-    return RC_SUCCESS;
+        return renderer_init(&init_info, renderer);
+    }
 
 error:
     return RC_FAILURE;
