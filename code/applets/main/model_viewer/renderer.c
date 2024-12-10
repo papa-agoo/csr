@@ -328,15 +328,15 @@ static result_e _create_axes_gizmo(struct renderer *renderer)
     struct mesh_gizmo *gizmo = &renderer->gizmo.axes;
     gizmo->name = make_string("gizmo.axes");
 
-    gizmo->buffer.vertex_format = VERTEX_FORMAT_POSITION_BIT | VERTEX_FORMAT_COLOR_BIT;
-    gizmo->buffer.vertex_stride = sizeof(vertex);
+    gizmo->primitive.vertex_format = VERTEX_FORMAT_POSITION_BIT | VERTEX_FORMAT_COLOR_BIT;
+    gizmo->primitive.vertex_stride = sizeof(vertex);
 
     gizmo->primitive.buffer = &gizmo->buffer;
     gizmo->primitive.vertices.count = vector_size(vertices);
 
-    gizmo->buffer.cpu.vertices = vertices;
+    gizmo->buffer.vertices.cpu = vertices;
 
-    xgl_buffer *gpu_vertices = &gizmo->buffer.gpu.vertices;
+    xgl_buffer *gpu_vertices = &gizmo->buffer.vertices.gpu;
     {
         struct xgl_buffer_create_info info = {0};
         info.byte_length = vector_byte_length(vertices);
@@ -347,6 +347,14 @@ static result_e _create_axes_gizmo(struct renderer *renderer)
     }
 
     ////////////////////////////////////////
+
+    // 1. create mesh_primitive_data (vertex format, vertices, indices)
+    //  - vertex format
+    //  - vertices
+    //  - indices
+    //
+    // 2. create mesh (vertex format, vertices, indices)
+    //  - mesh_add_primitive(data, material)
 
     return RC_SUCCESS;
 
@@ -430,15 +438,15 @@ static result_e _create_grid_gizmo(struct renderer *renderer, f32 size_qm)
     struct mesh_gizmo *gizmo = &renderer->gizmo.grid;
     gizmo->name = make_string("gizmo.grid");
 
-    gizmo->buffer.vertex_format = VERTEX_FORMAT_POSITION_BIT | VERTEX_FORMAT_COLOR_BIT;
-    gizmo->buffer.vertex_stride = sizeof(vertex);
+    gizmo->primitive.vertex_format = VERTEX_FORMAT_POSITION_BIT | VERTEX_FORMAT_COLOR_BIT;
+    gizmo->primitive.vertex_stride = sizeof(vertex);
 
     gizmo->primitive.buffer = &gizmo->buffer;
     gizmo->primitive.vertices.count = vector_size(vertices);
 
-    gizmo->buffer.cpu.vertices = vertices;
+    gizmo->buffer.vertices.cpu = vertices;
 
-    xgl_buffer *gpu_vertices = &gizmo->buffer.gpu.vertices;
+    xgl_buffer *gpu_vertices = &gizmo->buffer.vertices.gpu;
     {
         struct xgl_buffer_create_info info = {0};
         info.byte_length = vector_byte_length(vertices);
@@ -477,16 +485,16 @@ static void _destroy_gizmos(struct renderer *renderer)
     {
         struct mesh_gizmo *gizmo = &renderer->gizmo.axes;
 
-        vector_destroy(gizmo->buffer.cpu.vertices);
-        xgl_destroy_buffer(gizmo->buffer.gpu.vertices);
+        vector_destroy(gizmo->buffer.vertices.cpu);
+        xgl_destroy_buffer(gizmo->buffer.vertices.gpu);
     }
 
     // grid
     {
         struct mesh_gizmo *gizmo = &renderer->gizmo.grid;
 
-        vector_destroy(gizmo->buffer.cpu.vertices);
-        xgl_destroy_buffer(gizmo->buffer.gpu.vertices);
+        vector_destroy(gizmo->buffer.vertices.cpu);
+        xgl_destroy_buffer(gizmo->buffer.vertices.gpu);
     }
 
 error:
@@ -504,20 +512,20 @@ error:
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // debug primitives
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-static result_e _create_debug_primitives_buffer(struct renderer *renderer, struct mesh_buffer *buffer, u32 capacity)
+static result_e _create_debug_primitives_buffer(struct renderer *renderer, struct mesh_buffer *buffer, u32 capacity, u64 element_size)
 {
-    buffer->vertex_format = VERTEX_FORMAT_POSITION_BIT | VERTEX_FORMAT_COLOR_BIT;
-    buffer->vertex_stride = sizeof(struct vertex_1p1c);
+    // buffer->vertex_format = VERTEX_FORMAT_POSITION_BIT | VERTEX_FORMAT_COLOR_BIT;
+    // buffer->vertex_stride = sizeof(struct vertex_1p1c);
 
     // cpu storage
-    buffer->cpu.vertices = vector_create(capacity, buffer->vertex_stride);
+    buffer->vertices.cpu = vector_create(capacity, element_size);
 
     // gpu storage
     struct xgl_buffer_create_info info = {0};
-    info.byte_length = vector_capacity_byte_length(buffer->cpu.vertices);
+    info.byte_length = vector_capacity_byte_length(buffer->vertices.cpu);
     info.usage_flags = XGL_BUFFER_USAGE_VERTEX_BUFFER_BIT;
 
-    return xgl_create_buffer(&info, &buffer->gpu.vertices);
+    return xgl_create_buffer(&info, &buffer->vertices.gpu);
 
 error:
     return RC_FAILURE;
@@ -525,24 +533,27 @@ error:
 
 static void _destroy_debug_primitives_buffer(struct mesh_buffer *buffer)
 {
-    vector_destroy(buffer->cpu.vertices);
-    xgl_destroy_buffer(buffer->gpu.vertices);
+    vector_destroy(buffer->vertices.cpu);
+    xgl_destroy_buffer(buffer->vertices.gpu);
 }
 
 static result_e _create_debug_primitives(struct renderer *renderer)
 {
     check_ptr(renderer);
 
+    u32 vertex_format = VERTEX_FORMAT_POSITION_BIT | VERTEX_FORMAT_COLOR_BIT;
+    u32 vertex_stride = sizeof(struct vertex_1p1c);
+
     u32 max_points = 1024;
     u32 max_lines = max_points * 2;
 
     for (u32 i = 0; i < PRIMITIVE_SIZE_MAX; i++)
     {
-        check_result(_create_debug_primitives_buffer(renderer, &renderer->debug_draw.points[i], max_points));
-        check_result(_create_debug_primitives_buffer(renderer, &renderer->debug_draw.points_no_depth[i], max_points));
+        check_result(_create_debug_primitives_buffer(renderer, &renderer->debug_draw.points[i], max_points, vertex_stride));
+        check_result(_create_debug_primitives_buffer(renderer, &renderer->debug_draw.points_no_depth[i], max_points, vertex_stride));
 
-        check_result(_create_debug_primitives_buffer(renderer, &renderer->debug_draw.lines[i], max_lines));
-        check_result(_create_debug_primitives_buffer(renderer, &renderer->debug_draw.lines_no_depth[i], max_lines));
+        check_result(_create_debug_primitives_buffer(renderer, &renderer->debug_draw.lines[i], max_lines, vertex_stride));
+        check_result(_create_debug_primitives_buffer(renderer, &renderer->debug_draw.lines_no_depth[i], max_lines, vertex_stride));
     }
 
     return RC_SUCCESS;
@@ -557,11 +568,11 @@ static void _reset_debug_primitives(struct renderer *renderer)
 
     for (u32 i = 0; i < PRIMITIVE_SIZE_MAX; i++)
     {
-        vector_clear(renderer->debug_draw.points[i].cpu.vertices);
-        vector_clear(renderer->debug_draw.points_no_depth[i].cpu.vertices);
+        vector_clear(renderer->debug_draw.points[i].vertices.cpu);
+        vector_clear(renderer->debug_draw.points_no_depth[i].vertices.cpu);
 
-        vector_clear(renderer->debug_draw.lines[i].cpu.vertices);
-        vector_clear(renderer->debug_draw.lines_no_depth[i].cpu.vertices);
+        vector_clear(renderer->debug_draw.lines[i].vertices.cpu);
+        vector_clear(renderer->debug_draw.lines_no_depth[i].vertices.cpu);
     }
 
 error:
@@ -597,7 +608,7 @@ void renderer_add_point(struct renderer *renderer, struct vec3 p, struct vec3 co
 
     struct mesh_buffer *buffer = (depth) ? &renderer->debug_draw.points[size_idx] : &renderer->debug_draw.points_no_depth[size_idx];
 
-    vector_push_back(buffer->cpu.vertices, v);
+    vector_push_back(buffer->vertices.cpu, v);
 
 error:
     return;
@@ -616,8 +627,8 @@ void renderer_add_line(struct renderer *renderer, struct vec3 a, struct vec3 b, 
 
     struct mesh_buffer *buffer = (depth) ? &renderer->debug_draw.lines[size_idx] : &renderer->debug_draw.lines_no_depth[size_idx];
 
-    vector_push_back(buffer->cpu.vertices, va);
-    vector_push_back(buffer->cpu.vertices, vb);
+    vector_push_back(buffer->vertices.cpu, va);
+    vector_push_back(buffer->vertices.cpu, vb);
 
 error:
     return;

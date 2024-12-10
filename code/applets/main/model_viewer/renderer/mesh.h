@@ -8,24 +8,33 @@
 
 struct material;
 
+struct mesh_shader_data {
+    struct {
+        struct shader_data_object cpu;
+        xgl_buffer gpu;
+    } buffer;
+
+    xgl_descriptor_set ds;
+};
+
 struct mesh_buffer
 {
-    u32 vertex_format;
-    u32 vertex_stride;
+    struct {
+        struct vector *cpu;
+        xgl_buffer gpu;
+    } vertices;
 
     struct {
-        struct vector *vertices;
-        struct vector *indices;
-    } cpu;
-
-    struct {
-        xgl_buffer vertices;
-        xgl_buffer indices;
-    } gpu;
+        struct vector *cpu;
+        xgl_buffer gpu;
+    } indices;
 };
 
 struct mesh_primitive
 {
+    u32 vertex_format;
+    u32 vertex_stride;
+
     struct {
         u32 start;
         u32 count;
@@ -42,16 +51,14 @@ struct mesh_primitive
 
 struct mesh
 {
-    struct vector *primitives;
+    struct string name;
 
-    struct mesh_shader_data {
-        struct {
-            struct shader_data_object cpu;
-            xgl_buffer gpu;
-        } buffer;
+    struct vector *primitives; // pool?
 
-        xgl_descriptor_set ds;
-    } shader_data;
+    struct mesh_buffer *buffer;
+    struct mesh_shader_data shader_data;
+
+    struct aabb aabb;
 };
 
 struct mesh_node

@@ -58,13 +58,13 @@ error:
 
 void rcpu_draw_mesh_primitive(struct mesh_primitive *primitive)
 {
-    struct vector *vertex_buffer_data = primitive->buffer->cpu.vertices;
-    struct vector *index_buffer_data = primitive->buffer->cpu.indices;
+    struct vector *vertex_buffer_data = primitive->buffer->vertices.cpu;
+    struct vector *index_buffer_data = primitive->buffer->indices.cpu;
 
     struct softgl_vertex_buffer vertex_buffer = {0};
     vertex_buffer.buffer.data = vector_data(vertex_buffer_data);
     vertex_buffer.buffer.byte_length = vector_size(vertex_buffer_data);
-    vertex_buffer.stride = primitive->buffer->vertex_stride;
+    vertex_buffer.stride = primitive->vertex_stride;
 
     struct softgl_vertex_buffer* vertex_buffers[] = {
         &vertex_buffer
@@ -147,11 +147,16 @@ static void _draw_primitives(struct renderer *renderer, struct mesh_buffer *buff
     check_ptr(renderer);
     check_ptr(buffer);
 
-    check_quiet(vector_size(buffer->cpu.vertices) > 0);
+    check_quiet(vector_size(buffer->vertices.cpu) > 0);
 
     struct mesh_primitive mesh = {0};
     mesh.buffer = buffer;
-    mesh.vertices.count = vector_size(buffer->cpu.vertices);
+    mesh.vertices.count = vector_size(buffer->vertices.cpu);
+
+    // FIXME >>>
+    mesh.vertex_format = VERTEX_FORMAT_POSITION_BIT | VERTEX_FORMAT_COLOR_BIT;
+    mesh.vertex_stride = sizeof(struct vertex_1p1c);
+    // FIXME <<<
 
     softgl_bind_pipeline(pso);
     rcpu_draw_mesh_primitive(&mesh);

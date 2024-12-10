@@ -91,19 +91,19 @@ error:
 void rgpu_draw_mesh_primitive(struct mesh_primitive *primitive)
 {
     xgl_buffer vertex_buffers[] = {
-        primitive->buffer->gpu.vertices,
+        primitive->buffer->vertices.gpu,
     };
 
     u32 first_binding = 0;
     u32 binding_count = COUNT_OF(vertex_buffers);
 
     u32 vb_offsets[] = {0};
-    u32 vb_strides[] = {primitive->buffer->vertex_stride};
+    u32 vb_strides[] = {primitive->vertex_stride};
 
     xgl_bind_vertex_buffers(first_binding, binding_count, vertex_buffers, vb_offsets, vb_strides);
 
     if (primitive->indices.count > 0) {
-        xgl_bind_index_buffer(primitive->buffer->gpu.indices);
+        xgl_bind_index_buffer(primitive->buffer->indices.gpu);
         xgl_draw_indexed(primitive->indices.start, primitive->indices.count);
     }
     else {
@@ -235,15 +235,20 @@ static void _draw_primitives(struct renderer *renderer, struct mesh_buffer *buff
     check_ptr(renderer);
     check_ptr(buffer);
 
-    check_quiet(vector_size(buffer->cpu.vertices) > 0);
+    check_quiet(vector_size(buffer->vertices.cpu) > 0);
 
     // update gpu buffer
-    check_result(xgl_update_buffer(buffer->gpu.vertices, 0, vector_byte_length(buffer->cpu.vertices), vector_data(buffer->cpu.vertices)));
+    check_result(xgl_update_buffer(buffer->vertices.gpu, 0, vector_byte_length(buffer->vertices.cpu), vector_data(buffer->vertices.cpu)));
 
     // draw primitives
     struct mesh_primitive mesh = {0};
     mesh.buffer = buffer;
-    mesh.vertices.count = vector_size(buffer->cpu.vertices);
+    mesh.vertices.count = vector_size(buffer->vertices.cpu);
+
+    // FIXME >>>
+    mesh.vertex_format = VERTEX_FORMAT_POSITION_BIT | VERTEX_FORMAT_COLOR_BIT;
+    mesh.vertex_stride = sizeof(struct vertex_1p1c);
+    // FIXME <<<
 
     xgl_bind_pipeline(XGL_PIPELINE_TYPE_GRAPHICS, pso);
     rgpu_draw_mesh_primitive(&mesh);
