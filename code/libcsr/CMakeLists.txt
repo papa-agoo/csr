@@ -14,6 +14,7 @@ target_include_directories(${MY_TARGET}
     PUBLIC
         $<TARGET_PROPERTY:stb::image,INTERFACE_INCLUDE_DIRECTORIES>
         $<TARGET_PROPERTY:bstrlib::bstrlib,INTERFACE_INCLUDE_DIRECTORIES>
+        $<TARGET_PROPERTY:tinyobjloader-c,INTERFACE_INCLUDE_DIRECTORIES>
 )
 
 add_subdirectory(src/core)

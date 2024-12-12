@@ -1,3 +1,6 @@
 [submodule "code/external/imgui/cimgui"]
 	path = code/external/imgui/cimgui
 	url = https://github.com/cimgui/cimgui.git
+[submodule "code/external/tinyobjloader-c/include"]
+	path = code/external/tinyobjloader-c/include
+	url = https://github.com/syoyo/tinyobjloader-c.git
