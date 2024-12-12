@@ -21,7 +21,7 @@ u64 arena_get_size_free(struct arena *arena);
 void* arena_get_current_ptr(struct arena *arena);
 u64 arena_get_current_position(struct arena *arena);
 
-// advance the current position by size bytes and return the current address ptr
+// return the current address ptr and advance the current position by size bytes
 void* arena_push(struct arena *arena, u64 size);
 
 // rewind current position by size bytes

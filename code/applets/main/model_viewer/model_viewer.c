@@ -144,7 +144,31 @@ result_e model_viewer_load_model(struct string path)
 {
     check_expr(string_is_valid(path));
 
-    clog_notice("not impl. yet");
+    model_viewer_unload_model();
+
+    ////////////////////////////////////////
+
+    alog_notice("loading model : %S", &path);
+
+    // create model
+    struct model_import_info import = {0};
+    import.file_path = path;
+
+    struct model_create_info info = {0};
+    info.import = &import;
+
+    struct model* model = model_create(&info);
+    check_ptr(model);
+
+    // set parent
+    struct mesh_node *parent = &mv_scene_ptr()->root_node;
+    transform_identity(&parent->transform);
+
+    model->node.parent = parent;
+
+    ////////////////////////////////////////
+
+    mv_scene_ptr()->model = model;
 
     return RC_SUCCESS;
 
@@ -154,7 +178,12 @@ error:
 
 void model_viewer_unload_model()
 {
-    clog_notice("not impl. yet");
+    struct model *model = mv_scene_ptr()->model;
+    check_quiet(model);
+
+    model_destroy(model);
+
+    mv_scene_ptr()->model = NULL;
 
 error:
     return;

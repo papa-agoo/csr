@@ -19,6 +19,8 @@ add_library(${MY_TARGET}
 
         scene.c
         scene/model.c
+        scene/model_import_obj.c
+        scene/model_import_gltf.c
         scene/camera.c
 
         rsx.c

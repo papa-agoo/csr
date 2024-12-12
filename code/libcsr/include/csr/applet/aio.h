@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <csr/core/memory.h>
 #include <csr/core/file_io.h>
 
 #include <csr/core/clock.h>

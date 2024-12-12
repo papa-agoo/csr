@@ -1,39 +1,41 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+#include <csr/core/memory/arena.h>
+
 #include "model_priv.h"
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// struct model
-// {
-//     struct string name;
+// obj / gltf importer
+extern result_e model_import_obj(struct model_import_info *info, struct model *model);
+extern result_e model_import_gltf(struct model_import_info *info, struct model *model);
 
-//     struct aabb aabb;
-
-//     // ...
-
-//     struct transform transform;
-//     struct transform transform_parent;
-// };
-
-struct model* model_create(struct model_create_info *create_info)
+struct model* model_create(struct model_create_info *info)
 {
-    check_ptr(create_info);
-
-    if (string_is_valid(create_info->file_path)) {
-        clog_warn("model loading not impl. yet");
-    }
+    check_ptr(info);
 
     struct model *model = calloc(1, sizeof(struct model));
-    check_mem(model);
+    check_ptr(model);
 
-    model->name = string_is_valid(create_info->name) ? create_info->name : make_string("<no name>");
+    model->name = string_is_valid(info->name) ? info->name : make_string("<no name>");
 
-    model->node.aabb = make_aabb_unit_cube();
-    model->node.mesh = NULL; // FIXME
+    // FIXME
+    model->resources.arena = arena_create(model->name, MegaBytes(32));
 
-    transform_identity(&model->node.transform);
-    // transform_identity(&model->node.parent->transform);
+    if (info->import)
+    {
+        struct string file_path = info->import->file_path;
+
+        if (string_has_suffix_cstr(file_path, ".gltf") || string_has_suffix_cstr(file_path, ".glb")) {
+            check_result(model_import_gltf(info->import, model));
+        }
+        else if (string_has_suffix_cstr(file_path, ".obj")) {
+            check_result(model_import_obj(info->import, model));
+        }
+        else {
+            check(false, "cannot import model, format not supported : %S", &file_path);
+        }
+    }
 
     return model;
 
@@ -45,91 +47,12 @@ void model_destroy(struct model* model)
 {
     check_ptr(model);
 
+    arena_destroy(model->resources.arena);
+
+    model->node = (struct mesh_node) {0};
+
     free(model);
 
 error:
     return;
-}
-
-struct string model_get_name(struct model *model)
-{
-    check_ptr(model);
-
-    return model->name;
-
-error:
-    return make_string("<invalid model>");
-}
-
-struct aabb model_get_aabb(struct model* model)
-{
-    check_ptr(model);
-
-    return model->node.aabb;
-
-error:
-    return make_aabb_zero();
-}
-
-struct transform* model_get_transform(struct model *model)
-{
-    check_ptr(model);
-
-    return &model->node.transform;
-
-error:
-    return NULL;
-}
-
-void model_set_transform(struct model *model, struct transform *transform)
-{
-    check_ptr(model);
-    check_ptr(transform);
-
-    clog_warn("model_set_transform() not impl. yet");
-
-error:
-    return;
-}
-
-struct transform* model_get_parent_transform(struct model *model)
-{
-    check_ptr(model);
-
-    clog_warn("model_get_parent_transform() not impl. yet");
-    // return &model->node.parent->transform;
-
-error:
-    return NULL;
-}
-
-void model_set_parent_transform(struct model *model, struct transform *transform)
-{
-    check_ptr(model);
-    check_ptr(transform);
-
-    clog_warn("model_set_parent_transform() not impl. yet");
-
-error:
-    return;
-}
-
-struct mat44 model_get_matrix(struct model *model)
-{
-    check_ptr(model);
-
-    clog_warn("model_get_matrix() not impl. yet");
-
-error:
-    return mat44_identity();
-}
-
-struct mat44 model_get_world_matrix(struct model *model)
-{
-    check_ptr(model);
-
-    clog_warn("model_get_world_matrix() not impl. yet");
-
-error:
-    return mat44_identity();
 }
