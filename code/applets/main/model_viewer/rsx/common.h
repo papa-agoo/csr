@@ -13,6 +13,8 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+#define RSX_OBJECT_DECLARE CSR_OBJECT_DECLARE
+
 enum primitive_size
 {
     PRIMITIVE_SIZE_NORMAL = 0,
@@ -83,9 +85,7 @@ struct vertex_1p1n1uv
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-// shader resources
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
+// shader data
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // low frequency, updates once per frame
@@ -98,13 +98,25 @@ struct shader_data_frame
     // ...
 };
 
+CSR_INLINE void shader_data_frame_init(struct shader_data_frame *data)
+{
+    data->mtx_view = mat44_identity();
+    data->mtx_projection = mat44_identity();
+    data->mtx_projection_ortho = mat44_identity();
+}
+
 // medium frequency, updates once per render pass
-struct shader_data_pass
+struct shader_data_pass_main
 {
     f32 foo;
 
     // ...
 };
+
+CSR_INLINE void shader_data_pass_main_init(struct shader_data_pass_main *data)
+{
+    // ...
+}
 
 // average frequency, updates once per material
 struct shader_data_material
@@ -113,6 +125,11 @@ struct shader_data_material
 
     // ...
 };
+
+CSR_INLINE void shader_data_material_init(struct shader_data_material *data)
+{
+    // ...
+}
 
 // high frequency, updates arbitrary
 struct shader_data_object
@@ -124,95 +141,141 @@ struct shader_data_object
     // ...
 };
 
+CSR_INLINE void shader_data_object_init(struct shader_data_object *data)
+{
+    data->mtx_model = mat44_identity();
+    data->mtx_mvp = mat44_identity();
+
+    data->use_object_mvp = false;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// shader resources
+////////////////////////////////////////////////////////////////////////////////////////////////////
+struct rsx_shader_resource_binding
+{
+    xgl_descriptor_set ds;
+    xgl_descriptor_set_layout ds_layout;
+
+    xgl_pipeline_layout pipeline_layout;
+};
+
+#define RSX_TEXTURE(BASE_TYPE, TEX_TYPE) // ...
+
+#define RSX_UNIFORM_BUFFER(BASE_TYPE, UBO_TYPE) struct UBO_TYPE \
+{ \
+    struct BASE_TYPE cpu; \
+    xgl_buffer gpu; \
+}
+
+#define RSX_SHADER_RESOURCE(BASE_TYPE, RESOURCE_TYPE) struct RESOURCE_TYPE \
+{ \
+    struct BASE_TYPE data; \
+    struct rsx_shader_resource_binding binding; \
+}
+
+// declare shader resource types
+RSX_UNIFORM_BUFFER(shader_data_frame, rsx_uniform_buffer_frame);
+RSX_SHADER_RESOURCE(rsx_uniform_buffer_frame, rsx_shader_resource_frame);
+
+RSX_UNIFORM_BUFFER(shader_data_pass_main, rsx_uniform_buffer_pass_main);
+RSX_SHADER_RESOURCE(rsx_uniform_buffer_pass_main, rsx_shader_resource_pass_main);
+
+RSX_UNIFORM_BUFFER(shader_data_material, rsx_uniform_buffer_material);
+RSX_SHADER_RESOURCE(rsx_uniform_buffer_material, rsx_shader_resource_material);
+
+RSX_UNIFORM_BUFFER(shader_data_object, rsx_uniform_buffer_object);
+RSX_SHADER_RESOURCE(rsx_uniform_buffer_object, rsx_shader_resource_object);
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // materials
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-struct material
+struct rsx_material
 {
     struct string name;
+};
 
-    struct material_effect {
-        xgl_pipeline pipeline;
-        xgl_pipeline_layout pipeline_layout;
-    } effect;
-
-    struct material_shader_data
-    {
-        struct{
-            struct shader_data_material cpu;
-            xgl_buffer gpu;
-        } buffer;
-
-        xgl_descriptor_set ds;
-    } shader_data;
+struct rsx_material_create_info
+{
+    struct string name;
 };
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // meshes
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-struct mesh_shader_data {
-    struct {
-        struct shader_data_object cpu;
-        xgl_buffer gpu;
-    } buffer;
-
-    xgl_descriptor_set ds;
-};
-
-struct mesh_buffer
-{
-    struct {
-        struct vector *cpu;
-        xgl_buffer gpu;
-    } vertices;
-
-    struct {
-        struct vector *cpu;
-        xgl_buffer gpu;
-    } indices;
-};
-
-struct mesh_primitive
-{
-    u32 vertex_format;
-    u32 vertex_stride;
-
-    struct {
-        u32 start;
-        u32 count;
-    } vertices;
-
-    struct {
-        u32 start;
-        u32 count;
-    } indices;
-
-    struct material *material;
-    struct mesh_buffer *buffer;
-};
-
-struct mesh
+struct rsx_mesh
 {
     struct string name;
 
-    struct vector *primitives; // pool?
-
-    struct mesh_buffer *buffer;
-    struct mesh_shader_data shader_data;
-
-    struct aabb aabb;
+    struct rsx_shader_resource_object shader_data;
 };
 
-struct mesh_node
+struct rsx_mesh_create_info
 {
-    struct aabb aabb;
+    struct string name;
+};
 
-    struct mesh *mesh;
 
-    struct transform transform;
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// pass + render data
+////////////////////////////////////////////////////////////////////////////////////////////////////
+struct rsx_pass_base
+{
+    struct string name;
 
-    struct mesh_node *parent;
-    // children ...
+    bool enabled;
+};
+
+struct rsx_pass_meshes
+{
+    struct rsx_pass_base base;
+
+    // ...
+};
+
+struct rsx_pass_gizmos
+{
+    struct rsx_pass_base base;
+
+    bool draw_grid;
+    bool draw_orientation_axes;
+    bool draw_transform_handles;
+
+    // ...
+};
+
+struct rsx_pass_environment
+{
+    struct rsx_pass_base base;
+
+    f32 blur_amount;
+    bool blur_background;
+
+    // ...
+};
+
+struct rsx_pass_debug_primitives
+{
+    struct rsx_pass_base base;
+
+    // ...
+};
+
+struct rsx_render_data
+{
+    struct rsx_shader_resource_frame frame;
+
+    // ...
+
+    struct {
+        struct rsx_pass_meshes meshes;
+        struct rsx_pass_gizmos gizmos;
+        struct rsx_pass_environment environment;
+        struct rsx_pass_debug_primitives debug_primitives;
+
+        // ...
+    } pass;
 };

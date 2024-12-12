@@ -1,0 +1,61 @@
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+#include "rsx_priv.h"
+
+#include "rsx/rgpu_priv.h"
+#include "rsx/rcpu_priv.h"
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// materials
+////////////////////////////////////////////////////////////////////////////////////////////////////
+struct rsx_material* rsx_material_create(struct rsx_material_create_info *info)
+{
+    clog_warn("not impl. yet");
+
+    return NULL;
+}
+
+struct rsx_material* rsx_material_copy(struct rsx_material *material)
+{
+    clog_warn("not impl. yet");
+
+    return NULL;
+}
+
+void rsx_material_destroy(struct rsx_material* material)
+{
+    clog_warn("not impl. yet");
+}
+
+struct rsx_material* rsx_material_find_suitable(u32 vertex_format)
+{
+    clog_warn("not impl. yet");
+
+    return NULL;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// meshes
+////////////////////////////////////////////////////////////////////////////////////////////////////
+struct rsx_mesh* rsx_mesh_create(struct rsx_mesh_create_info *info)
+{
+    clog_warn("not impl. yet");
+
+    return NULL;
+}
+
+struct rsx_mesh* rsx_mesh_copy(struct rsx_mesh *mesh)
+{
+    clog_warn("not impl. yet");
+
+    return NULL;
+}
+
+void rsx_mesh_destroy(struct rsx_mesh* mesh)
+{
+    clog_warn("not impl. yet");
+}

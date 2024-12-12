@@ -55,6 +55,7 @@ void xgl_unmap_texture(xgl_texture texture);
 
 void* xgl_get_texture_handle(xgl_texture texture);
 
+
 // shaders
 result_e xgl_create_shader(struct xgl_shader_create_info* info, xgl_shader* shader);
 void xgl_destroy_shader(xgl_shader shader);

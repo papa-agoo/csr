@@ -10,6 +10,8 @@ static struct rcpu g_rcpu = {0};
 #define rcpu_ptr() (&g_rcpu)
 #define rcpu_cache_ptr() (&rcpu_ptr()->cache)
 
+////////////////////////////////////////////////////////////
+
 struct rcpu* rcpu_create()
 {
     check_result(softgl_init_driver());
@@ -35,8 +37,8 @@ void rcpu_tick(struct pixelbuffer *pb, struct softgl_viewport vp)
 {
     check_ptr(pb);
 
-    struct rcpu_cache *cache = rcpu_cache_ptr();
-    struct rsx_shader_data *shader_data = &rsx_ptr()->shader_data;
+    struct rsx_render_data *render_data = rsx_get_render_data();
+    struct rsx_uniform_buffer_frame *frame_data = &render_data->frame.data;
 
     // set the viewport for this frame
     rcpu_ptr()->vp = vp;
@@ -45,53 +47,53 @@ void rcpu_tick(struct pixelbuffer *pb, struct softgl_viewport vp)
     softgl_set_pixelbuffer(pb);
 
     // bind frame data
-    softgl_bind_descriptor_set(SOFTGL_DESCRIPTOR_SET_TYPE_FRAME, &shader_data->frame.buffer.cpu);
+    softgl_bind_descriptor_set(SOFTGL_DESCRIPTOR_SET_TYPE_FRAME, &frame_data->cpu);
 
-    rcpu_pass_meshes(NULL);
-    rcpu_pass_gizmos();
-    rcpu_pass_debug_primitives();
+    // draw passes
+    rcpu_pass_meshes(&render_data->pass.meshes);
+    rcpu_pass_gizmos(&render_data->pass.gizmos);
+    rcpu_pass_environment(&render_data->pass.environment);
+    rcpu_pass_debug_primitives(&render_data->pass.debug_primitives);
 
 error:
     return;
 }
 
-void rcpu_draw_mesh_primitive(struct mesh_primitive *primitive)
+// static void _draw_mesh_primitive(struct mesh_primitive *primitive)
+// {
+//     struct vector *vertex_buffer_data = primitive->buffer->vertices.cpu;
+//     struct vector *index_buffer_data = primitive->buffer->indices.cpu;
+
+//     struct softgl_vertex_buffer vertex_buffer = {0};
+//     vertex_buffer.buffer.data = vector_data(vertex_buffer_data);
+//     vertex_buffer.buffer.byte_length = vector_size(vertex_buffer_data);
+//     vertex_buffer.stride = primitive->vertex_stride;
+
+//     struct softgl_vertex_buffer* vertex_buffers[] = {
+//         &vertex_buffer
+//     };
+
+//     softgl_bind_vertex_buffers(vertex_buffers, 1);
+
+//     if (primitive->indices.count > 0)
+//     {
+//         struct softgl_index_buffer index_buffer = {0};
+//         index_buffer.buffer.data = vector_data(index_buffer_data);
+//         index_buffer.buffer.byte_length = vector_size(index_buffer_data);
+
+//         softgl_bind_index_buffer(&index_buffer);
+
+//         softgl_draw_indexed(primitive->indices.start, primitive->indices.count);
+//     }
+//     else {
+//         softgl_draw(primitive->vertices.start, primitive->vertices.count);
+//     }
+// }
+
+void rcpu_pass_meshes(struct rsx_pass_meshes *pass_data)
 {
-    struct vector *vertex_buffer_data = primitive->buffer->vertices.cpu;
-    struct vector *index_buffer_data = primitive->buffer->indices.cpu;
-
-    struct softgl_vertex_buffer vertex_buffer = {0};
-    vertex_buffer.buffer.data = vector_data(vertex_buffer_data);
-    vertex_buffer.buffer.byte_length = vector_size(vertex_buffer_data);
-    vertex_buffer.stride = primitive->vertex_stride;
-
-    struct softgl_vertex_buffer* vertex_buffers[] = {
-        &vertex_buffer
-    };
-
-    softgl_bind_vertex_buffers(vertex_buffers, 1);
-
-    if (primitive->indices.count > 0)
-    {
-        struct softgl_index_buffer index_buffer = {0};
-        index_buffer.buffer.data = vector_data(index_buffer_data);
-        index_buffer.buffer.byte_length = vector_size(index_buffer_data);
-
-        softgl_bind_index_buffer(&index_buffer);
-
-        softgl_draw_indexed(primitive->indices.start, primitive->indices.count);
-    }
-    else {
-        softgl_draw(primitive->vertices.start, primitive->vertices.count);
-    }
-}
-
-void rcpu_pass_meshes(struct vector *meshes)
-{
-    check_quiet(meshes);
-
-    struct rcpu_cache *cache = rcpu_cache_ptr();
-    struct rsx_shader_data *shader_data = &rsx_ptr()->shader_data;
+    check_ptr(pass_data);
+    check_quiet(pass_data->base.enabled);
 
     // ...
 
@@ -99,88 +101,44 @@ error:
     return;
 }
 
-void rcpu_pass_gizmos()
+void rcpu_pass_gizmos(struct rsx_pass_gizmos *pass_data)
 {
-    struct rcpu_cache *cache = rcpu_cache_ptr();
-    struct rsx_shader_data *shader_data = &rsx_ptr()->shader_data;
-
-    // bind pass data
-    softgl_bind_descriptor_set(SOFTGL_DESCRIPTOR_SET_TYPE_PASS, &shader_data->pass_main.buffer.cpu);
+    check_ptr(pass_data);
+    check_quiet(pass_data->base.enabled);
 
     // grid
-    struct mesh_gizmo *grid = &rsx_ptr()->gizmo.grid;
+    if (pass_data->draw_grid)
     {
-        softgl_bind_descriptor_set(SOFTGL_DESCRIPTOR_SET_TYPE_OBJECT, &grid->data);
-
-        softgl_bind_pipeline(cache->pipeline.lines);
-        rcpu_draw_mesh_primitive(&grid->primitive);
+        // ...
     }
 
-    // axes
-    struct mesh_gizmo *axes = &rsx_ptr()->gizmo.axes;
+    // orientation axes
+    if (pass_data->draw_orientation_axes)
     {
-        softgl_bind_descriptor_set(SOFTGL_DESCRIPTOR_SET_TYPE_OBJECT, &axes->data);
-
-        // draw the axes gizmo (top right corner)
-        {
-            struct softgl_viewport vp = rcpu_ptr()->vp;
-            rsx_calc_axes_viewport(&vp.x, &vp.y, &vp.width, &vp.height);
-
-            softgl_set_viewport(vp);
-
-            softgl_bind_pipeline(cache->pipeline.lines);
-            rcpu_draw_mesh_primitive(&axes->primitive);
-        }
-
-        // restore viewport
-        softgl_set_viewport(rcpu_ptr()->vp);
+        // ...
     }
 
 error:
     return;
 }
 
-static void _draw_primitives(struct mesh_buffer *buffer, softgl_pipeline pso)
+void rcpu_pass_environment(struct rsx_pass_environment *pass_data)
 {
-    check_ptr(buffer);
+    check_ptr(pass_data);
+    check_quiet(pass_data->base.enabled);
 
-    check_quiet(vector_size(buffer->vertices.cpu) > 0);
-
-    struct mesh_primitive mesh = {0};
-    mesh.buffer = buffer;
-    mesh.vertices.count = vector_size(buffer->vertices.cpu);
-
-    // FIXME >>>
-    mesh.vertex_format = VERTEX_FORMAT_POSITION_BIT | VERTEX_FORMAT_COLOR_BIT;
-    mesh.vertex_stride = sizeof(struct vertex_1p1c);
-    // FIXME <<<
-
-    softgl_bind_pipeline(pso);
-    rcpu_draw_mesh_primitive(&mesh);
+    // ...
 
 error:
     return;
 }
 
-void rcpu_pass_debug_primitives()
+void rcpu_pass_debug_primitives(struct rsx_pass_debug_primitives *pass_data)
 {
-    struct rsx *rsx = rsx_ptr();
+    check_ptr(pass_data);
+    check_quiet(pass_data->base.enabled);
 
-    struct rcpu_cache *cache = &rsx->rcpu->cache;
-    struct rsx_shader_data *shader_data = &rsx->shader_data;
-
-    // FIXME
-    softgl_bind_descriptor_set(SOFTGL_DESCRIPTOR_SET_TYPE_OBJECT, &shader_data->object.buffer.cpu);
-
-    // draw primitives
-    for (u32 i = 0; i < PRIMITIVE_SIZE_MAX; i++)
-    {
-        _draw_primitives(&rsx->debug_draw.lines[i], cache->pipeline.lines);
-        _draw_primitives(&rsx->debug_draw.points[i], cache->pipeline.points);
-
-        _draw_primitives(&rsx->debug_draw.lines_no_depth[i], cache->pipeline.lines_no_depth);
-        _draw_primitives(&rsx->debug_draw.points_no_depth[i], cache->pipeline.points_no_depth);
-    }
+    // ...
 
 error:
     return;

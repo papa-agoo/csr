@@ -6,102 +6,65 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-// FIXME >>> use mesh_node
-struct mesh_gizmo
+struct rsx_resources
 {
-    struct string name;
+    struct object_pool *meshes;
+    struct object_pool *materials;
+    struct object_pool *textures;
 
-    struct mesh_buffer buffer;
-    struct mesh_primitive primitive;
-
-    struct shader_data_object data;
+    // ...
 };
-// FIXME <<< use mesh_node
-
-struct rsx_shader_data
-{
-    // frame
-    struct {
-        struct {
-            struct shader_data_frame cpu;
-            xgl_buffer gpu;
-        } buffer;
-
-        xgl_descriptor_set ds;
-    } frame;
-
-    // pass main
-    struct {
-        struct {
-            struct shader_data_pass cpu;
-            xgl_buffer gpu;
-        } buffer;
-
-        xgl_descriptor_set ds;
-    } pass_main;
-
-    // pass environment
-    struct {
-        xgl_descriptor_set ds;
-    } pass_environment;
-
-    // object (fallback)
-    struct {
-        struct {
-            struct shader_data_object cpu;
-            xgl_buffer gpu;
-        } buffer;
-
-        xgl_descriptor_set ds;
-    } object;
-};
-
-////////////////////////////////////////////////////////////////////////////////////////////////////
 
 struct rsx
 {
-    struct rsx_conf *conf;
-
-    struct rsx_shader_data shader_data;
-
-    struct {
-        struct mesh_gizmo axes;
-        struct mesh_gizmo grid;
-    } gizmo;
-
-    struct {
-        struct mesh_buffer points[PRIMITIVE_SIZE_MAX];
-        struct mesh_buffer points_no_depth[PRIMITIVE_SIZE_MAX];
-
-        struct mesh_buffer lines[PRIMITIVE_SIZE_MAX];
-        struct mesh_buffer lines_no_depth[PRIMITIVE_SIZE_MAX];
-    } debug_draw;
-
+    // FIXME rsx_render_target
     struct {
         struct screen *rgpu;
         struct screen *rcpu;
     } screen;
 
+    // resources
+    struct rsx_resources resources;
+
+    // high level render data
+    struct rsx_render_data render_data;
+
+    // low level renderers
     struct rgpu* rgpu;
     struct rcpu* rcpu;
-};
 
-////////////////////////////////////////////////////////////////////////////////////////////////////
-
-struct rsx_init_info
-{
+    // global config
     struct rsx_conf *conf;
-
-    struct screen *screen_rgpu;
-    struct screen *screen_rcpu;
 };
+
+////////////////////////////////////////////////////////////
 
 struct rsx* rsx_ptr();
 
-result_e rsx_init(struct rsx_init_info *info);
-void rsx_quit();
+result_e rsx_pass_meshes_create(struct rsx_pass_meshes *pass_data);
+void rsx_pass_meshes_destroy(struct rsx_pass_meshes *pass_data);
 
-void rsx_tick();
+result_e rsx_pass_gizmos_create(struct rsx_pass_gizmos *pass_data);
+void rsx_pass_gizmos_destroy(struct rsx_pass_gizmos *pass_data);
 
-void rsx_calc_axes_viewport(f32 *x, f32 *y, f32 *width, f32 *height);
-// struct material* renderer_find_suitable_material(struct renderer *renderer, u32 vertex_format);
+result_e rsx_pass_environment_create(struct rsx_pass_environment *pass_data);
+void rsx_pass_environment_destroy(struct rsx_pass_environment *pass_data);
+
+result_e rsx_pass_debug_primitives_create(struct rsx_pass_debug_primitives *pass_data);
+void rsx_pass_debug_primitives_destroy(struct rsx_pass_debug_primitives *pass_data);
+
+////////////////////////////////////////////////////////////
+
+#define rsx_resource_ptr() (&rsx_ptr()->resources)
+
+#define rsx_rgpu_ptr() (rsx_ptr()->rgpu)
+#define rsx_rgpu_cache_ptr() (&rsx_rgpu_ptr()->cache)
+
+#define rsx_rcpu_ptr() (rsx_ptr()->rcpu)
+#define rsx_rcpu_cache_ptr() (&rsx_rcpu_ptr()->cache)
+
+#define rsx_pass_data_ptr() (&rsx_get_render_data()->pass)
+#define rsx_pass_data_meshes_ptr() (&rsx_pass_data_ptr()->meshes)
+#define rsx_pass_data_gizmos_ptr() (&rsx_pass_data_ptr()->gizmos)
+#define rsx_pass_data_environment_ptr() (&rsx_pass_data_ptr()->environment)
+#define rsx_pass_data_debug_primitives_ptr() (&rsx_pass_data_ptr()->debug_primitives)

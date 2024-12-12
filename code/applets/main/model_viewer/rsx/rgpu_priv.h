@@ -80,5 +80,12 @@ struct rgpu
     struct rgpu_cache cache;
 };
 
+////////////////////////////////////////////////////////////
+
 result_e rgpu_create_cache(struct rgpu_cache *cache);
 void rgpu_destroy_cache(struct rgpu_cache *cache);
+
+void rgpu_pass_meshes(struct rsx_pass_meshes *pass_data);
+void rgpu_pass_gizmos(struct rsx_pass_gizmos *pass_data);
+void rgpu_pass_environment(struct rsx_pass_environment *pass_data);
+void rgpu_pass_debug_primitives(struct rsx_pass_debug_primitives *pass_data);

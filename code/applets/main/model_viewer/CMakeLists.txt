@@ -22,6 +22,8 @@ add_library(${MY_TARGET}
         scene/camera.c
 
         rsx.c
+        rsx_commands.c
+        rsx_resources.c
         rsx/rgpu.c
         rsx/rgpu_cache.c
         rsx/rcpu.c

@@ -6,6 +6,17 @@
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+struct mesh_node
+{
+    struct aabb aabb;
+
+    struct rsx_mesh *mesh;
+
+    struct transform transform;
+
+    struct mesh_node *parent;
+    // children ...
+};
 
 struct model;
 

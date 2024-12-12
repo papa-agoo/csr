@@ -106,68 +106,8 @@ void model_viewer_tick()
 {
     csr_assert(mv_ptr()->is_initialized);
 
-    struct rsx *rsx = rsx_ptr();
-
     // process scene
-    {
-        struct shader_data_frame *frame_data = &rsx->shader_data.frame.buffer.cpu;
-
-        struct camera *camera = mv_scene_ptr()->camera;
-        struct camera_ctl *camera_ctl = mv_scene_ptr()->camera_ctl;
-
-        // update camera
-        {
-            if (camera_ctl->update_cb) {
-                camera_ctl->update_cb(camera, camera_ctl, aio_time_elapsed_delta());
-            }
-
-            f32 aspect_ratio = screen_get_aspect_ratio(rsx->screen.rgpu);
-
-            frame_data->mtx_view = camera_get_view_matrix(camera);
-            frame_data->mtx_projection = camera_get_persp_projection_matrix(camera, aspect_ratio);
-            frame_data->mtx_projection_ortho = camera_get_ortho_projection_matrix(camera, aspect_ratio);
-        }
-
-        // update model
-        {
-            // update model transform (model_ctl)
-            // ...
-
-            // update mesh_node hierarchy (compute mesh matrices)
-            // ...
-        }
-
-        // FIXME streamline when model / mesh building is properly impl.
-        {
-            // temp debug primitives
-            struct vec3 origin = {0};
-            {
-                if (camera_ctl->type == CAMERA_CTL_ORBITAL)
-                {
-                    struct camera_ctl_orbital *data = camera_ctl->data;
-                    struct orbit *orbit = &data->orbit_src;
-
-                    rsx_add_point(orbit->origin, make_vec3(1, 1, 1), 3, 0, false);
-
-                    origin = orbit->origin;
-                }
-
-                struct mat44 m = mat44_translate(make_vec3(0, 1, 0));
-                rsx_add_axes(m, false);
-                rsx_add_aabb(m, make_aabb_unit_cube(), false);
-            }
-
-            // update gizmo shader data
-            {
-                struct mesh_gizmo *axes = &rsx->gizmo.axes;
-                axes->data.mtx_mvp = mat44_mult(mat44_mult(frame_data->mtx_projection_ortho, frame_data->mtx_view), mat44_translate(origin));
-                axes->data.use_object_mvp = true;
-
-                struct mesh_gizmo *grid = &rsx->gizmo.grid;
-                grid->data = rsx->shader_data.object.buffer.cpu;
-            }
-        }
-    }
+    // ...
 
     // draw frame
     rsx_tick();

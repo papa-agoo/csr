@@ -42,5 +42,12 @@ struct rcpu
     struct rcpu_cache cache;
 };
 
+////////////////////////////////////////////////////////////
+
 result_e rcpu_create_cache(struct rcpu_cache *cache);
 void rcpu_destroy_cache(struct rcpu_cache *cache);
+
+void rcpu_pass_meshes(struct rsx_pass_meshes *pass_data);
+void rcpu_pass_gizmos(struct rsx_pass_gizmos *pass_data);
+void rcpu_pass_environment(struct rsx_pass_environment *pass_data);
+void rcpu_pass_debug_primitives(struct rsx_pass_debug_primitives *pass_data);
