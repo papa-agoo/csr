@@ -119,7 +119,6 @@ The main focus lies on the Model Viewer Applet (model_viewer.so) which will be a
   - [x] Applets
     - [x] ecs_hello_world.so (some tests with Flecs)
     - [x] xgl_hello_cube.so (textured)
-    - [x] softgl_hello_triangle.so
     - [x] model_viewer.so #1
       - [x] 3D scene (Base Grid, Orbit Camera, Orientantion Gizmo, Unit Cube AABB)
       - [x] User Interface (Model, Camera, Renderers, Debug Info)
@@ -128,29 +127,20 @@ The main focus lies on the Model Viewer Applet (model_viewer.so) which will be a
 <br/>
 
 * **Milestone 3 (Mesh Loading + Debug Materials)**
-  - [ ] Application
-    - [ ] User Help Window (Key Mappings for Application + Applet)
   - [ ] Library
     - [ ] SoftGL #2
-      - [ ] Depth / Stencil States
-      - [ ] Proper Culling
+      - [ ] Pipeline States #1
       - [ ] Proper Clipping
+      - [ ] Texture Mapping
   - [ ] model_viewer.so #1
-    - [ ] Builtin procedural meshes #1 (Cube, Sphere, Torus, ...)
+    - [ ] Builtin procedural meshes (Cube, Sphere, Torus, ...)
     - [ ] Loaders for Wavefront OBJ / glTF files
-    - [ ] Debug materials (Point Cloud, Wireframe, Normals, UVs, Solid)
+    - [ ] Debug materials (Point Cloud, Wireframe, Normals, UVs, Solid, Textured)
     - [ ] Integration of the ImGuizmo Library
-    - [ ] FPS Camera
-    - [ ] Orthographic Rendering
 
 <br/>
 
 * **Milestone 4 (Lighting + Environment)**
-  - [ ] Library
-    - [ ] SoftGL #3
-      - [ ] Proper Line Rasterizer (with attrib. interpolation)
-      - [ ] Texture Mapping
-      - [ ] OPTIMIZATION
   - [ ] model_viewer.so
     - [ ] Legacy Lighting
     - [ ] Soft Shadows
@@ -166,6 +156,10 @@ The main focus lies on the Model Viewer Applet (model_viewer.so) which will be a
   - ...
 
 ## Media
+
+YouTube
+
+[![YouTube Playlist](files/youtube_thumbnail.png)](https://www.youtube.com/playlist?list=PLE546RFOzq9f5rue4Qd-CwamoZc_WZhiG)
 
 Release v0.0.5
 
