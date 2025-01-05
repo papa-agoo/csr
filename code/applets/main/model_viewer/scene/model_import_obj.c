@@ -86,10 +86,10 @@ result_e model_import_obj(struct model_import_info *info, struct model *model)
     model->name = string_cut_dir_file(info->file_path).filename;
 
     struct obj_data data = {0};
-    data.arena = model->resources.arena;
+    data.arena = model->priv.arena;
     data.flags = (info->triangulate) ? TINYOBJ_FLAG_TRIANGULATE : 0;
 
-    string_cstr path_cstr = string_get_cstr(model->resources.arena, info->file_path);
+    string_cstr path_cstr = string_get_cstr(model->priv.arena, info->file_path);
 
     check_result(_import_obj_data(&data,  path_cstr));
     check_result(_process_geometry(&data, model));

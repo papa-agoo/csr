@@ -42,6 +42,26 @@ error:
     return;
 }
 
+void scene_tick(struct scene *scene, f64 dt)
+{
+    check_ptr(scene);
+    check_ptr(scene->camera);
+
+    struct camera *camera = scene->camera;
+    struct camera_ctl *camera_ctl = scene->camera_ctl;
+
+    // update camera
+    if (camera_ctl->update_cb) {
+        camera_ctl->update_cb(camera, camera_ctl, dt);
+    }
+
+    // update model
+    // ...
+
+error:
+    return;
+}
+
 const struct scene_conf* scene_get_conf(struct scene *scene)
 {
     check_ptr(scene);
@@ -50,6 +70,24 @@ const struct scene_conf* scene_get_conf(struct scene *scene)
 
 error:
     return NULL;
+}
+
+struct vec3 scene_get_origin(struct scene *scene)
+{
+    check_ptr(scene);
+
+    struct camera_ctl *ctl = scene->camera_ctl;
+
+    if (ctl && ctl->type == CAMERA_CTL_ORBITAL)
+    {
+        struct camera_ctl_orbital *data = ctl->data;
+        struct orbit *orbit = &data->orbit_src;
+
+        return orbit->origin;
+    }
+
+error:
+    return make_vec3_zero();
 }
 
 struct mesh_node* scene_get_root_node(struct scene *scene)
@@ -90,4 +128,21 @@ struct model* scene_get_model(struct scene *scene)
 
 error:
     return NULL;
+}
+
+void scene_set_model(struct scene *scene, struct model *model)
+{
+    check_ptr(scene);
+
+    scene->model = model;
+
+    struct mesh_node *parent = &scene->root_node;
+    transform_identity(&parent->transform);
+
+    if (model) {
+        model->node.parent = parent;
+    }
+
+error:
+    return;
 }

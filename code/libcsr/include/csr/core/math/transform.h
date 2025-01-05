@@ -53,3 +53,4 @@ struct vec3 transform_local_to_world(struct transform *transform, struct vec3 p)
 struct vec3 transform_world_to_local(struct transform *transform, struct vec3 p);
 
 struct mat44 transform_get_matrix(struct transform *transform);
+struct mat44 transform_get_global_matrix(struct transform *transform, struct transform *parent);

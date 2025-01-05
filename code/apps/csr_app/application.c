@@ -400,6 +400,11 @@ static void on_application_kbd_key_down(struct keyboard_event* event)
         }
         break;
 
+        case KBD_KEY_R: {
+            applet_mgr_request_applet_reload();
+        }
+        break;
+
         // viewport: toggle fullscreen
         case KBD_KEY_F: {
             klog_warn("screen_toggle_fullscreen() not implemented yet");

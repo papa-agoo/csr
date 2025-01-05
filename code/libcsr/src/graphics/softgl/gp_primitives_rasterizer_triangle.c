@@ -26,9 +26,9 @@ CSR_INLINE void _eeq_compute(struct eeq* e, struct vec4* v0, struct vec4* v1, st
     // flip coefficients for back facing triangles
     if ((a * v2->x + b * v2->y + c) < 0)
     {
-        // a *= -1;
-        // b *= -1;
-        // c *= -1;
+        a *= -1;
+        b *= -1;
+        c *= -1;
     }
 
     e->a = a;

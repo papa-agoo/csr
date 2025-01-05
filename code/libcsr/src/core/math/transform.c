@@ -176,8 +176,7 @@ struct vec3 transform_local_to_world(struct transform *transform, struct vec3 p)
 {
     check_ptr(transform);
 
-    // FIXME
-    clog_warn("not implemented yet :(");
+    clog_warn("not impl. yet :(");
 
 error:
     return p;
@@ -187,8 +186,7 @@ struct vec3 transform_world_to_local(struct transform *transform, struct vec3 p)
 {
     check_ptr(transform);
 
-    // FIXME
-    clog_warn("not implemented yet :(");
+    clog_warn("not impl. yet :(");
 
 error:
     return p;
@@ -206,6 +204,17 @@ struct mat44 transform_get_matrix(struct transform *transform)
     }
 
     return transform->matrix;
+
+error:
+    return mat44_identity();
+}
+
+struct mat44 transform_get_global_matrix(struct transform *transform, struct transform *parent)
+{
+    check_ptr(transform);
+    check_ptr(parent);
+
+    return mat44_mult(transform_get_matrix(transform), transform_get_matrix(parent));
 
 error:
     return mat44_identity();

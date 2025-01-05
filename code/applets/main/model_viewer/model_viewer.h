@@ -27,8 +27,10 @@ struct model_viewer_conf* model_viewer_get_conf();
 struct scene* model_viewer_get_scene();
 void model_viewer_set_camera_controller(enum camera_ctl_type type);
 
-result_e model_viewer_load_model(struct string path);
-void model_viewer_unload_model();
+struct model* model_viewer_get_model();
+result_e model_viewer_set_model(struct model *model);
+
+struct arena* model_viewer_get_resource_arena(); // FIXME
 
 ////////////////////////////////////////////////////////////
 

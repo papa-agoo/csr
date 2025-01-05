@@ -13,12 +13,14 @@ struct rsx_init_info
 
     struct screen *screen_rgpu;
     struct screen *screen_rcpu;
+
+    struct arena *arena;
 };
 
 result_e rsx_init(struct rsx_init_info *info);
 void rsx_quit();
 
-void rsx_tick();
+void rsx_tick(f64 dt);
 
 const struct rsx_conf* rsx_get_conf();
 struct rsx_render_data* rsx_get_render_data();
@@ -53,6 +55,8 @@ struct rsx_mesh* rsx_mesh_create(struct rsx_mesh_create_info *info);
 struct rsx_mesh* rsx_mesh_copy(struct rsx_mesh *mesh);
 void rsx_mesh_destroy(struct rsx_mesh *mesh);
 
+struct rsx_mesh* rsx_mesh_create_test_triangle();
+struct rsx_mesh* rsx_mesh_create_test_box();
 
 ////////////////////////////////////////////////////////////////////////////////
 // command api
@@ -64,5 +68,6 @@ void rsx_debug_add_line(struct vec3 a, struct vec3 b, struct vec3 color, f32 wid
 
 void rsx_debug_add_axes(struct mat44 transform, bool depth);
 void rsx_debug_add_aabb(struct mat44 transform, struct aabb aabb, bool depth);
+void rsx_debug_add_colored_aabb(struct mat44 transform, struct aabb aabb, struct vec3 color, bool depth);
 
 // ...

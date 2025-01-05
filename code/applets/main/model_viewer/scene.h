@@ -16,9 +16,11 @@ struct scene;
 
 const struct scene_conf* scene_get_conf(struct scene *scene);
 
+struct vec3 scene_get_origin(struct scene *scene);
 struct mesh_node* scene_get_root_node(struct scene *scene);
 
 struct camera* scene_get_camera(struct scene *scene);
 struct camera_ctl* scene_get_camera_ctl(struct scene *scene);
 
 struct model* scene_get_model(struct scene *scene);
+void scene_set_model(struct scene *scene, struct model *model);

@@ -49,7 +49,7 @@ result_e model_import_gltf(struct model_import_info *info, struct model *model)
     cgltf_options options = {0};
     cgltf_data* data = NULL;
 
-    string_cstr path_cstr = string_get_cstr(model->resources.arena, info->file_path);
+    string_cstr path_cstr = string_get_cstr(model->priv.arena, info->file_path);
 
     check_expr(cgltf_parse_file(&options, path_cstr, &data) == cgltf_result_success);
     check_result(_process_geometry(data, model));

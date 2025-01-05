@@ -38,14 +38,19 @@ void gp_process_fragment(struct softgl_fragment* fragment)
 
     if (ds->enable_test)
     {
-        // u32 frag_idx = (pb->width * p_y) + p_x;
+        u32 frag_idx = (pb->width * p_y) + p_x;
 
-        // f32* z_new = &fragment->frag_coords.z;
-        // f32* z_old = pb->user_data + frag_idx;
+        // GL_UNSIGNED_INT_24_8 : 0xFFFFFF00 (DDDDDDSS)
+        u32* ds_buffer = pb->user_data;
 
-        // if (*z_new < *z_old) return;
+        u32 depth_new = (u32)(fragment->frag_coords.z * (1 << 24));
+        u32 depth_old = (ds_buffer[frag_idx] >> 8) & 0xFFFFFF;
 
-        // *z_old = *z_new;
+        // skip fragments which are farther away (0.0 = nearest, 1.0 = farest)
+        if (depth_old < depth_new) return;
+
+        // FIXME move to the output merger when all of the rasterizer states are impl.
+        ds_buffer[frag_idx] = depth_new << 8;
     }
 
     ////////////////////////////////////////

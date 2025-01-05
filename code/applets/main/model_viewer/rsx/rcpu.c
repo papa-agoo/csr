@@ -59,43 +59,84 @@ error:
     return;
 }
 
-// static void _draw_mesh_primitive(struct mesh_primitive *primitive)
-// {
-//     struct vector *vertex_buffer_data = primitive->buffer->vertices.cpu;
-//     struct vector *index_buffer_data = primitive->buffer->indices.cpu;
+static void _draw_mesh_primitive(struct rsx_mesh_primitive *primitive)
+{
+    struct rsx_mesh_geometry *geometry = &primitive->mesh->geometry;
 
-//     struct softgl_vertex_buffer vertex_buffer = {0};
-//     vertex_buffer.buffer.data = vector_data(vertex_buffer_data);
-//     vertex_buffer.buffer.byte_length = vector_size(vertex_buffer_data);
-//     vertex_buffer.stride = primitive->vertex_stride;
+    struct softgl_vertex_buffer vertex_buffer = {0};
+    vertex_buffer.buffer.data = geometry->vertex_buffer.cpu + primitive->vertices.offset_bytes;
+    vertex_buffer.buffer.byte_length = primitive->vertex_stride * primitive->vertices.count;
+    vertex_buffer.stride = primitive->vertex_stride;
 
-//     struct softgl_vertex_buffer* vertex_buffers[] = {
-//         &vertex_buffer
-//     };
+    struct softgl_vertex_buffer* vertex_buffers[] = {
+        &vertex_buffer
+    };
 
-//     softgl_bind_vertex_buffers(vertex_buffers, 1);
+    softgl_bind_vertex_buffers(vertex_buffers, 1);
 
-//     if (primitive->indices.count > 0)
-//     {
-//         struct softgl_index_buffer index_buffer = {0};
-//         index_buffer.buffer.data = vector_data(index_buffer_data);
-//         index_buffer.buffer.byte_length = vector_size(index_buffer_data);
+    if (primitive->indices.count > 0)
+    {
+        struct softgl_index_buffer index_buffer = {0};
+        index_buffer.buffer.data = geometry->index_buffer.cpu; // + primitive->indices.offset_bytes; // FIXME
+        index_buffer.buffer.byte_length = primitive->indices.count * sizeof(u32); // FIXME 16/32 bit indices
 
-//         softgl_bind_index_buffer(&index_buffer);
+        softgl_bind_index_buffer(&index_buffer);
 
-//         softgl_draw_indexed(primitive->indices.start, primitive->indices.count);
-//     }
-//     else {
-//         softgl_draw(primitive->vertices.start, primitive->vertices.count);
-//     }
-// }
+        softgl_draw_indexed(0, primitive->indices.count);
+    }
+    else {
+        softgl_draw(0, primitive->vertices.count);
+    }
+}
+
+static void _draw_mesh(struct rsx_mesh *mesh)
+{
+    struct rsx_mesh_geometry *geometry = &mesh->geometry;
+
+    // static mesh: no need to calculate the mvp for every vertex
+    struct shader_data_object *object_data = &mesh->shader_data.data.cpu;
+    {
+        // do not overwrite an already calculated mvp
+        if (!object_data->use_object_mvp)
+        {
+            struct shader_data_frame *frame_data = &rsx_get_render_data()->frame.data.cpu;
+
+            object_data->mtx_mvp = mat44_mult(mat44_mult(frame_data->mtx_projection, frame_data->mtx_view), object_data->mtx_model);
+        }
+    }
+
+    // bind object shader data
+    softgl_bind_descriptor_set(SOFTGL_DESCRIPTOR_SET_TYPE_OBJECT, object_data);
+
+    // draw primitives
+    for (u32 i = 0; i < vector_size(geometry->primitives); i++)
+    {
+        struct rsx_mesh_primitive *primitive = vector_get(geometry->primitives, i);
+
+        // set material
+        struct rsx_material *material = primitive->material;
+
+        softgl_bind_descriptor_set(SOFTGL_DESCRIPTOR_SET_TYPE_MATERIAL, &material->shader_data.data.cpu);
+        softgl_bind_pipeline(material->pso.cpu);
+
+        // draw primitive
+        _draw_mesh_primitive(primitive);
+    }
+}
 
 void rcpu_pass_meshes(struct rsx_pass_meshes *pass_data)
 {
     check_ptr(pass_data);
-    check_quiet(pass_data->base.enabled);
+    check_quiet(pass_data->enabled);
 
-    // ...
+    struct rsx_pass_meshes_priv *priv = &pass_data->priv;
+
+    for (u32 i = 0; i < vector_size(priv->meshes); i++)
+    {
+        struct rsx_mesh **mesh = vector_get(priv->meshes, i);
+
+        _draw_mesh(*mesh);
+    }
 
 error:
     return;
@@ -104,18 +145,29 @@ error:
 void rcpu_pass_gizmos(struct rsx_pass_gizmos *pass_data)
 {
     check_ptr(pass_data);
-    check_quiet(pass_data->base.enabled);
+    check_quiet(pass_data->enabled);
+
+    struct rsx_pass_gizmos_priv *priv = &pass_data->priv;
 
     // grid
-    if (pass_data->draw_grid)
-    {
-        // ...
+    if (pass_data->draw_grid) {
+        _draw_mesh(priv->mesh.grid);
     }
 
     // orientation axes
     if (pass_data->draw_orientation_axes)
     {
-        // ...
+        // set the new viewport (top right corner)
+        struct softgl_viewport vp = rcpu_ptr()->vp;
+        priv->calc_axes_viewport(&vp.x, &vp.y, &vp.width, &vp.height);
+
+        softgl_set_viewport(vp);
+
+        // draw axes
+        _draw_mesh(priv->mesh.axes);
+
+        // restore the old viewport
+        softgl_set_viewport(rcpu_ptr()->vp);
     }
 
 error:
@@ -125,7 +177,7 @@ error:
 void rcpu_pass_environment(struct rsx_pass_environment *pass_data)
 {
     check_ptr(pass_data);
-    check_quiet(pass_data->base.enabled);
+    check_quiet(pass_data->enabled);
 
     // ...
 
@@ -136,7 +188,7 @@ error:
 void rcpu_pass_debug_primitives(struct rsx_pass_debug_primitives *pass_data)
 {
     check_ptr(pass_data);
-    check_quiet(pass_data->base.enabled);
+    check_quiet(pass_data->enabled);
 
     // ...
 

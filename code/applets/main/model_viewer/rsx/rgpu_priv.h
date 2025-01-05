@@ -54,15 +54,16 @@ struct rgpu_cache
     // pipelines
     struct {
         // points
-        xgl_pipeline points[PRIMITIVE_SIZE_MAX];
-        xgl_pipeline points_no_depth[PRIMITIVE_SIZE_MAX];
+        xgl_pipeline points[RSX_PRIMITIVE_SIZE_MAX];
+        xgl_pipeline points_no_depth[RSX_PRIMITIVE_SIZE_MAX];
 
         // lines
-        xgl_pipeline lines[PRIMITIVE_SIZE_MAX];
-        xgl_pipeline lines_no_depth[PRIMITIVE_SIZE_MAX];
+        xgl_pipeline lines[RSX_PRIMITIVE_SIZE_MAX];
+        xgl_pipeline lines_no_depth[RSX_PRIMITIVE_SIZE_MAX];
 
-        xgl_pipeline debug_uvs;
-        xgl_pipeline debug_normals;
+        xgl_pipeline debug_colors;
+        // xgl_pipeline debug_normals;
+        // xgl_pipeline debug_texcoords;
     } pipeline;
 
     // samplers

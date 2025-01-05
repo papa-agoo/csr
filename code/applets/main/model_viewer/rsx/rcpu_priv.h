@@ -18,6 +18,7 @@ struct rcpu_cache
     struct {
         struct softgl_input_layout position;
         struct softgl_input_layout position_color;
+        // struct softgl_input_layout position_normal_texcoord;
     } input_layout;
 
     // shaders
@@ -32,6 +33,10 @@ struct rcpu_cache
 
         softgl_pipeline lines;
         softgl_pipeline lines_no_depth;
+
+        softgl_pipeline debug_colors;
+        // softgl_pipeline debug_normals;
+        // softgl_pipeline debug_texcoords;
     } pipeline;
 };
 

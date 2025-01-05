@@ -17,6 +17,8 @@ struct rsx_resources
 
 struct rsx
 {
+    struct arena *arena;
+
     // FIXME rsx_render_target
     struct {
         struct screen *rgpu;
@@ -46,15 +48,18 @@ void rsx_pass_meshes_destroy(struct rsx_pass_meshes *pass_data);
 
 result_e rsx_pass_gizmos_create(struct rsx_pass_gizmos *pass_data);
 void rsx_pass_gizmos_destroy(struct rsx_pass_gizmos *pass_data);
+void rsx_pass_gizmos_tick(struct rsx_pass_gizmos *pass_data, f64 dt);
 
 result_e rsx_pass_environment_create(struct rsx_pass_environment *pass_data);
 void rsx_pass_environment_destroy(struct rsx_pass_environment *pass_data);
 
 result_e rsx_pass_debug_primitives_create(struct rsx_pass_debug_primitives *pass_data);
 void rsx_pass_debug_primitives_destroy(struct rsx_pass_debug_primitives *pass_data);
+void rsx_pass_debug_primitives_tick(struct rsx_pass_debug_primitives *pass_data, f64 dt);
 
 ////////////////////////////////////////////////////////////
 
+#define rsx_arena_ptr() (rsx_ptr()->arena)
 #define rsx_resource_ptr() (&rsx_ptr()->resources)
 
 #define rsx_rgpu_ptr() (rsx_ptr()->rgpu)

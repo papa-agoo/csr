@@ -75,7 +75,7 @@ static void _draw_pass_environment_view(struct rsx_pass_environment *pass_data)
 {
     igNewLine();
 
-    igCheckbox("Enable##pass_env", &pass_data->base.enabled);
+    igCheckbox("Enable##pass_env", &pass_data->enabled);
     igNewLine();
 
     igText("...");
@@ -86,7 +86,7 @@ static void _draw_pass_gizmos_view(struct rsx_pass_gizmos *pass_data)
 {
     igNewLine();
 
-    igCheckbox("Enable##pass_gizmos", &pass_data->base.enabled);
+    igCheckbox("Enable##pass_gizmos", &pass_data->enabled);
     igNewLine();
 
     igCheckbox("Draw Grid", &pass_data->draw_grid);
@@ -100,7 +100,7 @@ static void _draw_pass_meshes_view(struct rsx_pass_meshes *pass_data)
 {
     igNewLine();
 
-    igCheckbox("Enable##pass_meshes", &pass_data->base.enabled);
+    igCheckbox("Enable##pass_meshes", &pass_data->enabled);
     igNewLine();
 
     // - draw mode
@@ -119,7 +119,10 @@ static void _draw_pass_debug_primitives_view(struct rsx_pass_debug_primitives *p
 {
     igNewLine();
 
-    igCheckbox("Enable##pass_debug_primitives", &pass_data->base.enabled);
+    igCheckbox("Enable##pass_debug_draw", &pass_data->enabled);
+    igNewLine();
+
+    igCheckbox("Draw World Origin", &pass_data->draw_world_origin);
     igNewLine();
 
     igText("...");
@@ -145,7 +148,7 @@ static void _draw_pass_settings_view(string_cstr title)
         _draw_pass_environment_view(&render_data->pass.environment);
     }
 
-    if (igCollapsingHeader_TreeNodeFlags("Debug Primitives", 0)) {
+    if (igCollapsingHeader_TreeNodeFlags("Debug Draw", 0)) {
         _draw_pass_debug_primitives_view(&render_data->pass.debug_primitives);
     }
 }

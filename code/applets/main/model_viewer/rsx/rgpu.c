@@ -48,35 +48,80 @@ error:
     return;
 }
 
-// static void _draw_mesh_primitive(struct mesh_primitive *primitive)
-// {
-//     xgl_buffer vertex_buffers[] = {
-//         primitive->buffer->vertices.gpu,
-//     };
+static void _draw_mesh_primitive(struct rsx_mesh_primitive *primitive)
+{
+    struct rsx_mesh_geometry *geometry = &primitive->mesh->geometry;
 
-//     u32 first_binding = 0;
-//     u32 binding_count = COUNT_OF(vertex_buffers);
+    xgl_buffer vertex_buffers[] = {
+        geometry->vertex_buffer.gpu,
+    };
 
-//     u32 vb_offsets[] = {0};
-//     u32 vb_strides[] = {primitive->vertex_stride};
+    u32 first_binding = 0;
+    u32 binding_count = COUNT_OF(vertex_buffers);
 
-//     xgl_bind_vertex_buffers(first_binding, binding_count, vertex_buffers, vb_offsets, vb_strides);
+    u32 vb_offsets[] = {primitive->vertices.offset_bytes};
+    u32 vb_strides[] = {primitive->vertex_stride};
 
-//     if (primitive->indices.count > 0) {
-//         xgl_bind_index_buffer(primitive->buffer->indices.gpu);
-//         xgl_draw_indexed(primitive->indices.start, primitive->indices.count);
-//     }
-//     else {
-//         xgl_draw(primitive->vertices.start, primitive->vertices.count);
-//     }
-// }
+    xgl_bind_vertex_buffers(first_binding, binding_count, vertex_buffers, vb_offsets, vb_strides);
+
+    if (primitive->indices.count > 0) {
+        xgl_bind_index_buffer(geometry->index_buffer.gpu);
+        xgl_draw_indexed(0, primitive->indices.count);
+    }
+    else {
+        xgl_draw(0, primitive->vertices.count);
+    }
+}
+
+static void _draw_mesh(struct rsx_mesh *mesh)
+{
+    struct rsx_mesh_geometry *geometry = &mesh->geometry;
+
+    // update object shader data (FIXME: centralised updates in rsx, dirty only)
+    struct rsx_uniform_buffer_object *ubo = &mesh->shader_data.data;
+    {
+        void *gpu_ptr = xgl_map_buffer(ubo->gpu);
+
+        memcpy(gpu_ptr, &ubo->cpu, sizeof(ubo->cpu));
+        xgl_unmap_buffer(ubo->gpu);
+    }
+
+    // bind object shader data
+    struct rsx_shader_resource_binding *mesh_data = &mesh->shader_data.binding;
+    xgl_bind_descriptor_set(XGL_DESCRIPTOR_SET_TYPE_OBJECT, mesh_data->pipeline_layout, mesh_data->ds);
+
+    // draw primitives
+    for (u32 i = 0; i < vector_size(geometry->primitives); i++)
+    {
+        struct rsx_mesh_primitive *primitive = vector_get(geometry->primitives, i);
+
+        // set material
+        struct rsx_material *material = primitive->material;
+
+        // xgl_bind_descriptor_set(XGL_DESCRIPTOR_SET_TYPE_MATERIAL, material->shader_data.binding.pipeline_layout, material->shader_data.binding.ds);
+        xgl_bind_pipeline(XGL_PIPELINE_TYPE_GRAPHICS, material->pso.gpu);
+
+        // draw primitive
+        _draw_mesh_primitive(primitive);
+    }
+
+error:
+    return;
+}
 
 void rgpu_pass_meshes(struct rsx_pass_meshes *pass_data)
 {
     check_ptr(pass_data);
-    check_quiet(pass_data->base.enabled);
+    check_quiet(pass_data->enabled);
 
-    // ...
+    struct rsx_pass_meshes_priv *priv = &pass_data->priv;
+
+    for (u32 i = 0; i < vector_size(priv->meshes); i++)
+    {
+        struct rsx_mesh **mesh = vector_get(priv->meshes, i);
+
+        _draw_mesh(*mesh);
+    }
 
 error:
     return;
@@ -85,18 +130,29 @@ error:
 void rgpu_pass_gizmos(struct rsx_pass_gizmos *pass_data)
 {
     check_ptr(pass_data);
-    check_quiet(pass_data->base.enabled);
+    check_quiet(pass_data->enabled);
+
+    struct rsx_pass_gizmos_priv *priv = &pass_data->priv;
 
     // grid
-    if (pass_data->draw_grid)
-    {
-        // ...
+    if (pass_data->draw_grid) {
+        _draw_mesh(priv->mesh.grid);
     }
 
     // orientation axes
     if (pass_data->draw_orientation_axes)
     {
-        // ...
+        // set the new viewport (top right corner)
+        struct xgl_viewport vp = rgpu_ptr()->vp;
+        priv->calc_axes_viewport(&vp.x, &vp.y, &vp.width, &vp.height);
+
+        xgl_set_viewports(1, &vp);
+
+        // draw axes
+        _draw_mesh(priv->mesh.axes);
+
+        // restore the old viewport
+        xgl_set_viewports(1, &rgpu_ptr()->vp);
     }
 
 error:
@@ -106,7 +162,7 @@ error:
 void rgpu_pass_environment(struct rsx_pass_environment *pass_data)
 {
     check_ptr(pass_data);
-    check_quiet(pass_data->base.enabled);
+    check_quiet(pass_data->enabled);
 
     // ...
 
@@ -117,7 +173,7 @@ error:
 void rgpu_pass_debug_primitives(struct rsx_pass_debug_primitives *pass_data)
 {
     check_ptr(pass_data);
-    check_quiet(pass_data->base.enabled);
+    check_quiet(pass_data->enabled);
 
     // ...
 

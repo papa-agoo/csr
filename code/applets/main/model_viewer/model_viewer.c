@@ -29,6 +29,9 @@ struct model_viewer
     struct scene scene;
 
     struct model_viewer_conf conf;
+
+    // FIXME obsolete when the resource / asset system is impl.
+    struct arena *arena;
 };
 
 static struct model_viewer g_mv = {0};
@@ -72,6 +75,14 @@ result_e model_viewer_init()
         }
     }
 
+    ////////////////////////////////////////
+
+    // check_result(_create_resource_srv());
+    {
+        mv_ptr()->arena = arena_create(make_string("Model Viewer Assets"), MegaBytes(32));
+        check_ptr(mv_ptr()->arena);
+    }
+
     check_result(_create_rsx());
     check_result(_create_scene());
 
@@ -98,19 +109,72 @@ void model_viewer_quit()
 {
     csr_assert(mv_ptr()->is_initialized);
 
+    model_viewer_set_model(NULL);
+
     scene_quit(mv_scene_ptr());
     rsx_quit();
+
+    // resource_srv_quit();
+    arena_destroy(mv_ptr()->arena);
 }
 
 void model_viewer_tick()
 {
     csr_assert(mv_ptr()->is_initialized);
 
+    f64 dt = aio_time_elapsed_delta();
+
     // process scene
-    // ...
+    scene_tick(mv_scene_ptr(), dt);
+
+    // prepare render data
+    struct rsx_render_data *render_data = rsx_get_render_data();
+    {
+        struct camera *camera = mv_scene_ptr()->camera;
+
+        // update global shader data
+        struct shader_data_frame *frame_data = &render_data->frame.data.cpu;
+        {
+            f32 aspect_ratio = screen_get_aspect_ratio(rsx_ptr()->screen.rgpu);
+
+            frame_data->mtx_view = camera_get_view_matrix(camera);
+            frame_data->mtx_projection = camera_get_persp_projection_matrix(camera, aspect_ratio);
+            frame_data->mtx_projection_ortho = camera_get_ortho_projection_matrix(camera, aspect_ratio);
+        }
+
+        // misc
+        render_data->world_origin = scene_get_origin(mv_scene_ptr());
+    }
+
+    // FIXME gets the job done for now, obsolete when the scene system is in place
+    struct rsx_pass_meshes *pass_meshes = rsx_pass_data_meshes_ptr();
+    {
+        vector_clear(pass_meshes->priv.meshes);
+
+        struct model *model = scene_get_model(mv_scene_ptr());
+
+        if (pass_meshes->enabled && model)
+        {
+            struct mat44 model_matrix = model_get_transform_matrix(model);
+
+            struct rsx_mesh *mesh = model_get_mesh(model);
+
+            if (mesh)
+            {
+                mesh->shader_data.data.cpu.mtx_model = model_matrix;
+
+                vector_push_back(pass_meshes->priv.meshes, mesh);
+            }
+            else
+            {
+                // draw a red box as an indicator for an invalid / missing mesh
+                rsx_debug_add_colored_aabb(model_matrix, make_aabb_unit_cube(), make_vec3(1, 0, 0), true);
+            }
+        }
+    }
 
     // draw frame
-    rsx_tick();
+    rsx_tick(dt);
 }
 
 struct model_viewer_conf* model_viewer_get_conf()
@@ -140,35 +204,20 @@ void model_viewer_set_camera_controller(enum camera_ctl_type type)
     }
 }
 
-result_e model_viewer_load_model(struct string path)
+struct model* model_viewer_get_model()
 {
-    check_expr(string_is_valid(path));
+    return scene_get_model(mv_scene_ptr());
+}
 
-    model_viewer_unload_model();
+result_e model_viewer_set_model(struct model *model)
+{
+    struct model *model_old = scene_get_model(mv_scene_ptr());
 
-    ////////////////////////////////////////
+    if (model_old) {
+        model_destroy(model_old);
+    }
 
-    alog_notice("loading model : %S", &path);
-
-    // create model
-    struct model_import_info import = {0};
-    import.file_path = path;
-
-    struct model_create_info info = {0};
-    info.import = &import;
-
-    struct model* model = model_create(&info);
-    check_ptr(model);
-
-    // set parent
-    struct mesh_node *parent = &mv_scene_ptr()->root_node;
-    transform_identity(&parent->transform);
-
-    model->node.parent = parent;
-
-    ////////////////////////////////////////
-
-    mv_scene_ptr()->model = model;
+    scene_set_model(mv_scene_ptr(), model);
 
     return RC_SUCCESS;
 
@@ -176,17 +225,9 @@ error:
     return RC_FAILURE;
 }
 
-void model_viewer_unload_model()
+struct arena* model_viewer_get_resource_arena()
 {
-    struct model *model = mv_scene_ptr()->model;
-    check_quiet(model);
-
-    model_destroy(model);
-
-    mv_scene_ptr()->model = NULL;
-
-error:
-    return;
+    return mv_ptr()->arena;
 }
 
 
@@ -305,9 +346,6 @@ static result_e _create_scene()
     // set default camera controller
     scene->camera_ctl = _camera_ctl_orbital_ptr();
 
-    // set model
-    // ...
-
     return RC_SUCCESS;
 
 error:
@@ -360,6 +398,7 @@ static result_e _create_rsx()
     {
         struct rsx_init_info init_info = {0};
         init_info.conf = conf;
+        init_info.arena = aio_get_main_arena();
         init_info.screen_rgpu = screen_rgpu;
         init_info.screen_rcpu = screen_rcpu;
 

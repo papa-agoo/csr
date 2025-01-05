@@ -61,7 +61,7 @@ void rgpu_destroy_cache(struct rgpu_cache *cache)
     // xgl_destroy_shader(cache->shader.vertex_texture);
 
     // pipelines
-    for (u32 i = 0; i < PRIMITIVE_SIZE_MAX; i++)
+    for (u32 i = 0; i < RSX_PRIMITIVE_SIZE_MAX; i++)
     {
         xgl_destroy_pipeline(cache->pipeline.points[i]);
         xgl_destroy_pipeline(cache->pipeline.points_no_depth[i]);
@@ -70,8 +70,9 @@ void rgpu_destroy_cache(struct rgpu_cache *cache)
         xgl_destroy_pipeline(cache->pipeline.lines_no_depth[i]);
     }
 
-    // xgl_destroy_pipeline(cache->pipeline.debug_uvs);
+    xgl_destroy_pipeline(cache->pipeline.debug_colors);
     // xgl_destroy_pipeline(cache->pipeline.debug_normals);
+    // xgl_destroy_pipeline(cache->pipeline.debug_texcoords);
 
 error:
     return;
@@ -391,7 +392,7 @@ static result_e _create_pso_points(struct rgpu_cache *cache)
         make_string("pso.points_fat.no_depth"),
     };
 
-    for (u32 i = 0; i < PRIMITIVE_SIZE_MAX; i++)
+    for (u32 i = 0; i < RSX_PRIMITIVE_SIZE_MAX; i++)
     {
         // FIXME calc relative size in the shader (dpi aware)
         info.rasterizer_state->point_size = (i + 1) * (i + 1);
@@ -450,7 +451,7 @@ static result_e _create_pso_lines(struct rgpu_cache *cache)
         make_string("pso.lines_fat.no_depth"),
     };
 
-    for (u32 i = 0; i < PRIMITIVE_SIZE_MAX; i++)
+    for (u32 i = 0; i < RSX_PRIMITIVE_SIZE_MAX; i++)
     {
         // FIXME calc relative size in the shader (dpi aware)
         info.rasterizer_state->line_width = (i + 1) * (i + 1);
@@ -476,12 +477,47 @@ error:
     return RC_FAILURE;
 }
 
+static result_e _create_pso_debug_colors(struct rgpu_cache *cache)
+{
+    check_ptr(cache);
+
+    ////////////////////////////////////////
+
+    struct xgl_ia_state ia_state = {0};
+    ia_state.topology = XGL_TOPOLOGY_TRIANGLE_LIST;
+
+    struct xgl_shader_state shader_state = {0};
+    shader_state.shader = cache->shader.vertex_color;
+
+    struct xgl_pipeline_create_info info = {0};
+    info.name = make_string("pso.debug.colors");
+    info.type = XGL_PIPELINE_TYPE_GRAPHICS;
+    info.ia_state = &ia_state;
+    info.shader_state = &shader_state;
+    info.depth_stencil_state = &cache->depth_stencil_state.rw_off;
+    info.input_layout = &cache->input_layout.position_color;
+    info.pipeline_layout = cache->pipeline_layout.main;
+
+    check_result(xgl_create_pipeline(&info, &cache->pipeline.debug_colors));
+
+    ////////////////////////////////////////
+
+    return RC_SUCCESS;
+
+error:
+    return RC_FAILURE;
+}
+
 static result_e _create_pipelines(struct rgpu_cache *cache)
 {
     check_ptr(cache);
 
     check_result(_create_pso_points(cache));
     check_result(_create_pso_lines(cache));
+
+    check_result(_create_pso_debug_colors(cache));
+    // check_result(_create_pso_debug_normals(cache));
+    // check_result(_create_pso_debug_texcoords(cache));
 
     return RC_SUCCESS;
 

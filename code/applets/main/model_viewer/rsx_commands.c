@@ -6,13 +6,17 @@
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-// debug primitives
+// debug draw
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void rsx_debug_add_point(struct vec3 p, struct vec3 color, f32 size, f32 lifetime, bool depth)
 {
     struct rsx_pass_debug_primitives *pass_data = rsx_pass_data_debug_primitives_ptr();
 
-    // struct vertex_1p1c v = {.position = p, .color = color};
+    check_quiet(pass_data->enabled);
+
+    ////////////////////////////////////////
+
+    struct vertex_1p1c v = {.position = p, .color = color};
 
     // u32 size_idx = clamp(size, 1, PRIMITIVE_SIZE_MAX) - 1;
 
@@ -28,8 +32,12 @@ void rsx_debug_add_line(struct vec3 a, struct vec3 b, struct vec3 color, f32 wid
 {
     struct rsx_pass_debug_primitives *pass_data = rsx_pass_data_debug_primitives_ptr();
 
-    // struct vertex_1p1c va = {.position = a, .color = color};
-    // struct vertex_1p1c vb = {.position = b, .color = color};
+    check_quiet(pass_data->enabled);
+
+    ////////////////////////////////////////
+
+    struct vertex_1p1c va = {.position = a, .color = color};
+    struct vertex_1p1c vb = {.position = b, .color = color};
 
     // u32 size_idx = clamp(width, 1, PRIMITIVE_SIZE_MAX) - 1;
 
@@ -44,7 +52,9 @@ error:
 
 void rsx_debug_add_axes(struct mat44 transform, bool depth)
 {
-    struct rsx *rsx = rsx_ptr();
+    struct rsx_pass_debug_primitives *pass_data = rsx_pass_data_debug_primitives_ptr();
+
+    check_quiet(pass_data->enabled && pass_data->draw_object_orientation_axes);
 
     ////////////////////////////////////////
 
@@ -70,28 +80,35 @@ error:
 
 void rsx_debug_add_aabb(struct mat44 transform, struct aabb aabb, bool depth)
 {
-    struct rsx *rsx = rsx_ptr();
+    const struct vec3 color = rsx_get_conf()->color.aabb;
+
+    rsx_debug_add_colored_aabb(transform, aabb, color, depth);
+}
+
+void rsx_debug_add_colored_aabb(struct mat44 transform, struct aabb aabb, struct vec3 color, bool depth)
+{
+    struct rsx_pass_debug_primitives *pass_data = rsx_pass_data_debug_primitives_ptr();
+
+    check_quiet(pass_data->enabled && pass_data->draw_object_bounding_boxes);
 
     ////////////////////////////////////////
 
     // top points
-    struct vec3 ta = mat44_mult_vec3(transform, make_vec3(aabb.min.x, aabb.min.z, aabb.max.y));
-    struct vec3 tb = mat44_mult_vec3(transform, make_vec3(aabb.max.x, aabb.min.z, aabb.max.y));
-    struct vec3 tc = mat44_mult_vec3(transform, make_vec3(aabb.max.x, aabb.max.z, aabb.max.y));
-    struct vec3 td = mat44_mult_vec3(transform, make_vec3(aabb.min.x, aabb.max.z, aabb.max.y));
+    struct vec3 ta = mat44_mult_vec3(transform, make_vec3(aabb.min.x, aabb.max.y, aabb.min.z));
+    struct vec3 tb = mat44_mult_vec3(transform, make_vec3(aabb.max.x, aabb.max.y, aabb.min.z));
+    struct vec3 tc = mat44_mult_vec3(transform, make_vec3(aabb.max.x, aabb.max.y, aabb.max.z));
+    struct vec3 td = mat44_mult_vec3(transform, make_vec3(aabb.min.x, aabb.max.y, aabb.max.z));
 
     // bottom points
-    struct vec3 ba = mat44_mult_vec3(transform, make_vec3(aabb.min.x, aabb.min.z, aabb.min.y));
-    struct vec3 bb = mat44_mult_vec3(transform, make_vec3(aabb.max.x, aabb.min.z, aabb.min.y));
-    struct vec3 bc = mat44_mult_vec3(transform, make_vec3(aabb.max.x, aabb.max.z, aabb.min.y));
-    struct vec3 bd = mat44_mult_vec3(transform, make_vec3(aabb.min.x, aabb.max.z, aabb.min.y));
+    struct vec3 ba = mat44_mult_vec3(transform, make_vec3(aabb.min.x, aabb.min.y, aabb.min.z));
+    struct vec3 bb = mat44_mult_vec3(transform, make_vec3(aabb.max.x, aabb.min.y, aabb.min.z));
+    struct vec3 bc = mat44_mult_vec3(transform, make_vec3(aabb.max.x, aabb.min.y, aabb.max.z));
+    struct vec3 bd = mat44_mult_vec3(transform, make_vec3(aabb.min.x, aabb.min.y, aabb.max.z));
 
     ////////////////////////////////////////
 
     f32 width = 1.0f;
     f32 lifetime = 0.0f;
-
-    struct vec3 color = rsx_get_conf()->color.aabb;
 
     // top lines
     rsx_debug_add_line(ta, tb, color, width, lifetime, depth);

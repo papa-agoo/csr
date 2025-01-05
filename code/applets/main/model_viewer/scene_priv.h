@@ -28,3 +28,5 @@ struct scene_init_info
 
 result_e scene_init(struct scene_init_info *info, struct scene *scene);
 void scene_quit(struct scene *scene);
+
+void scene_tick(struct scene *scene, f64 dt);

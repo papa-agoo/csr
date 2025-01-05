@@ -47,6 +47,8 @@ void rcpu_destroy_cache(struct rcpu_cache *cache)
     softgl_destroy_pipeline(cache->pipeline.lines);
     softgl_destroy_pipeline(cache->pipeline.lines_no_depth);
 
+    softgl_destroy_pipeline(cache->pipeline.debug_colors);
+
 error:
     return;
 }
@@ -206,10 +208,44 @@ error:
     return RC_FAILURE;
 }
 
+static result_e _create_pso_debug_colors(struct rcpu_cache *cache)
+{
+    check_ptr(cache);
+
+    ////////////////////////////////////////
+
+    struct softgl_ia_state ia_state = {0};
+    ia_state.topology = SOFTGL_TOPOLOGY_TRIANGLE_LIST;
+
+    struct softgl_shader_state shader_state = {0};
+    shader_state.shader = cache->shader.vertex_color;
+
+    struct softgl_pipeline_create_info info = {0};
+    info.ia_state = &ia_state;
+    info.shader_state = &shader_state;
+    info.input_layout = &cache->input_layout.position_color;
+
+    info.name = make_string("pso.debug.colors");
+    info.depth_stencil_state = &cache->depth_stencil_state.rw_off;
+
+    check_result(softgl_create_pipeline(&info, &cache->pipeline.debug_colors));
+
+    ////////////////////////////////////////
+
+    return RC_SUCCESS;
+
+error:
+    return RC_FAILURE;
+}
+
 static result_e _create_pipelines(struct rcpu_cache *cache)
 {
     check_result(_create_pso_points(cache));
     check_result(_create_pso_lines(cache));
+
+    check_result(_create_pso_debug_colors(cache));
+    // check_result(_create_pso_debug_normals(cache));
+    // check_result(_create_pso_debug_texcoords(cache));
 
     return RC_SUCCESS;
 

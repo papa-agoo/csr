@@ -3,6 +3,7 @@
 #pragma once
 
 #include <csr/core/vector.h>
+#include <csr/core/memory.h>
 
 #include <csr/core/math.h>
 #include <csr/core/math/aabb.h>
@@ -15,13 +16,20 @@
 
 #define RSX_OBJECT_DECLARE CSR_OBJECT_DECLARE
 
-enum primitive_size
+enum rsx_primitive_mode
 {
-    PRIMITIVE_SIZE_NORMAL = 0,
-    PRIMITIVE_SIZE_THICK,
-    PRIMITIVE_SIZE_FAT,
+    RSX_PRIMITIVE_MODE_POINTS,
+    RSX_PRIMITIVE_MODE_LINES,
+    RSX_PRIMITIVE_MODE_TRIANGLES,
+};
 
-    PRIMITIVE_SIZE_MAX,
+enum rsx_primitive_size
+{
+    RSX_PRIMITIVE_SIZE_NORMAL = 0,
+    RSX_PRIMITIVE_SIZE_THICK,
+    RSX_PRIMITIVE_SIZE_FAT,
+
+    RSX_PRIMITIVE_SIZE_MAX,
 };
 
 
@@ -192,23 +200,142 @@ RSX_SHADER_RESOURCE(rsx_uniform_buffer_object, rsx_shader_resource_object);
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // materials
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+RSX_OBJECT_DECLARE(rsx_material);
+
 struct rsx_material
 {
     struct string name;
+
+    struct {
+        softgl_pipeline cpu;
+        xgl_pipeline gpu;
+    } pso;
+
+    struct rsx_shader_resource_material shader_data;
 };
 
 struct rsx_material_create_info
 {
     struct string name;
+
+    // ...
 };
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // meshes
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+// mesh pipeline overview (WIP)
+//
+//  - A) decoupled composition (struct rsx_mesh_composition)
+//      - settings for generating normals, uvs, tangents, ...
+//      - separate vertex attrib streams
+//      - indices
+//
+//  - B) geometry description (struct rsx_mesh_primitive_data)
+//      - vertex format + mode (lines, triangles, ...)
+//      - vertex buffer (interleaved vertex attribs)
+//      - index buffer
+//
+//  - C) mesh container (struct rsx_mesh)
+//      - raw vertex buffer [CPU/GPU]
+//      - raw index buffer [CPU/GPU]
+//      - no instance data yet (transform, ...)
+//      - append geometry data to the vertex + index buffers
+//          - build mesh_primitive struct for appended geometry data (buffer view + material)
+//          - if no material is provided, try to lookup a compatible one (based on vertex format)
+//          - (mesh_primitive structs are grouped as LODs) [need more research: LOD materials]
+//
+//  - D) mesh instance (struct rsx_mesh_instance)
+//      - contains per instance data (transform, ...) [CPU/GPU]
+//      - references a mesh container
+//
+//  - E) model
+//      - contains a mesh instance
+//      - flags for rendering (draw aabb, draw outline, cast shadow, material override, ...)
+//      - LOD settings
+//      - is used to construct data structures for the low level renderer
+//
+////////////////////////////////////////////////////////////////////////////////////////////////////
+RSX_OBJECT_DECLARE(rsx_mesh);
+
+struct rsx_mesh;
+
+struct rsx_mesh_primitive_data
+{
+    struct string name;
+
+    enum rsx_primitive_mode mode;
+
+    u32 vertex_format;
+
+    u32 *index_data;
+    u32 index_count;
+
+    void *vertex_data;
+    u32 vertex_count;
+
+    struct rsx_material *material;
+};
+
+struct rsx_mesh_primitive
+{
+    struct string name;
+
+    u32 vertex_format;
+    u32 vertex_stride;
+
+    struct {
+        u64 offset_bytes;
+        u32 count;
+    } vertices;
+
+    struct {
+        u64 offset_bytes;
+        u32 count;
+    } indices;
+
+    struct rsx_mesh *mesh;
+    struct rsx_material *material;
+};
+
+struct rsx_buffer
+{
+    void *cpu;
+    xgl_buffer gpu;
+};
+
+struct rsx_mesh_geometry
+{
+    struct vector *primitives;
+
+    struct rsx_buffer vertex_buffer;
+    struct rsx_buffer index_buffer;
+
+    struct arena *arena;
+};
+
+struct rsx_mesh_info
+{
+    // u32 material_count;
+    u32 primitive_count;
+
+    u32 indices_count;
+    u32 indices_byte_length;
+
+    u32 vertices_count;
+    u32 vertices_byte_length;
+
+    size_t total_byte_length;
+};
+
 struct rsx_mesh
 {
     struct string name;
+
+    struct rsx_mesh_info info;
+    struct rsx_mesh_geometry geometry;
 
     struct rsx_shader_resource_object shader_data;
 };
@@ -216,40 +343,61 @@ struct rsx_mesh
 struct rsx_mesh_create_info
 {
     struct string name;
+
+    struct rsx_mesh_primitive_data *primitives;
+    u32 primitive_count;
+
+    struct arena *arena;
 };
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 // pass + render data
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-struct rsx_pass_base
-{
-    struct string name;
-
-    bool enabled;
-};
+#define RSX_PASS_BASE() \
+\
+    struct string name; \
+    bool enabled; \
+\
 
 struct rsx_pass_meshes
 {
-    struct rsx_pass_base base;
+    RSX_PASS_BASE();
 
-    // ...
+    struct rsx_pass_meshes_priv
+    {
+        struct vector *meshes;
+    } priv;
 };
 
 struct rsx_pass_gizmos
 {
-    struct rsx_pass_base base;
+    RSX_PASS_BASE();
 
     bool draw_grid;
     bool draw_orientation_axes;
     bool draw_transform_handles;
 
-    // ...
+    struct rsx_pass_gizmos_priv
+    {
+        void (*calc_axes_viewport)(f32 *x, f32 *y, f32 *width, f32 *height);
+
+        struct {
+            struct rsx_mesh *grid;
+            struct rsx_mesh *axes;
+        } mesh;
+
+        // NOTICE obsolete when the material system is ready
+        struct {
+            struct rsx_material grid;
+            struct rsx_material axes;
+        } material;
+    } priv;
 };
 
 struct rsx_pass_environment
 {
-    struct rsx_pass_base base;
+    RSX_PASS_BASE();
 
     f32 blur_amount;
     bool blur_background;
@@ -259,13 +407,26 @@ struct rsx_pass_environment
 
 struct rsx_pass_debug_primitives
 {
-    struct rsx_pass_base base;
+    RSX_PASS_BASE();
 
-    // ...
+    bool draw_world_origin;
+    bool draw_object_bounding_boxes;
+    bool draw_object_orientation_axes;
+
+    struct rsx_pass_debug_primitives_priv
+    {
+        // high level primitive data (unsorted)
+        // struct queue *primitives;
+
+        // mesh ready for drawing
+        struct rsx_mesh *mesh;
+    } priv;
 };
 
 struct rsx_render_data
 {
+    struct vec3 world_origin;
+
     struct rsx_shader_resource_frame frame;
 
     // ...
@@ -278,4 +439,12 @@ struct rsx_render_data
 
         // ...
     } pass;
+
+    struct {
+        struct rsx_material debug_colors;
+        struct rsx_material debug_normals;
+        struct rsx_material debug_texcoords;
+
+        // ...
+    } material;
 };

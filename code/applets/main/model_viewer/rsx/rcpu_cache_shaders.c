@@ -21,14 +21,7 @@ vertex_shader(vs_vertex_color)
     {
         *v_color = make_vec4_3_1(*a_color, 1.0f);
 
-        struct mat44 mvp = object_data->mtx_mvp;
-
-        // FIXME use object mvp where possible
-        if (!object_data->use_object_mvp) {
-            mvp = mat44_mult(mat44_mult(frame_data->mtx_projection, frame_data->mtx_view), object_data->mtx_model);
-        }
-
-        vs_return( mat44_mult_vec4(mvp, make_vec4_3_1(*a_position, 1.0f)) );
+        vs_return( mat44_mult_vec4(object_data->mtx_mvp, make_vec4_3_1(*a_position, 1.0f)) );
     }
 }
 
